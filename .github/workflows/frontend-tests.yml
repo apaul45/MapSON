@@ -10,7 +10,6 @@ jobs:
         working-directory: ./frontend
     steps:
       - name: Checkout
-        working-directory: ./frontend
         uses: actions/checkout@v3
       # Install NPM dependencies, cache them correctly
       # and run all Cypress tests
