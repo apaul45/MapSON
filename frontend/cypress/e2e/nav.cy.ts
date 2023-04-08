@@ -28,5 +28,3 @@ describe('Navigation Bar Tests', () => {
     cy.contains('Discover').should('have.class', 'bg-navbar-hover');
   });
 });
-
-export {}
