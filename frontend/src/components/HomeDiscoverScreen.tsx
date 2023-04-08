@@ -3,7 +3,8 @@ import { MainNavbar } from './MainNavbar'
 
 export const HomeDiscoverScreen = () => {
   return (
-    <div>
+    <div className='h-screen bg-gray'>
+        
     </div>
   )
 }
