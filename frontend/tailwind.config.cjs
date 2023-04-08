@@ -13,7 +13,9 @@ module.exports = {
       'white': '#FFFFFF',
       'black': '#000000',
       'blue': '#5783F4',
-      'gray': '#4F4F4F'
+      'gray': '#4F4F4F',
+      'upvote': "#fa8072",
+      'downvote': '#7193ff'
     }
   },
   plugins: [],
