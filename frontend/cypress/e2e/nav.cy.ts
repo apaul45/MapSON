@@ -27,4 +27,6 @@ describe('Navigation Bar Tests', () => {
     cy.get('#search-field').should('be.visible');
     cy.contains('Discover').should('have.class', 'bg-navbar-hover');
   });
-})
+});
+
+export {}
