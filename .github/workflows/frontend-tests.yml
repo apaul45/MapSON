@@ -6,8 +6,42 @@ jobs:
   cypress-run:
     runs-on: ubuntu-latest
     steps:
+      # Checks out repository under $GITHUB_WORKSPACE, so workflow can access it
       - name: Checkout
         uses: actions/checkout@v3
+      
+      #Setup node in order for both frontend and backend to properly start up
+      - name: Setup Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 15
+
+      # - name: 'Create env file for backend'
+      #   working-directory: ./backend
+      #   run: |
+      #     touch .env
+      #     echo PORT=${{ secrets.PORT }} >> .env
+      #     echo API_KEY=${{ secrets.DB }} >> .env
+      #     cat .env
+
+      # - name: Load backend's environment variables
+      #   working-directory: ./backend
+      #   run: |
+      #     echo ${{secrets.BACKEND_ENV}} > .env
+      #     source .env
+
+      # - name: Install backend dependencies
+      #   working-directory: ./backend
+      #   run: npm install
+
+      # #Run server in background by ending command w/a "&"
+      # - name: Start server
+      #   working-directory: ./backend
+      #   run: node index.js &
+      #   env:
+      #     PORT: ${{ secrets.PORT }}
+      #     DB: ${{ secrets.DB }}
+
       # Install NPM dependencies, cache them correctly
       # and run all Cypress tests
       - name: Cypress run
@@ -16,3 +50,4 @@ jobs:
           working-directory: ./frontend
           build: npm run build
           start: npm run dev
+
