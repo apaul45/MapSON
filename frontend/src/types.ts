@@ -7,7 +7,7 @@ export interface User {
 
 export interface Published {
     isPublished: boolean;
-    publishedDate: Date;
+    publishedDate?: Date;
 }
 
 export interface Comment {
