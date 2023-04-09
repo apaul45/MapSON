@@ -3,11 +3,7 @@ import { Link } from 'react-router-dom';
 
 export const RegisterScreen = () => {
   return (
-    <div className="relative flex flex-col justify-center min-h-screen overflow-hidden" 
-      style={{backgroundImage: `url("/img/loginbg.png")`,
-      backgroundRepeat: "no-repeat",
-      backgroundSize: "cover"
-    }}>
+    <div className="bg-[url('/img/loginbg.png')] bg-center bg-cover relative flex flex-col justify-center min-h-screen overflow-hidden">
       <div className="w-full p-6 m-auto lg:max-w-xl">
         <form>
           <div>
