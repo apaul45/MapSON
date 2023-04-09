@@ -1,0 +1,18 @@
+.marker-icon,
+.marker-icon:focus {
+  background-color: white !important;
+  border: 1.5px solid black !important;
+  width: 7px !important;
+  height: 7px !important;
+  margin: -4px 0 0 -4px !important;
+}
+
+.marker-icon-middle,
+.marker-icon-middle:focus {
+  background-color: transparent !important;
+  opacity: 0.5 !important;
+  margin: -3.6px 0 0 -3.6px !important;
+  width: 6px !important;
+  height: 6px !important;
+  border: 1.5px solid green !important;
+}

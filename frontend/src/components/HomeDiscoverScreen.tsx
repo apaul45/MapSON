@@ -1,4 +1,4 @@
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import MapCard from './MapCard'
 import { useState } from 'react'
 import { AddMapDialog } from './AddMapDialog'
@@ -7,6 +7,7 @@ import { store } from '../models'
 export const HomeDiscoverScreen = () => {
     const mapStore = store.dispatch.mapStore;
     const location = useLocation();
+    const navigate = useNavigate()
 
     const [isMenuOpen, setMenuOpen] = useState<boolean>(false)
     const [sortBy, setSortBy] = useState<string>('upvote')
@@ -43,7 +44,7 @@ export const HomeDiscoverScreen = () => {
                     {
                         location.pathname.includes('home') &&
                             <>
-                                <div id="add-project" className="max-w-sm rounded overflow-hidden border-white border-2 grid place-content-center col-end-0 hover:cursor-pointer" onClick={openAddDialog}>
+                                <div id="add-project" className="max-w-sm rounded overflow-hidden border-white border-2 grid place-content-center hover:cursor-pointer" onClick={openAddDialog}>
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="current" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-20 h-20 text-white mx-auto">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                                     </svg>
@@ -52,7 +53,7 @@ export const HomeDiscoverScreen = () => {
                                 </div>
                                 
 
-                                <div id="new-project" className="max-w-sm rounded overflow-hidden border-white border-2 grid place-content-center border-dashed col-end-0">
+                                <div id="new-project" className="max-w-sm rounded overflow-hidden border-white border-2 grid place-content-center border-dashed hover:cursor-pointer" onClick={() => {navigate('/project/default')}}>
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="current" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-20 h-20 text-white mx-auto">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                                     </svg>

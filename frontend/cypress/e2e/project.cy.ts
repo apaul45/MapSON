@@ -1,17 +1,17 @@
 describe('Project Screen Tests', () => {
-    beforeEach(() => cy.visit('http://127.0.0.1:5173/project'));
+  beforeEach(() => cy.visit('http://127.0.0.1:5173/project/default'));
 
-    it('should update the map name', () => {
-        cy.get('#project-namefield').should('not.exist');
-        cy.get('#project-name').dblclick();
+  it('should update the map name', () => {
+    cy.get('#project-namefield').should('not.exist');
+    cy.get('#project-name').dblclick();
 
-        cy.get('#project-namefield')
-          .clear()
-          .type('Cypress Map{enter}');
-        
-        cy.get('#project-namefield').should('not.exist');
-        cy.get('#project-name').should('contain.text', 'Cypress Map');
-    });
+    cy.get('#project-namefield')
+      .clear()
+      .type('Cypress Map{enter}');
+
+    cy.get('#project-namefield').should('not.exist');
+    cy.get('#project-name').should('contain.text', 'Cypress Map');
+  });
 
     it('should update the comments button', () => {
         cy.get('#unfilled-comment')
@@ -34,7 +34,7 @@ describe('Project Screen Tests', () => {
       cy.location('pathname').should((path) => 
         expect(path).to.include('/discover')
       );
-    })
+    });
 });
 
-export{}
+export { }

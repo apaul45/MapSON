@@ -63,7 +63,7 @@ export default function MapCard() {
     }
 
     const goToProject = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        navigate('/project')
+        navigate('/project/default')
     }
 
     return (

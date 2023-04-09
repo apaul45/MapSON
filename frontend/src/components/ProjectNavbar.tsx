@@ -9,25 +9,28 @@ interface Props {
   commentsOpen: boolean;
   setCommentsOpen: Function;
 
+  shareOpen: boolean;
+  setShareOpen: Function;
+
   mapName: string;
   setMapName: Function;
 }
 
-export const ProjectNavbar = ({commentsOpen, setCommentsOpen, mapName, setMapName}: Props) => {
+export const ProjectNavbar = ({commentsOpen, setCommentsOpen, shareOpen, setShareOpen, mapName, setMapName}: Props) => {
   const [isEditNameActive, setEditNameActive] = useState(false);
-  
+
   const user = useSelector((state: RootState) => state.user.currentUser);
 
   const handleNameClick = () => {
     //TODO: Only editing the name active if this user owns the map, or is a collaborator
     setEditNameActive(true);
-  }
+  };
 
   //TODO: Make this update the actual current map name (probably through a callback to project screen)
   const handleNameChange = (e: any) => {
     setMapName(e.target.value);
     setEditNameActive(e.code !== "Enter");
-  }
+  };
 
   return (
     <nav className="bg-navbar w-screen text-white">
@@ -70,11 +73,10 @@ export const ProjectNavbar = ({commentsOpen, setCommentsOpen, mapName, setMapNam
             <button id="share-button" className="rounded-md pr-5 pl-5 pt-0.5 pb-0.5 mr-2 bg-blue"> 
               Share 
             </button>
-
             {!user && <AccountCircle />}
           </div>
         </div>
       </div>
-    </nav> 
-  )
-}
+    </nav>
+  );
+};
