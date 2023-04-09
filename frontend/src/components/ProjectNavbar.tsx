@@ -70,7 +70,7 @@ export const ProjectNavbar = ({commentsOpen, setCommentsOpen, shareOpen, setShar
               }
             </button>
 
-            <button id="share-button" className="rounded-md pr-5 pl-5 pt-0.5 pb-0.5 mr-2 bg-blue"> 
+            <button id="share-button" className="rounded-md pr-5 pl-5 pt-0.5 pb-0.5 mr-2 bg-blue" onClick={() => setShareOpen(!shareOpen)}> 
               Share 
             </button>
             {!user && <AccountCircle />}
