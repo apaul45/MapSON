@@ -16,3 +16,15 @@
   height: 6px !important;
   border: 1.5px solid green !important;
 }
+
+.merge-icon {
+  background: url("/img/controls/merge.svg");
+}
+
+.split-icon {
+  background: url("/img/controls/split.svg");
+}
+
+.simplify-icon {
+  background: url("/img/controls/simplify.svg");
+}

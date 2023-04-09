@@ -19,7 +19,9 @@ export const mapStore = createModel<RootModel>()({
       setCurrentMap: (state, payload: Map[]) => {return;},
       setMaps: (state, payload: Map[]) => {return;},
       setUserMaps: (state, payload: Map[]) => {return;},
-      setShareDialog: (state, payload: boolean) => {return;},
+      setShareDialog: (state, payload: boolean) => {
+        return {...state, shareDialog: payload}
+      },
       setDeleteDialog: (state, payload: boolean) => {
         return {...state, deleteDialog: payload}
       },
