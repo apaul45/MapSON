@@ -18,7 +18,7 @@ describe('Navigation Bar Tests', () => {
     cy.get('#search-field').should('not.exist');
 
     cy.contains('Discover')
-      .should('not.have.class', 'bg-navbar-hover')
+      .should('not.have.class', 'selected-nav-btn')
       .click();
 
     cy.location('pathname').should((path) => 
@@ -26,7 +26,7 @@ describe('Navigation Bar Tests', () => {
     );
 
     cy.get('#search-field').should('be.visible');
-    cy.contains('Discover').should('have.class', 'bg-navbar-hover');
+    cy.contains('Discover').should('have.class', 'selected-nav-btn');
   });
 
   it('should go to project', () => {
