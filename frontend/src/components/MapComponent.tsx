@@ -32,12 +32,16 @@ const SELECTED = {
 
 const position: L.LatLngTuple = [37.335556, -122.009167];
 
-const MapComponent = ({ features }: Map) => {
+interface IMapComponent extends Map {
+  canEdit: boolean;
+}
+
+const MapComponent = ({ features, canEdit }: IMapComponent) => {
   const [key, setKey] = useState(uuidv4());
   const fg = useRef<LGeoJsonExt>(null);
   const geoJSON: FeatureCollection = {
     type: "FeatureCollection",
-    features: features ?? [],
+    features,
   };
   const selectedFeatures = useRef<[SelectedFeature, SelectedFeature]>([
     null,
@@ -142,49 +146,55 @@ const MapComponent = ({ features }: Map) => {
     layer.on("mouseout", mouseout);
 
     layer.on("click", click);
-    layer.on("dblclick", dblclick);
+
+    if (canEdit) {
+      layer.on("dblclick", dblclick);
+    }
   };
 
   return (
-    <div className="map">
-      <div>
-        <MapContainer
-          style={{ width: "100%", height: "75vh" }}
-          center={position}
-          zoom={4}
-          markerZoomAnimation={false}
-          doubleClickZoom={false}
-          key={key}
-        >
-          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-          <FeatureGroup ref={fg}>
-            <MapControls
-              onCreate={(e) => {
-                console.log(e);
-                //TODO: STORE NEW FEATURE IN DB AND GET ID AS WELL
-                const feature = {};
-                // @ts-ignore
-                onEachFeature(feature, e.layer as LGeoJsonExt);
-              }}
-            />
+    <MapContainer
+      style={{ width: "100%", minHeight: "95%", height: "95%", zIndex: 0 }}
+      center={position}
+      zoom={4}
+      markerZoomAnimation={false}
+      doubleClickZoom={false}
+      key={key}
+      ref={(ref) =>
+        window.addEventListener("resize", () => {
+          ref?.invalidateSize();
+        })
+      }
+    >
+      <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+      <FeatureGroup ref={fg}>
+        {canEdit && (
+          <MapControls
+            onCreate={(e) => {
+              console.log(e);
+              //TODO: STORE NEW FEATURE IN DB AND GET ID AS WELL
+              const feature = {};
+              // @ts-ignore
+              onEachFeature(feature, e.layer as LGeoJsonExt);
+            }}
+          />
+        )}
 
-            <GeoJSON
-              data={geoJSON}
-              style={{
-                fillColor: "red",
-                fillOpacity: 0.15,
-                color: "blue",
-                weight: 1,
-              }}
-              /* @ts-ignore */
-              // Fine to ignore since we are guaranteeing the extensions to L.GeoJSON
-              onEachFeature={onEachFeature}
-              ref={fg}
-            />
-          </FeatureGroup>
-        </MapContainer>
-      </div>
-    </div>
+        <GeoJSON
+          data={geoJSON}
+          style={{
+            fillColor: "red",
+            fillOpacity: 0.15,
+            color: "blue",
+            weight: 1,
+          }}
+          /* @ts-ignore */
+          // Fine to ignore since we are guaranteeing the extensions to L.GeoJSON
+          onEachFeature={onEachFeature}
+          ref={fg}
+        />
+      </FeatureGroup>
+    </MapContainer>
   );
 };
 

@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { ProjectNavbar } from "./ProjectNavbar";
 import { Map } from "../types";
-import { FeatureCollection } from "geojson";
 import { useParams } from "react-router-dom";
+import { store } from "../models";
 import MapComponent from "./MapComponent";
 
 const defaultMap: Map = {
+  _id: "DEFAULT_MAP",
   name: "My Map",
   username: "",
   upvotes: [],
@@ -20,6 +21,8 @@ const defaultMap: Map = {
 export const ProjectScreen = () => {
   const { id } = useParams();
 
+  const user = store.getState().user.currentUser;
+
   useEffect(() => {
     //load data from db
     setMap(defaultMap);
@@ -28,15 +31,17 @@ export const ProjectScreen = () => {
   const [map, setMap] = useState<Map>(defaultMap);
   const [commentsOpen, setCommentsOpen] = useState(false);
 
+  const canEdit = (user && user.maps?.some((v) => v._id === map._id)) ?? false;
+
   return (
-    <div>
+    <div className="h-screen w-screen">
       <ProjectNavbar
         commentsOpen={commentsOpen}
         setCommentsOpen={setCommentsOpen}
         mapName={map.name}
         setMapName={(name: string) => setMap({ ...map, name: name })}
       />
-      <MapComponent key={"MAP"} {...map} />
+      <MapComponent canEdit={canEdit} key={"MAP"} {...map} />
     </div>
   );
 };

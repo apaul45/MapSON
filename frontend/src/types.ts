@@ -27,6 +27,7 @@ export type Features = Array<FeatureExt>
 export type LGeoJsonExt = L.GeoJSON & CommonGeoJSONData;
 
 export interface Map {
+    _id: string;
     name: string;
     username: string;
     upvotes: User[];
