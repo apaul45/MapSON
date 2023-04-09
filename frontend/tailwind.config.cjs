@@ -17,7 +17,8 @@ module.exports = {
       'upvote': "#fa8072",
       'downvote': '#7193ff',
       'sort': '#D9D9D9',
-      'sort-by': '#C0B7B7'
+      'sort-by': '#C0B7B7',
+      'sort-hover': '#757575'
     }
   },
   plugins: [],

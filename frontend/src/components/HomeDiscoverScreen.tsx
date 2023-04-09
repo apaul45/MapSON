@@ -25,12 +25,12 @@ export const HomeDiscoverScreen = () => {
 
                 {
                     isMenuOpen &&
-                    <div className="bg-gray text-white absolute right-0 z-10 w-48 origin-top-right py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none text-left space-y-2" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button">
+                    <div id="sort-menu" className="bg-gray text-white absolute right-0 z-10 w-48 origin-top-right py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none text-left space-y-2" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button">
                         <p className='text-lg text-sort-by'>Sort By...</p>
-                        <button onClick={() => {sortMaps('Upvotes')}}>Upvotes</button> <br/>
-                        <button onClick={() => {sortMaps('Downloads')}}>Downloads</button> <br/>
-                        <button onClick={() => {sortMaps('Oldest-Newest')}}>Oldest-Newest</button> <br/>
-                        <button onClick={() => {sortMaps('Newest-Oldest')}}>Newest-Oldest</button>
+                        <button onClick={() => { sortMaps('Upvotes') }} className='hover:bg-sort-hover w-full text-left'>Upvotes</button> <br />
+                        <button onClick={() => { sortMaps('Downloads') }} className='hover:bg-sort-hover w-full text-left'>Downloads</button> <br />
+                        <button onClick={() => { sortMaps('Oldest-Newest') }} className='hover:bg-sort-hover w-full text-left'>Oldest-Newest</button> <br />
+                        <button onClick={() => { sortMaps('Newest-Oldest') }} className='hover:bg-sort-hover w-full text-left'>Newest-Oldest</button>
                     </div>
                 }
             </div>
@@ -38,7 +38,7 @@ export const HomeDiscoverScreen = () => {
                 {
                     location.pathname.includes('home') ?
                         <>
-                            <div className="max-w-sm rounded overflow-hidden border-white border-2 grid place-content-center col-end-0">
+                            <div id="add-project" className="max-w-sm rounded overflow-hidden border-white border-2 grid place-content-center col-end-0">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="current" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-20 h-20 text-white mx-auto">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                                 </svg>
@@ -46,7 +46,7 @@ export const HomeDiscoverScreen = () => {
                                 <div className='text-white text-sm'>From ESRI shapefile or GeoJSON</div>
                             </div>
 
-                            <div className="max-w-sm rounded overflow-hidden border-white border-2 grid place-content-center border-dashed col-end-0">
+                            <div id="new-project" className="max-w-sm rounded overflow-hidden border-white border-2 grid place-content-center border-dashed col-end-0">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="current" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-20 h-20 text-white mx-auto">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                                 </svg>
@@ -57,7 +57,7 @@ export const HomeDiscoverScreen = () => {
                         ""
                 }
 
-                <div className='col-end-0'>
+                <div>
                     <MapCard />
                 </div>
                 <div>
