@@ -2,21 +2,21 @@ import { useLocation } from 'react-router-dom'
 import MapCard from './MapCard'
 import { useState } from 'react'
 import { AddMapDialog } from './AddMapDialog'
+import { store } from '../models'
 
 export const HomeDiscoverScreen = () => {
-    const location = useLocation()
+    const mapStore = store.dispatch.mapStore;
+    const location = useLocation();
+
     const [isMenuOpen, setMenuOpen] = useState<boolean>(false)
     const [sortBy, setSortBy] = useState<string>('upvote')
-    const [showDialog, setShowDialog] = useState<boolean>(false)
 
     const sortMaps = (type: string) => {
         setSortBy(type)
         setMenuOpen(false)
     }
 
-    const openAddDialog = () => {
-        setShowDialog(true)
-    }
+    const openAddDialog = () => mapStore.setAddDialog(true);
 
     return (
         <>
@@ -81,7 +81,7 @@ export const HomeDiscoverScreen = () => {
                     </div>
                 </div>
             </div>
-            <AddMapDialog showDialog={showDialog} setShowDialog={setShowDialog} />
+            <AddMapDialog />
         </>
     )
 }
