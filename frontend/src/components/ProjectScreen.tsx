@@ -6,7 +6,6 @@ import { store } from '../models'
 import DeletedMapDialog from './DeletedMapDialog'
 import ShareMapDialog from './ShareMapDialog'
 import { useEffect, useState } from "react";
-import { Map } from "../types";
 import { useParams } from "react-router-dom";
 import MapComponent from "./MapComponent";
 import { RootState } from "../models";
