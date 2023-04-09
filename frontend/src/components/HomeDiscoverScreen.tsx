@@ -30,7 +30,7 @@ export const HomeDiscoverScreen = () => {
                     </button>
                     {
                         isMenuOpen &&
-                        <div id="sort-menu" className="bg-gray text-white absolute right-0 z-10 w-48 origin-top-right py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none text-left space-y-2" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button">
+                        <div id="sort-menu" className="bg-gray text-white absolute right-0 z-10 w-48 origin-top-right py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none text-left space-y-2 p-2 rounded" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button">
                             <p className='text-lg text-sort-by'>Sort By...</p>
                             <button onClick={() => { sortMaps('Upvotes') }} className='sort-btn'>Upvotes</button> <br />
                             <button onClick={() => { sortMaps('Downloads') }} className='sort-btn'>Downloads</button> <br />
