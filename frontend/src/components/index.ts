@@ -1,5 +1,5 @@
 import { AddMapDialog } from "./AddMapDialog";
-import { DeleteMapDialog } from "./DeleteMapDialog";
+import DeleteMapDialog from "./DeleteMapDialog";
 import { ErrorDialog } from "./ErrorDialog";
 import { HomeDiscoverScreen } from "./HomeDiscoverScreen";
 import { LoginScreen } from "./LoginScreen";

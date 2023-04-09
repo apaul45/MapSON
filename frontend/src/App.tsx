@@ -16,7 +16,7 @@ function App() {
       <Routes>
         <Route path="/home" element={<HomeDiscoverScreen />} />
         <Route path="/discover" element={<HomeDiscoverScreen />} />
-        <Route path="/project" element={<ProjectScreen />} />
+        <Route path="/project/:id" element={<ProjectScreen />} />
         <Route path="/login" element={<LoginScreen />} />
         <Route path="/register" element={<RegisterScreen />} />
         <Route path="/" element={<FrontPageScreen />} />

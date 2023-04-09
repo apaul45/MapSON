@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { ProjectNavbar } from "./ProjectNavbar";
 import { Map } from "../types";
 import { useParams } from "react-router-dom";
-import { store } from "../models";
 import MapComponent from "./MapComponent";
 import { useNavigate } from "react-router-dom";
 import { RootState } from "../models";
@@ -28,8 +27,6 @@ export const ProjectScreen = () => {
   const user = useSelector((state: RootState) => state.user.currentUser);
 
   const { id } = useParams();
-
-  const user = store.getState().user.currentUser;
 
   useEffect(() => {
     //load data from db
