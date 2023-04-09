@@ -13,3 +13,30 @@
 .read-the-docs {
   color: #888;
 }
+
+@layer components {
+  .sort-btn{
+    @apply hover:bg-sort-hover w-full text-left
+  }
+  .acct-btn {
+    @apply rounded-md p-1 bg-blue
+  }
+  .nav-btn {
+    @apply text-white hover:bg-navbar-hover rounded-md px-3 py-2 text-lg font-medium
+  }
+  .selected-nav-btn {
+    @apply text-white bg-navbar-hover rounded-md px-3 py-2 text-lg font-medium
+  }
+  .form-inputs {
+    @apply block w-full px-4 py-2 mt-2 text-purple-700 bg-white border rounded-md focus:border-purple-400 focus:ring-purple-300 focus:outline-none focus:ring focus:ring-opacity-40
+  }
+  .lr-bg {
+    @apply bg-[url('/img/loginbg.png')] bg-top bg-cover relative flex flex-col justify-center min-h-screen
+  }
+  .lr-text {
+    @apply text-xs text-white hover:underline
+  }
+  .lr-btn {
+    @apply  hover:bg-blue-700 text-white font-bold py-2 px-4 rounded !bg-black
+  }
+}

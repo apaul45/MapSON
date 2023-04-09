@@ -44,6 +44,7 @@ export interface Store {
     maps: Map[];
     userMaps: Map[];
     deleteDialog: boolean;
+    addDialog: boolean;
 }
 
 export interface UserModel {

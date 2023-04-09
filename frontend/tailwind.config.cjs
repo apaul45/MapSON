@@ -1,9 +1,8 @@
 /** @type {import('tailwindcss').Config} */
-module.exports = {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
+const withMT = require("@material-tailwind/react/utils/withMT");
+ 
+module.exports = withMT({
+  content: ["./index.html","./src/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {},
     colors: {
@@ -18,8 +17,10 @@ module.exports = {
       'downvote': '#7193ff',
       'sort': '#D9D9D9',
       'sort-by': '#C0B7B7',
-      'sort-hover': '#757575'
+      'sort-hover': '#757575',
+      'blue-500': '#3b82f6',
+      'blue-700': '#1d4ed8'
     }
   },
   plugins: [],
-}
+});

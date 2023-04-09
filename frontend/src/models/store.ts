@@ -7,6 +7,7 @@ const initialState: Store = {
     maps: [],
     userMaps: [],
     deleteDialog: false, 
+    addDialog: false
 }  
 
 export const mapStore = createModel<RootModel>()({
@@ -17,10 +18,15 @@ export const mapStore = createModel<RootModel>()({
       setCurrentMap: (state, payload: Map[]) => {return;},
       setMaps: (state, payload: Map[]) => {return;},
       setUserMaps: (state, payload: Map[]) => {return;},
-      setDeletedDialog: (state, payload: boolean) => {return;},
+      setDeleteDialog: (state, payload: boolean) => {
+        return {...state, deleteDialog: payload}
+      },
+      setAddDialog: (state, payload: boolean) => {
+        return {...state, addDialog: payload}
+      }
     },
   
-    //Effects are (possibly async) functions that take in the store's state    and payload, and return anything
+    //Effects are (possibly async) functions that take in the store's state and payload, and return anything
   
     effects: (dispatch) => ({
       async loadUserMaps(payload, state) {return;},
