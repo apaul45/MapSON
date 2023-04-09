@@ -1,6 +1,7 @@
-import React, { useState } from 'react'
-import { store } from '../models';
+import { useState } from 'react'
+import { RootState } from '../models';
 import AccountCircle from './AccountCircle';
+import { useSelector } from 'react-redux';
 
 interface Props {
   commentsOpen: boolean;
@@ -13,7 +14,7 @@ interface Props {
 export const ProjectNavbar = ({commentsOpen, setCommentsOpen, mapName, setMapName}: Props) => {
   const [isEditNameActive, setEditNameActive] = useState(false);
   
-  const user = store.getState().user.currentUser;
+  const user = useSelector((state: RootState) => state.user.currentUser);
 
   const handleNameClick = () => {
     //TODO: Only editing the name active if this user owns the map, or is a collaborator
