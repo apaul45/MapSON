@@ -12,7 +12,6 @@ interface Props {
 }
 
 const DeletedMapDialog = ({isOpen, closeDialog}: Props) => {
-
   return (
     <Fragment>
       <Dialog open={isOpen} handler={() => closeDialog()} size="xs" className="block place-items-center">
@@ -25,7 +24,7 @@ const DeletedMapDialog = ({isOpen, closeDialog}: Props) => {
         <DialogFooter className="justify-center">
           <button
             onClick={() => closeDialog()}
-            className="rounded-md p-1 justify-center mr-1 bg-blue text-white"
+            className="rounded-md justify-center mr-1 bg-blue text-white font-medium p-2"
           >
             Exit project
           </button>
