@@ -1,4 +1,4 @@
-import { FeatureCollection } from "geojson";
+import { Feature, FeatureCollection, Geometry } from "geojson";
 
 export interface User {
     username: string;
@@ -15,6 +15,15 @@ export interface Comment {
     comment: string
 }
 
+
+// add mongodb _id type to geometries and features from `geojson` types
+export interface CommonGeoJSONData {
+    _id: string
+}
+export type GeometryExtension = CommonGeoJSONData & Geometry;
+export type FeatureExtension = CommonGeoJSONData & Feature<GeometryExtension>;
+export type Features = Array<FeatureExtension>
+
 export interface Map {
     name: string;
     username: string;
@@ -24,7 +33,7 @@ export interface Map {
     downloads: number;
     published: Published;
     comments: Comment[];
-    features: FeatureCollection
+    features: Features
 }
 
 export interface Store {
