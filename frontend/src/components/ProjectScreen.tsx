@@ -42,7 +42,7 @@ export const ProjectScreen = () => {
        commentsOpen={commentsOpen} 
        setCommentsOpen={setCommentsOpen} 
        shareOpen={shareOpen} 
-       setSharOpen={setShareOpen} 
+       setShareOpen={setShareOpen} 
        mapName = {map.name}
        setMapName = {(name: string) => setMap({...map, name: name})}
       />

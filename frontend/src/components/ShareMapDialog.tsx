@@ -1,6 +1,7 @@
 import { Fragment } from "react";
 import {
   Dialog,
+  DialogBody,
   DialogFooter,
   DialogHeader,
 } from "@material-tailwind/react";
@@ -15,36 +16,21 @@ interface Props {
 const ShareMapDialog = ({isOpen, closeDialog}: Props) => {
   return (
     <Fragment>
-      <Dialog open={isOpen} handler={() => closeDialog()} size="sm">
-        <DialogHeader className="flex justify-center">
-          Share this map
+      <Dialog open={isOpen} handler={() => {return}} size="xs" className="bg-gray block place-items-center">
+        <DialogBody className="flex justify-center place-items-center">
+            <i className="mt-4 fa-solid fa-circle-exclamation fa-2xl" style={{color: "#ff0000"}}></i>
+        </DialogBody>
+        <DialogHeader className="text-white justify-center">
+            Share this map
         </DialogHeader>
-        <button
+        <DialogFooter className="justify-center">
+          <button
             onClick={() => closeDialog()}
-            className="rounded-md justify-center mr-1 bg-white text-black font-medium p-2"
+            className="rounded-md justify-center mr-1 bg-blue text-white font-medium p-2"
           >
-            X
-        </button>
-        <div>
-            <input placeholder="Add people..." />
-            People with access:
-        </div>
-        <div>
-            <ul>ausername</ul>
-            <ul>ausername</ul>
-            <ul>ausername</ul>
-        </div>
-        <button
-            
-            className="rounded-md justify-center mr-1 bg-white text-black font-medium p-2"
-        >
             Copy Link
-        </button><button
-            onClick={() => closeDialog()}
-            className="rounded-md justify-center mr-1 bg-white text-black font-medium p-2"
-          >
-            Publish
-        </button>
+          </button>
+        </DialogFooter>
       </Dialog>
     </Fragment>
   );
