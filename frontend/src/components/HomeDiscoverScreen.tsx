@@ -28,7 +28,6 @@ export const HomeDiscoverScreen = () => {
                             <path d="M41 288h238c21.4 0 32.1 25.9 17 41L177 448c-9.4 9.4-24.6 9.4-33.9 0L24 329c-15.1-15.1-4.4-41 17-41z" />
                         </svg>
                     </button>
-
                     {
                         isMenuOpen &&
                         <div id="sort-menu" className="bg-gray text-white absolute right-0 z-10 w-48 origin-top-right py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none text-left space-y-2" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button">

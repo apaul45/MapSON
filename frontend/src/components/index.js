@@ -14,7 +14,7 @@ import { RequestDialog } from "./RequestDialog";
 
 export {
     AddMapDialog,
-    DeleteMapDialog, 
+    DeleteMapDialog,
     ErrorDialog,
     HomeDiscoverScreen,
     LoginScreen,

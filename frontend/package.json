@@ -11,6 +11,7 @@
   "dependencies": {
     "@geoman-io/leaflet-geoman-free": "^2.14.2",
     "@headlessui/react": "^0.0.0-insiders.f4e9710",
+    "@material-tailwind/react": "^1.4.2",
     "@rematch/core": "^2.2.0",
     "@turf/turf": "^6.5.0",
     "@types/geojson": "^7946.0.10",
@@ -27,6 +28,7 @@
     "react-leaflet": "^4.2.1",
     "react-leaflet-draw": "^0.20.4",
     "react-leaflet-geoman-v2": "^0.2.2",
+    "react-redux": "^8.0.5",
     "react-router-dom": "^6.10.0",
     "shpjs": "^4.0.4",
     "socket.io": "^4.6.1",
