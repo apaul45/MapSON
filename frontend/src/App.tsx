@@ -6,6 +6,7 @@ import { LoginScreen } from './components/LoginScreen';
 import { FrontPageScreen } from './components/FrontPageScreen';
 import { RegisterScreen } from './components/RegisterScreen';
 import { MainNavbar } from './components/MainNavbar';
+import { RecoveryScreen } from './components/RecoveryScreen';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
         <Route path='/login' element={<LoginScreen />} />
         <Route path='/register' element={<RegisterScreen />} />
         <Route path='/' element={<FrontPageScreen />} />
+        <Route path="/recover-account" element={<RecoveryScreen />} />
       </Routes>
     </BrowserRouter>
   )

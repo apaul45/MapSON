@@ -15,7 +15,7 @@ export const MainNavbar = () => {
     
     //Render the main navbar everywhere except any project related screens
     return (<> { !location.pathname.includes('project') &&
-        <nav id="main-nav" className="bg-navbar w-screen text-white">
+        <nav id="main-nav" className="bg-navbar text-white">
             <div className="w-full px-5">
                 <div className="relative flex h-16 items-center justify-between">
                     <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
@@ -63,7 +63,7 @@ export const MainNavbar = () => {
 
                                 {
                                     isMenuOpen &&
-                                    <div className="bg-gray text-white outline outline-1 outline-white absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button">
+                                    <div className="bg-gray text-white outline outline-1 outline-white absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button">
                                         <button>Import from Shapefile</button>
                                         <hr/>
                                         <button>Create new Map</button>
