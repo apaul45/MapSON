@@ -99,35 +99,35 @@ export default function MapCard() {
             <div className="px-1 pt-4 pb-3 flex relative">
 
                 <span className='pr-3 space-x-2 flex '>
-                    <button className={upvoteClass} onClick={(e) => { upvoteMap(e) }}>
+                    <button id='upvote-button' className={upvoteClass} onClick={(e) => { upvoteMap(e) }}>
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 10.5L12 3m0 0l7.5 7.5M12 3v18" />
                         </svg>
 
                     </button>
-                    <span className='text-lg'>{upvoteCount}</span>
+                    <span id='upvote-count' className='text-lg'>{upvoteCount}</span>
                 </span>
 
                 <span className='pr-3 space-x-2 flex'>
-                    <button className={downvoteClass} onClick={(e) => { downvoteMap(e) }}>
+                    <button id='downvote-button' className={downvoteClass} onClick={(e) => { downvoteMap(e) }}>
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 13.5L12 21m0 0l-7.5-7.5M12 21V3" />
                         </svg>
 
                     </button>
-                    <span className='text-lg'>{downvoteCount}</span>
+                    <span id='downvote-count' className='text-lg'>{downvoteCount}</span>
                 </span>
 
                 <span className='px-3 space-x-2 flex'>
-                    <button className='' onClick={(e) => { downloadMap(e) }}>
+                    <button id='download-button' className='' onClick={(e) => { downloadMap(e) }}>
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
                         </svg>
                     </button>
-                    <span className='text-lg'>{downloadCount}</span>
+                    <span id='download-count' className='text-lg'>{downloadCount}</span>
                 </span>
 
-                <button className="absolute bottom-0 right-0 px-3 py-3" onClick={(e) => { e.stopPropagation(); setExpand(!expand) }}>
+                <button id='expand-collapse-button' className="absolute bottom-0 right-0 px-3 py-3" onClick={(e) => { e.stopPropagation(); setExpand(!expand) }}>
                     {
                         !expand ?
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
