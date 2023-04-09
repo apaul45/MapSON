@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { Feature, type FeatureCollection } from "geojson";
-import { GeoJSON, MapContainer, FeatureGroup } from "react-leaflet";
+import { GeoJSON, MapContainer, FeatureGroup, TileLayer } from "react-leaflet";
 
 import * as L from "leaflet";
 
@@ -154,6 +154,10 @@ const MapComponent = ({ features }: Map) => {
           doubleClickZoom={false}
           key={key}
         >
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
           <FeatureGroup ref={fg}>
             <MapControls
               onCreate={(e) => {
