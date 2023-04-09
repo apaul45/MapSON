@@ -1,5 +1,4 @@
 import { ProjectNavbar } from './ProjectNavbar'
-import { Map } from '../types'
 import { FeatureCollection } from 'geojson'
 import { useNavigate } from 'react-router-dom'
 import { store } from '../models'
