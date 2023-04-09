@@ -8,7 +8,7 @@ const ProjectMenu = () => {
   const openDeleteDialog = () => store.dispatch.mapStore.setDeleteDialog(true);
     
   return (
-    <MenuList className="bg-gray text-white p-0 font-sans text-base">
+    <MenuList id="project-menu" className="bg-gray text-white p-0 font-sans text-base">
         <MenuItem className='text-sort-by mb-0.5 text-lg pointer-events-none'> File </MenuItem>
 
         <MenuItem className='hover:bg-sort-hover'>Save</MenuItem>

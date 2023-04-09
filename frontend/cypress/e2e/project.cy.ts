@@ -24,6 +24,17 @@ describe('Project Screen Tests', () => {
         
         cy.get('#unfilled-comment').should('be.visible');
     });
+
+    it('should exit the project', () => {
+      cy.get('#menu-button').click();
+
+      cy.contains('Exit project')
+        .click();
+      
+      cy.location('pathname').should((path) => 
+        expect(path).to.include('/discover')
+      );
+    })
 });
 
 export{}

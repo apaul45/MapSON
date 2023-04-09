@@ -34,8 +34,8 @@ export const ProjectNavbar = ({commentsOpen, setCommentsOpen, mapName, setMapNam
       <div className="w-full px-5">
         <div className="relative flex h-16 items-center justify-between">
           <Menu placement="bottom-start">
-            <MenuHandler>
-              <button id="menu-button" className="mr-24">
+            <MenuHandler id="menu-button">
+              <button className="mr-24">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-10 h-10"><path fillRule="evenodd" d="M3 6.75A.75.75 0 013.75 6h16.5a.75.75 0 010 1.5H3.75A.75.75 0 013 6.75zM3 12a.75.75 0 01.75-.75h16.5a.75.75 0 010 1.5H3.75A.75.75 0 013 12zm0 5.25a.75.75 0 01.75-.75h16.5a.75.75 0 010 1.5H3.75a.75.75 0 01-.75-.75z" clipRule="evenodd" /></svg>
               </button>
             </MenuHandler>
@@ -46,7 +46,7 @@ export const ProjectNavbar = ({commentsOpen, setCommentsOpen, mapName, setMapNam
             {
               !isEditNameActive ?
 
-              <u className="text-xl font-medium" onDoubleClick={() => setEditNameActive(true)}> {mapName} </u>
+              <u id="project-name" className="text-xl font-medium" onDoubleClick={() => setEditNameActive(true)}> {mapName} </u>
 
               : 
               <input
