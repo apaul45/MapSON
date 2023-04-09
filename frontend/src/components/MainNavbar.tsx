@@ -1,17 +1,17 @@
 import { useState } from 'react';
 import mapsonLogo from '../assets/MapSON-logo-outlined copy.png';
 import { Link, useLocation } from 'react-router-dom';
-import { store } from '../models';
+import { RootState, store } from '../models';
 import AccountCircle from './AccountCircle';
+import { useSelector } from 'react-redux';
 
 export const MainNavbar = () => {
     const location = useLocation();
-    const user = store.getState().user.currentUser;
+    const user = useSelector((state: RootState) => state.user.currentUser);
 
-    const [isMenuOpen, setMenuOpen] = useState(false); //For openign and closing user's add menu
+    const [isMenuOpen, setMenuOpen] = useState(false); //For opening and closing user's add menu
 
-    const navBtn = "bg-gray-900 text-white hover:bg-navbar-hover rounded-md px-3 py-2 text-lg font-medium";
-    const selectedNavBtn = "text-white bg-navbar-hover rounded-md px-3 py-2 text-lg font-medium";
+    const isSelected = (path: string) => location.pathname === path ? 'selected-nav-btn' : 'nav-btn';
     
     //Render the main navbar everywhere except any project related screens
     return (<> { !location.pathname.includes('project') &&
@@ -28,9 +28,9 @@ export const MainNavbar = () => {
                                 {
                                     //Only render user page if user logged in
                                     user &&
-                                    <Link to='/home' className={location.pathname === '/home' ? selectedNavBtn : navBtn}>Home</Link>
+                                    <Link to='/home' className={isSelected('/home')}>Home</Link>
                                 }
-                                <Link to='/discover' className={location.pathname === '/discover' ? selectedNavBtn : navBtn}>Discover </Link>
+                                <Link to='/discover' className={isSelected('/discover')}>Discover </Link>
                                 
                                 {
                                     // Render search textfield for discover page only
@@ -77,10 +77,10 @@ export const MainNavbar = () => {
                         
                         <>
                             { location.pathname !== '/login' &&
-                              <Link to="/login" id="login-button" className="rounded-md p-1 mr-2 bg-blue"> Login </Link>
+                              <Link to="/login" id="login-button" className="acct-btn mr-2"> Login </Link>
                             }
                             { location.pathname !== '/register' &&
-                              <Link to="/register" id="register-button" className="rounded-md p-1 bg-blue"> Register </Link>
+                              <Link to="/register" id="register-button" className="acct-btn"> Register </Link>
                             }
                         </>
                     }

@@ -3,8 +3,9 @@ import { ProjectNavbar } from './ProjectNavbar'
 import { Map } from '../types'
 import { FeatureCollection } from 'geojson'
 import { useNavigate } from 'react-router-dom'
-import { store } from '../models'
+import { RootState } from '../models'
 import DeletedMapDialog from './DeletedMapDialog'
+import { useSelector } from 'react-redux'
 
 const defaultMap: Map = {
   name: "My Map",
@@ -21,7 +22,7 @@ const defaultMap: Map = {
 export const ProjectScreen = () => {
   const navigate = useNavigate();
 
-  const user = store.getState().user.currentUser;
+  const user = useSelector((state: RootState) => state.user.currentUser);
 
   const [map, setMap] = useState<Map>(defaultMap);
   const [isMapDeleted, setMapDeleted] = useState(false);

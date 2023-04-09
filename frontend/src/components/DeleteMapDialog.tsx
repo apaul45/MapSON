@@ -13,14 +13,14 @@ const DeleteMapDialog = () => {
 
   return (
     <Fragment>
-      <Dialog open={isOpen} handler={() => closeDialog()} size="sm">
-        <DialogHeader className="flex justify-center">
+      <Dialog open={isOpen} handler={() => closeDialog()} size="sm" className="bg-gray text-white">
+        <DialogHeader className="flex justify-center text-white">
           Are you sure you want to delete this map?
         </DialogHeader>
         <DialogFooter className="flex justify-center">
           <button
             onClick={() => closeDialog()}
-            className="rounded-md justify-center mr-1 bg-white text-black font-medium p-2"
+            className="rounded-md justify-center mr-1 text-white font-medium p-2"
           >
             Cancel
           </button>
