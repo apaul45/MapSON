@@ -13,6 +13,13 @@ describe('Home Screen Tests', () => {
     cy.contains('Sort by: Downloads').should('exist')
     cy.get('#sort-menu').should('not.exist')
   })
+
+  it('should go to project screen', () => {
+    cy.get('#new-project').click()
+    cy.location('pathname').should((path) => 
+      expect(path).to.include('/project')
+    );
+  })
 })
 
 describe('Discover Screen Tests', () => {
