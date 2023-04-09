@@ -32,3 +32,5 @@ describe('Discover Screen Tests', () => {
     cy.get('#sort-menu').should('not.exist')
   })
 })
+
+export{}
