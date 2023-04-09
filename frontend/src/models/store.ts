@@ -6,7 +6,8 @@ const initialState: Store = {
     currentMap: null,
     maps: [],
     userMaps: [],
-    deleteDialog: false, 
+    deleteDialog: false,
+    shareDialog: false, 
 }  
 
 export const mapStore = createModel<RootModel>()({
@@ -18,6 +19,7 @@ export const mapStore = createModel<RootModel>()({
       setMaps: (state, payload: Map[]) => {return;},
       setUserMaps: (state, payload: Map[]) => {return;},
       setDeletedDialog: (state, payload: boolean) => {return;},
+      setShareDialog: (state, payload: boolean) => {return;},
     },
   
     //Effects are (possibly async) functions that take in the store's state    and payload, and return anything

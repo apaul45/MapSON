@@ -1,6 +1,7 @@
 import { AddMapDialog } from "./AddMapDialog";
 import { DeleteMapDialog } from "./DeleteMapDialog";
 import { ErrorDialog } from "./ErrorDialog";
+import { ShareMapDialog } from "./ShareMapDialog";
 import { HomeDiscoverScreen } from "./HomeDiscoverScreen";
 import { LoginScreen } from "./LoginScreen";
 import { MainNavbar } from "./MainNavbar";
@@ -14,8 +15,9 @@ import { RequestDialog } from "./RequestDialog";
 
 export {
     AddMapDialog,
-    DeleteMapDialog, 
+    DeleteMapDialog,
     ErrorDialog,
+    ShareMapDialog,
     HomeDiscoverScreen,
     LoginScreen,
     MainNavbar,

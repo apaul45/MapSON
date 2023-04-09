@@ -6,11 +6,14 @@ interface Props {
   commentsOpen: boolean;
   setCommentsOpen: Function;
 
+  shareOpen: boolean;
+  setShareOpen: Function;
+
   mapName: string;
   setMapName: Function;
 }
 
-export const ProjectNavbar = ({commentsOpen, setCommentsOpen, mapName, setMapName}: Props) => {
+export const ProjectNavbar = ({commentsOpen, setCommentsOpen, shareOpen, setShareOpen, mapName, setMapName}: Props) => {
   const [isEditNameActive, setEditNameActive] = useState(false);
   
   const user = store.getState().user.currentUser;
@@ -59,7 +62,7 @@ export const ProjectNavbar = ({commentsOpen, setCommentsOpen, mapName, setMapNam
                   }
                 </button>
 
-                <button id="share-button" className="rounded-md pr-5 pl-5 pt-0.5 pb-0.5 mr-2 bg-blue"> 
+                <button className="rounded-md pr-5 pl-5 pt-0.5 pb-0.5 mr-2 bg-blue" id="share-button" onClick={() => setShareOpen(!shareOpen)}> 
                   Share 
                 </button>
 
