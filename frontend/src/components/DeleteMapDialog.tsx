@@ -20,13 +20,13 @@ const DeleteMapDialog = () => {
         <DialogFooter className="flex justify-center">
           <button
             onClick={() => closeDialog()}
-            className="rounded-md p-1 justify-center mr-1 bg-white text-black font-medium p-2"
+            className="rounded-md justify-center mr-1 bg-white text-black font-medium p-2"
           >
             Cancel
           </button>
           <button
             onClick={() => closeDialog()}
-            className="rounded-md p-1 justify-center mr-1 bg-blue text-white font-medium p-2"
+            className="rounded-md justify-center mr-1 bg-blue text-white font-medium p-2"
           >
             Confirm
           </button>
