@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-import { Feature, type FeatureCollection } from "geojson";
+import { type FeatureCollection } from "geojson";
 import { GeoJSON, MapContainer, FeatureGroup, TileLayer } from "react-leaflet";
 
 import * as L from "leaflet";
@@ -11,9 +11,9 @@ import "leaflet/dist/leaflet.css";
 import "leaflet-draw/dist/leaflet.draw.css";
 
 import { v4 as uuidv4 } from "uuid";
-import { Map } from "../types";
+import { FeatureExt, LGeoJsonExt, Map } from "../types";
 
-type SelectedFeature = { layer: L.GeoJSON; id: number } | null;
+type SelectedFeature = { layer: LGeoJsonExt; id: number } | null;
 
 const HOVERED = {
   fillColor: "green",
@@ -34,7 +34,7 @@ const position: L.LatLngTuple = [37.335556, -122.009167];
 
 const MapComponent = ({ features }: Map) => {
   const [key, setKey] = useState(uuidv4());
-  const fg = useRef<L.GeoJSON>(null);
+  const fg = useRef<LGeoJsonExt>(null);
   const geoJSON: FeatureCollection = {
     type: "FeatureCollection",
     features: features ?? [],
@@ -57,7 +57,7 @@ const MapComponent = ({ features }: Map) => {
     );
   };
 
-  const selectFeature = (id: number, layer: L.GeoJSON): SelectedFeature => {
+  const selectFeature = (id: number, layer: LGeoJsonExt): SelectedFeature => {
     if (isSelected(id)) {
       return null;
     }
@@ -80,13 +80,15 @@ const MapComponent = ({ features }: Map) => {
 
   // NOTE: only call this function in leaflet event handlers,
   // OR when it is guaranteed that the `FeatureGroup` ref will be set
-  const getLayerID = (layer: L.GeoJSON) => {
+  const getLayerID = (layer: LGeoJsonExt) => {
     return fg.current?.getLayerId(layer);
   };
 
-  const onEachFeature = (country: Feature | null, layer: L.GeoJSON) => {
-    if (country) {
-      layer.bindPopup(country.properties?.name);
+  const onEachFeature = (feature: FeatureExt, layer: LGeoJsonExt) => {
+    layer._id = feature._id;
+
+    if (feature?.properties?.name) {
+      layer.bindPopup(feature.properties.name);
     }
 
     layer.pm.disable();
@@ -154,15 +156,15 @@ const MapComponent = ({ features }: Map) => {
           doubleClickZoom={false}
           key={key}
         >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
+          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
           <FeatureGroup ref={fg}>
             <MapControls
               onCreate={(e) => {
                 console.log(e);
-                onEachFeature(null, e.layer as L.GeoJSON);
+                //TODO: STORE NEW FEATURE IN DB AND GET ID AS WELL
+                const feature = {};
+                // @ts-ignore
+                onEachFeature(feature, e.layer as LGeoJsonExt);
               }}
             />
 
@@ -174,6 +176,8 @@ const MapComponent = ({ features }: Map) => {
                 color: "blue",
                 weight: 1,
               }}
+              /* @ts-ignore */
+              // Fine to ignore since we are guaranteeing the extensions to L.GeoJSON
               onEachFeature={onEachFeature}
               ref={fg}
             />

@@ -20,9 +20,11 @@ export interface Comment {
 export interface CommonGeoJSONData {
     _id: string
 }
-export type GeometryExtension = CommonGeoJSONData & Geometry;
-export type FeatureExtension = CommonGeoJSONData & Feature<GeometryExtension>;
-export type Features = Array<FeatureExtension>
+export type GeometryExt = CommonGeoJSONData & Geometry;
+export type FeatureExt = CommonGeoJSONData & Feature<GeometryExt>;
+export type Features = Array<FeatureExt>
+
+export type LGeoJsonExt = L.GeoJSON & CommonGeoJSONData;
 
 export interface Map {
     name: string;
