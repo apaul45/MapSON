@@ -9,12 +9,12 @@ export const AddMapDialog = ({showDialog, setShowDialog}: Props) => {
     return (
         <>
             {showDialog &&
-                <div id="add-dialog" className="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                <div className="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
                     <div className="fixed inset-0 z-10 overflow-y-auto">
                         <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center">
 
-                            <div className="relative overflow-hidden rounded-lg bg-gray shadow-xl sm:my-8 sm:w-full sm:max-w-sm border-white border-2 m-auto flex flex-col justify-center items-center">
-                                <button className='absolute top-0 right-0' onClick={() => setShowDialog(false)}>
+                            <div id="add-dialog" className="relative overflow-hidden rounded-lg bg-gray shadow-xl sm:my-8 sm:w-full sm:max-w-sm border-white border-2 m-auto flex flex-col justify-center items-center">
+                                <button  id='close-dialog' className='absolute top-0 right-0' onClick={() => setShowDialog(false)}>
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="current" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-white">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                                     </svg>
@@ -35,11 +35,11 @@ export const AddMapDialog = ({showDialog, setShowDialog}: Props) => {
 
                                 <div className="flex items-center mb-4 space-x-5">
                                     <div>
-                                        <input id="Shapefile" type="radio" value="" name="import" className="text-blue" />
+                                        <input id="Shapefile" type="radio" value="shapefile" name="import" className="text-blue" />
                                         <label htmlFor="Shapefile" className="text-white">ESRI Shapefile</label>
                                     </div>
                                     <div>
-                                        <input id="geojson" type="radio" value="" name="import" className="text-blue" />
+                                        <input id="geojson" type="radio" value="geojson" name="import" className="text-blue" />
                                         <label htmlFor="geojson" className="text-white">GeoJSON</label>
                                     </div>
                                 </div>
