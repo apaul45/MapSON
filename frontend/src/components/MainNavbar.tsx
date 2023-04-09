@@ -80,7 +80,7 @@ export const MainNavbar = () => {
                               <Link to="/login" id="login-button" className="rounded-md p-1 mr-2 bg-blue"> Login </Link>
                             }
                             { location.pathname !== '/register' &&
-                              <Link to="/register" id="register-button" className="rounded-md p-1 mr-2 bg-blue"> Register </Link>
+                              <Link to="/register" id="register-button" className="rounded-md p-1 bg-blue"> Register </Link>
                             }
                         </>
                     }
