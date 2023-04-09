@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from "react-router-dom"
 
 export const LoginScreen = () => {
   return (
@@ -12,7 +12,7 @@ export const LoginScreen = () => {
               className="block w-full px-4 py-2 mt-2 text-purple-700 bg-white border rounded-md focus:border-purple-400 focus:ring-purple-300 focus:outline-none focus:ring focus:ring-opacity-40"
               placeholder="Email/Username"
             />
-            <a href="#" className="text-xs text-purple-600 hover:underline">Don't have an account? Click here to register</a>
+            <Link to="/register" className="text-xs text-purple-600 hover:underline">Don't have an account? Click here to register</Link>
           </div>
           <div>
             <input
@@ -21,11 +21,9 @@ export const LoginScreen = () => {
               placeholder="Password"
             />
           </div>
-          <a href="#" className="text-xs text-purple-600 hover:underline">Forgot Password?</a>
+          <Link to="/recover-account" className="text-xs text-purple-600 hover:underline">Forgot Password?</Link>
           <div className="mt-6">
-            <Link to="/home">
-              <button className="bg-black hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Login</button>
-            </Link>
+              <input type="submit" value="Login" className="bg-black hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"/>
           </div>
         </form>
       </div>
