@@ -6,7 +6,8 @@ const initialState: Store = {
     currentMap: null,
     maps: [],
     userMaps: [],
-    deleteDialog: false, 
+    deleteDialog: false,
+    shareDialog: false, 
     addDialog: false
 }  
 
@@ -18,6 +19,7 @@ export const mapStore = createModel<RootModel>()({
       setCurrentMap: (state, payload: Map[]) => {return;},
       setMaps: (state, payload: Map[]) => {return;},
       setUserMaps: (state, payload: Map[]) => {return;},
+      setShareDialog: (state, payload: boolean) => {return;},
       setDeleteDialog: (state, payload: boolean) => {
         return {...state, deleteDialog: payload}
       },
