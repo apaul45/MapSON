@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { ProjectNavbar } from './ProjectNavbar'
 import { Map } from '../types'
 import { FeatureCollection } from 'geojson'
@@ -6,23 +5,37 @@ import { useNavigate } from 'react-router-dom'
 import { store } from '../models'
 import DeletedMapDialog from './DeletedMapDialog'
 import ShareMapDialog from './ShareMapDialog'
+import { useEffect, useState } from "react";
+import { Map } from "../types";
+import { useParams } from "react-router-dom";
+import MapComponent from "./MapComponent";
+import { RootState } from "../models";
+import { useSelector } from "react-redux";
 
 const defaultMap: Map = {
+  _id: "DEFAULT_MAP",
   name: "My Map",
   username: "",
   upvotes: [],
-  downvotes: [], 
+  downvotes: [],
   forks: 0,
-  downloads: 0, 
-  published: {isPublished: false}, 
+  downloads: 0,
+  published: { isPublished: false },
   comments: [],
-  features: [] as unknown as FeatureCollection
-}
+  features: [],
+};
 
 export const ProjectScreen = () => {
   const navigate = useNavigate();
 
-  const user = store.getState().user.currentUser;
+  const user = useSelector((state: RootState) => state.user.currentUser);
+
+  const { id } = useParams();
+
+  useEffect(() => {
+    //load data from db
+    setMap(defaultMap);
+  }, [id]);
 
   const [map, setMap] = useState<Map>(defaultMap);
   const [isMapDeleted, setMapDeleted] = useState(false);
@@ -35,6 +48,8 @@ export const ProjectScreen = () => {
   }
 
   const closeShareDialog = () => { setShareOpen(false); }
+
+  const canEdit = (user && user.maps?.some((v) => v._id === map._id)) ?? false;
 
   return (
     <div className='bg-black'>
@@ -49,5 +64,5 @@ export const ProjectScreen = () => {
       <DeletedMapDialog isOpen={isMapDeleted} closeDialog={closeDeletedDialog} />
       <ShareMapDialog isOpen={shareOpen} closeDialog={closeShareDialog} />
     </div>
-  )
-}
+  );
+};

@@ -1,29 +1,29 @@
 describe('Project Screen Tests', () => {
-    beforeEach(() => cy.visit('http://127.0.0.1:5173/project'));
+  beforeEach(() => cy.visit('http://127.0.0.1:5173/project/default'));
 
-    it('should update the map name', () => {
-        cy.get('#project-namefield').should('not.exist');
-        cy.get('#project-name').dblclick();
+  it('should update the map name', () => {
+    cy.get('#project-namefield').should('not.exist');
+    cy.get('#project-name').dblclick();
 
-        cy.get('#project-namefield')
-          .clear()
-          .type('Cypress Map{enter}');
-        
-        cy.get('#project-namefield').should('not.exist');
-        cy.get('#project-name').should('contain.text', 'Cypress Map');
-    });
+    cy.get('#project-namefield')
+      .clear()
+      .type('Cypress Map{enter}');
 
-    it('should update the comments button', () => {
-        cy.get('#unfilled-comment')
-          .should('be.visible')
-          .click();
+    cy.get('#project-namefield').should('not.exist');
+    cy.get('#project-name').should('contain.text', 'Cypress Map');
+  });
 
-        cy.get('#filled-comment')
-          .should('be.visible')
-          .click();
-        
-        cy.get('#unfilled-comment').should('be.visible');
-    });
+  it('should update the comments button', () => {
+    cy.get('#unfilled-comment')
+      .should('be.visible')
+      .click();
+
+    cy.get('#filled-comment')
+      .should('be.visible')
+      .click();
+
+    cy.get('#unfilled-comment').should('be.visible');
+  });
 });
 
-export{}
+export { }

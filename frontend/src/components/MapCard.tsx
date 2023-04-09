@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { store } from '../models'
 
 
 export default function MapCard() {
@@ -19,7 +20,8 @@ export default function MapCard() {
 
     const deleteCard = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
         console.log('delete card')
-        e.stopPropagation()
+        e.stopPropagation();
+        store.dispatch.mapStore.setDeleteDialog(true);
     }
 
     const upvoteMap = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
@@ -61,7 +63,7 @@ export default function MapCard() {
     }
 
     const goToProject = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        navigate('/project')
+        navigate('/project/default')
     }
 
     return (

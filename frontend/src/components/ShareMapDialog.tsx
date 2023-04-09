@@ -17,16 +17,19 @@ const ShareMapDialog = ({isOpen, closeDialog}: Props) => {
   return (
     <Fragment>
       <Dialog open={isOpen} handler={() => {return}} size="xs" className="bg-gray block place-items-center">
-        <DialogBody className="flex justify-center place-items-center">
-            <i className="mt-4 fa-solid fa-circle-exclamation fa-2xl" style={{color: "#ff0000"}}></i>
-        </DialogBody>
         <DialogHeader className="text-white justify-center">
             Share this map
+
+            <button onClick={() => closeDialog()} className="text-right">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
         </DialogHeader>
         <DialogFooter className="justify-center">
           <button
             onClick={() => closeDialog()}
-            className="rounded-md justify-center mr-1 bg-blue text-white font-medium p-2"
+            className="rounded-md justify-center mr-1 bg-gray outline outline-1 text-white font-medium p-2"
           >
             Copy Link
           </button>
