@@ -42,7 +42,8 @@ export const ProjectScreen = () => {
     //navigate(user ? '/home' : '/discover');
   };
 
-  const canEdit = (user && user.maps?.some((v) => v._id === map._id)) ?? false;
+  // const canEdit = (user && user.maps?.some((v) => v._id === map._id)) ?? false;
+  const canEdit = true; // allow editing for build 2
 
   return (
     <div className="bg-black h-screen w-screen">
