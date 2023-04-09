@@ -7,10 +7,12 @@ import {
 import { RootState, store } from "../models";
 import { useSelector } from "react-redux";
 
-const ShareMapDialog = () => {
-  const isOpen = useSelector((state: RootState) => state.mapStore.shareDialog);
-  const closeDialog = () => store.dispatch.mapStore.setShareDialog(false);
+interface Props {
+    isOpen: boolean;
+    closeDialog: Function;
+}
 
+const ShareMapDialog = ({isOpen, closeDialog}: Props) => {
   return (
     <Fragment>
       <Dialog open={isOpen} handler={() => closeDialog()} size="sm">
