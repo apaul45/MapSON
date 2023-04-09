@@ -13,17 +13,28 @@ describe('Project Screen Tests', () => {
     cy.get('#project-name').should('contain.text', 'Cypress Map');
   });
 
-  it('should update the comments button', () => {
-    cy.get('#unfilled-comment')
-      .should('be.visible')
-      .click();
+    it('should update the comments button', () => {
+        cy.get('#unfilled-comment')
+          .should('be.visible')
+          .click();
 
-    cy.get('#filled-comment')
-      .should('be.visible')
-      .click();
+        cy.get('#filled-comment')
+          .should('be.visible')
+          .click();
+        
+        cy.get('#unfilled-comment').should('be.visible');
+    });
 
-    cy.get('#unfilled-comment').should('be.visible');
-  });
+    it('should exit the project', () => {
+      cy.get('#menu-button').click();
+
+      cy.contains('Exit project')
+        .click();
+      
+      cy.location('pathname').should((path) => 
+        expect(path).to.include('/discover')
+      );
+    });
 });
 
 export { }
