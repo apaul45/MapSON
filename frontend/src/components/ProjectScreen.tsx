@@ -24,7 +24,7 @@ export const ProjectScreen = () => {
   const user = store.getState().user.currentUser;
 
   const [map, setMap] = useState<Map>(defaultMap);
-  const [isMapDeleted, setMapDeleted] = useState(true);
+  const [isMapDeleted, setMapDeleted] = useState(false);
   const [commentsOpen, setCommentsOpen] = useState(false);
 
   const closeDeletedDialog = () => {

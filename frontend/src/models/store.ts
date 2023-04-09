@@ -6,7 +6,7 @@ const initialState: Store = {
     currentMap: null,
     maps: [],
     userMaps: [],
-    deleteDialog: true, 
+    deleteDialog: false, 
 }  
 
 export const mapStore = createModel<RootModel>()({
