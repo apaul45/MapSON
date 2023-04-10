@@ -9,6 +9,7 @@ import MapComponent, { SelectedFeature } from "./MapComponent";
 import { RootState } from "../models";
 import { useSelector } from "react-redux";
 import ProjectSidePanel from "./ProjectSidePanel";
+import CommentsSidePanel from "./CommentsSidePanel";
 
 const defaultMap: Map = {
   _id: "DEFAULT_MAP",
@@ -37,9 +38,10 @@ export const ProjectScreen = () => {
 
   const [map, setMap] = useState<Map>(defaultMap);
   const [isMapDeleted, setMapDeleted] = useState(false);
-  const [commentsOpen, setCommentsOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [selectedFeature, setSelectedFeature] = useState<SelectedFeature>(null);
+  // true for comments, false for property editor
+  const [sidePanelToggle, setSidePanelToggle] = useState(true);
 
   const closeDeletedDialog = () => {
     setMapDeleted(false);
@@ -56,12 +58,12 @@ export const ProjectScreen = () => {
   return (
     <div className="bg-black w-screen h-[calc(100vh-64px)]">
       <ProjectNavbar
-        commentsOpen={commentsOpen}
-        setCommentsOpen={setCommentsOpen}
         shareOpen={shareOpen}
         setShareOpen={setShareOpen}
         mapName={map.name}
         setMapName={(name: string) => setMap({ ...map, name: name })}
+        setSidePanelToggle={setSidePanelToggle}
+        sidePanelToggle={sidePanelToggle}
       />
 
       <div className="flex flex-row">
@@ -71,7 +73,10 @@ export const ProjectScreen = () => {
           key={"MAP"}
           {...map}
         />
-        <ProjectSidePanel selectedFeature={selectedFeature} />
+        {!sidePanelToggle && (
+          <ProjectSidePanel selectedFeature={selectedFeature} />
+        )}
+        {sidePanelToggle && <CommentsSidePanel />}
       </div>
 
       <DeletedMapDialog
