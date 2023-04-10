@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { User } from "../types";
 import { store } from "../models";
 import { useState } from "react";
@@ -6,7 +6,7 @@ import { useState } from "react";
 export const LoginScreen = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-
+  const navigate = useNavigate()
 
   const handleSubmit = (event: any) => {
     if (!username || !password) {
@@ -20,6 +20,7 @@ export const LoginScreen = () => {
     }
 
     store.dispatch.user.setCurrentUser(user);
+    navigate('/home');
   };
 
   return (
