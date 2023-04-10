@@ -56,7 +56,7 @@ export const ProjectScreen = () => {
   const canEdit = true; // allow editing for build 2
 
   return (
-    <div className="bg-black w-screen h-full overflow-hidden">
+    <div className="bg-black w-screen h-[calc(100vh-64px)]">
       <ProjectNavbar
         shareOpen={shareOpen}
         setShareOpen={setShareOpen}
@@ -66,7 +66,7 @@ export const ProjectScreen = () => {
         sidePanelToggle={sidePanelToggle}
       />
 
-      <div className="flex flex-row h-[calc(100vh-64px)]">
+      <div className="flex flex-row">
         <MapComponent
           canEdit={canEdit}
           setSelectedFeature={setSelectedFeature}
