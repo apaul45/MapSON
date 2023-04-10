@@ -5,9 +5,11 @@ import DeletedMapDialog from "./DeletedMapDialog";
 import ShareMapDialog from "./ShareMapDialog";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import MapComponent from "./MapComponent";
+import MapComponent, { SelectedFeature } from "./MapComponent";
 import { RootState } from "../models";
 import { useSelector } from "react-redux";
+import { Stack } from "@mui/material";
+import ProjectSidePanel from "./ProjectSidePanel";
 
 const defaultMap: Map = {
   _id: "DEFAULT_MAP",
@@ -38,6 +40,7 @@ export const ProjectScreen = () => {
   const [isMapDeleted, setMapDeleted] = useState(false);
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const [selectedFeature, setSelectedFeature] = useState<SelectedFeature>(null);
 
   const closeDeletedDialog = () => {
     setMapDeleted(false);
@@ -62,7 +65,15 @@ export const ProjectScreen = () => {
         setMapName={(name: string) => setMap({ ...map, name: name })}
       />
 
-      <MapComponent canEdit={canEdit} key={"MAP"} {...map} />
+      <Stack direction={"row"}>
+        <MapComponent
+          canEdit={canEdit}
+          setSelectedFeature={setSelectedFeature}
+          key={"MAP"}
+          {...map}
+        />
+        <ProjectSidePanel selectedFeature={selectedFeature} />
+      </Stack>
 
       <DeletedMapDialog
         isOpen={isMapDeleted}
