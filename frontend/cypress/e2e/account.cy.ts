@@ -41,8 +41,10 @@ describe('Logout Test', () => {
       .should('exist')
       .click()
 
-      cy.location('pathname').should((path) =>
+    cy.location('pathname').should((path) =>
       expect(path).to.deep.equal('/')
     );
   })
 })
+
+export { }
