@@ -145,6 +145,8 @@ const MapComponent = ({
       }
     };
 
+    layer.clearCustomEventHandlers?.();
+
     layer.on("mouseover", mouseover);
 
     layer.on("mouseout", mouseout);
@@ -154,6 +156,17 @@ const MapComponent = ({
     if (canEdit) {
       layer.on("dblclick", dblclick);
     }
+
+    layer.clearCustomEventHandlers = () => {
+      layer.off("mouseover", mouseover);
+
+      layer.off("mouseout", mouseout);
+
+      layer.off("click", click);
+      if (canEdit) {
+        layer.off("dblclick", dblclick);
+      }
+    };
   };
 
   return (
