@@ -16,7 +16,7 @@ interface Props {
 const ShareMapDialog = ({isOpen, closeDialog}: Props) => {
   return (
     <Fragment>
-      <Dialog open={isOpen} handler={() => {return}} size="xs" className="bg-gray block place-items-center">
+      <Dialog open={isOpen} handler={() => closeDialog()} size="xs" className="bg-gray block place-items-center">
         <DialogHeader className="text-white justify-center">
             Share this map
         </DialogHeader>
