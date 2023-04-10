@@ -41,7 +41,7 @@ export const ProjectScreen = () => {
   const [shareOpen, setShareOpen] = useState(false);
   const [selectedFeature, setSelectedFeature] = useState<SelectedFeature>(null);
   // true for comments, false for property editor
-  const [sidePanelToggle, setSidePanelToggle] = useState(true);
+  const [sidePanelToggle, setSidePanelToggle] = useState(false);
 
   const closeDeletedDialog = () => {
     setMapDeleted(false);

@@ -86,10 +86,19 @@ export const ProjectNavbar = ({
 
           <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
             <IconButton
+              variant={!sidePanelToggle ? "outlined" : "text"}
+              onClick={() => setSidePanelToggle(false)}
+              color={!sidePanelToggle ? "white" : undefined}
+              className="transition-all ml-2 mr-1"
+            >
+              <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAADxUlEQVR4nO3dSYsVVxyG8VITETRgou0MSUgQHBoCjuBGxI0EXYTs8gXyBSTLdLoblaRtNU4IguKAiJhhI0IEBT+AIYsMbZNxkckJNcG+wTxSWmBz+9TtqlPn3P7fuu+zbG6dU1U/aug7JkkWsAgYBkaBBqpsjWzf7QUWJlUCNgJ/l14FlddfwAZfjPTIEEYclAU+IOkhpuL0iQ9Iet5TcRrxAdEFPF4NHxAVMYEYSyDGEoixBGIsgRhLIMYSSKeDKKWUUr5N9UWv7iUCsZVAjCUQYwnEWAIxlkCMJRBjCcRYAjGWQIwlkG4F8R036dAQiK0EYiyBGMs8iCqWQIwlEGMJxFgCMZZAjGXmdi7YChpJIMYSiLEEYizzIKpYAjGWQIwlEGMJxFgCMda4m6d5QC+wHJjV9ts53+Ws5i0CHwDfNv1tDLgCvBNsIt8NSDo04nUZeKXyRL4bkHRoxO0b4KVKE/luQNKhEb9z7ZpIFet/YL1AbHVMIHG7VvLxowKJV192SegrscyYQCJijLshKIoikAh9lHOX1hf1lOV7m5gYjTDtmWSO9L/2Vh0VSFYAjP6kQC2OlPS2d51AstqBMW6uq44xzlZakQKTei03VfnuB2Cg5Dz9UZ46UV4Yg7h/ReH57404HqCK9XGAI+Pu0+tG0wNVfIwBxxh3gLWuB6u4GIM5GGvyFlCRfqAF2JVzzehttZCKg7HbMcafLTEEEh4DmAbsz8FYXWQAFRbjgDeGQCZtqCTGp44x/gBWFR1HR0g4jIM5GCsLYwgkGMYhxxi/l8YQSBCMwzkYK0pjCGRCewNg/Aa86YUhkEoYR5jYr5UwBOKFMR04gRvjjUoYAimNMQM4ycR+CYKRTZKe87q1oZIYpxxj/AS8FgQjm2hbdrh1W0MlMc44xvgReDUYRt0D3gJuOXbkcEmM044xfgZej7sFNYq4GGFPU3UPWAHcrojxAnDeMcZNYFncLahZwFcVMV4ELjjGGAGWxl37mgXMBf5r2pH7SmJcdGD8IAyPgHebduTj3NevJy47E/jMgfEdsNhnfbo+4Lhjh94DNhbA+Nyx7PfAkq7fsb61+J/qAbC5BcYXwggczz6Y36qHwBYHxpc6TUUI2Mnk/QNsFUYb4tm3IxTpX2AHcCnnjc897VjfWgfMBh5Rra+B+VO9LbUI2F4R44YwwoIcqogxL+T6dH3AqAfE/ezJw5e7fgeGDFhSEKABXAc+BDalTyAKIkJAT/YdVK4PUqZ3TfuAt4E5AmhTwPvZU+7pC0fpmxDeAxZ1GsATkmbtBSDeBSYAAAAASUVORK5CYII="></img>
+            </IconButton>
+
+            <IconButton
               variant={sidePanelToggle ? "outlined" : "text"}
               onClick={() => setSidePanelToggle(true)}
               color={sidePanelToggle ? "white" : undefined}
-              className="transition-all ml-2 mr-1"
+              className="transition-all ml-1 mr-2"
             >
               <svg
                 id="unfilled-comment"
@@ -111,15 +120,6 @@ export const ProjectNavbar = ({
                   </clipPath>
                 </defs>
               </svg>
-            </IconButton>
-
-            <IconButton
-              variant={!sidePanelToggle ? "outlined" : "text"}
-              onClick={() => setSidePanelToggle(false)}
-              color={!sidePanelToggle ? "white" : undefined}
-              className="transition-all ml-1 mr-2 bg-transparent"
-            >
-              <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAADxUlEQVR4nO3dSYsVVxyG8VITETRgou0MSUgQHBoCjuBGxI0EXYTs8gXyBSTLdLoblaRtNU4IguKAiJhhI0IEBT+AIYsMbZNxkckJNcG+wTxSWmBz+9TtqlPn3P7fuu+zbG6dU1U/aug7JkkWsAgYBkaBBqpsjWzf7QUWJlUCNgJ/l14FlddfwAZfjPTIEEYclAU+IOkhpuL0iQ9Iet5TcRrxAdEFPF4NHxAVMYEYSyDGEoixBGIsgRhLIMYSSKeDKKWUUr5N9UWv7iUCsZVAjCUQYwnEWAIxlkCMJRBjCcRYAjGWQIwlkG4F8R036dAQiK0EYiyBGMs8iCqWQIwlEGMJxFgCMZZAjGXmdi7YChpJIMYSiLEEYizzIKpYAjGWQIwlEGMJxFgCMda4m6d5QC+wHJjV9ts53+Ws5i0CHwDfNv1tDLgCvBNsIt8NSDo04nUZeKXyRL4bkHRoxO0b4KVKE/luQNKhEb9z7ZpIFet/YL1AbHVMIHG7VvLxowKJV192SegrscyYQCJijLshKIoikAh9lHOX1hf1lOV7m5gYjTDtmWSO9L/2Vh0VSFYAjP6kQC2OlPS2d51AstqBMW6uq44xzlZakQKTei03VfnuB2Cg5Dz9UZ46UV4Yg7h/ReH57404HqCK9XGAI+Pu0+tG0wNVfIwBxxh3gLWuB6u4GIM5GGvyFlCRfqAF2JVzzehttZCKg7HbMcafLTEEEh4DmAbsz8FYXWQAFRbjgDeGQCZtqCTGp44x/gBWFR1HR0g4jIM5GCsLYwgkGMYhxxi/l8YQSBCMwzkYK0pjCGRCewNg/Aa86YUhkEoYR5jYr5UwBOKFMR04gRvjjUoYAimNMQM4ycR+CYKRTZKe87q1oZIYpxxj/AS8FgQjm2hbdrh1W0MlMc44xvgReDUYRt0D3gJuOXbkcEmM044xfgZej7sFNYq4GGFPU3UPWAHcrojxAnDeMcZNYFncLahZwFcVMV4ELjjGGAGWxl37mgXMBf5r2pH7SmJcdGD8IAyPgHebduTj3NevJy47E/jMgfEdsNhnfbo+4Lhjh94DNhbA+Nyx7PfAkq7fsb61+J/qAbC5BcYXwggczz6Y36qHwBYHxpc6TUUI2Mnk/QNsFUYb4tm3IxTpX2AHcCnnjc897VjfWgfMBh5Rra+B+VO9LbUI2F4R44YwwoIcqogxL+T6dH3AqAfE/ezJw5e7fgeGDFhSEKABXAc+BDalTyAKIkJAT/YdVK4PUqZ3TfuAt4E5AmhTwPvZU+7pC0fpmxDeAxZ1GsATkmbtBSDeBSYAAAAASUVORK5CYII="></img>
             </IconButton>
 
             <button
