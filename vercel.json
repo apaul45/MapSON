@@ -1,6 +1,5 @@
 {
   "rewrites":  [
-    {"source": "/home", "destination": "/home"},
-    {"source": "/recover-account", "destination": "/recover-account"}
+    {"source": "/(.*)", "destination": "/"}
   ]
 }
