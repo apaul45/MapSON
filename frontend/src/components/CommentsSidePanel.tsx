@@ -3,7 +3,7 @@ import CommentCard from "./CommentCard";
 
 const CommentsSidePanel = () => {
   return (
-    <div className="bg-gray p-2 z-0 text-white" style={{ minWidth: "20vw" }}>
+    <div className="bg-gray p-2 z-0 text-white h-[calc(100vh-64px)]" style={{ minWidth: "20vw" }}>
       <div className='grid grid-cols-1 gap-3 relative p-2'>
         <div> 
           <CommentCard />
