@@ -7,7 +7,6 @@ import {
   TabPanel,
 } from "@material-tailwind/react";
 import { SelectedFeature } from "./MapComponent";
-import { Divider } from "@mui/material";
 
 const EXAMPLE_PROPERTIES = Object.fromEntries(
   Array.from(Array(10).keys()).map((v) => [`Key${v}`, `Value${v}`])

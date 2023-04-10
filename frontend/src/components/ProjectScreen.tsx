@@ -8,7 +8,6 @@ import { useParams } from "react-router-dom";
 import MapComponent, { SelectedFeature } from "./MapComponent";
 import { RootState } from "../models";
 import { useSelector } from "react-redux";
-import { Stack } from "@mui/material";
 import ProjectSidePanel from "./ProjectSidePanel";
 
 const defaultMap: Map = {
@@ -65,7 +64,7 @@ export const ProjectScreen = () => {
         setMapName={(name: string) => setMap({ ...map, name: name })}
       />
 
-      <Stack direction={"row"}>
+      <div className="flex flex-row">
         <MapComponent
           canEdit={canEdit}
           setSelectedFeature={setSelectedFeature}
@@ -73,7 +72,7 @@ export const ProjectScreen = () => {
           {...map}
         />
         <ProjectSidePanel selectedFeature={selectedFeature} />
-      </Stack>
+      </div>
 
       <DeletedMapDialog
         isOpen={isMapDeleted}
