@@ -1,13 +1,15 @@
 import { Models, RematchDispatch, RematchRootState, init } from "@rematch/core";
 import { user } from "./user";
 import { mapStore } from "./store";
+import { error } from "./error";
 
 export interface RootModel extends Models<RootModel> {
     user: typeof user;
     mapStore: typeof mapStore;
+    error: typeof error
 }
 
-const models: RootModel = { user, mapStore };
+const models: RootModel = { user, mapStore, error };
 
 export const store = init({models});
 
