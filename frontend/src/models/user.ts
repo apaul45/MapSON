@@ -7,7 +7,9 @@ export const user = createModel<RootModel>()({
 
     //Pure reducer functions
     reducers: {
-        setCurrentUser: (state, payload) => {return;}
+        setCurrentUser: (state, payload: User | null) => {
+          return {...state, currentUser: payload}
+        }
     },
 
   //Effects are (possibly async) functions that take in the store's state    and payload, and return anything
@@ -19,5 +21,4 @@ export const user = createModel<RootModel>()({
     async logout(payload: User, state) {return;},
     async updateUser(payload: User, state) {return;}
   }),
-
 })

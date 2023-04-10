@@ -2,6 +2,7 @@ import { Feature, FeatureCollection, Geometry } from "geojson";
 
 export interface User {
     username: string;
+    password: string
     maps?: Map[];
 }
 
@@ -50,4 +51,8 @@ export interface Store {
 
 export interface UserModel {
     currentUser: User | null
+}
+
+export interface ErrorModel {
+    errorMessage: string | null
 }

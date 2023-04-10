@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import { store } from "../models";
 
 const AccountCircle = () => {
   const [isCircleOpen, setCircleOpen] = useState(false);
+  const logout = () => store.dispatch.user.setCurrentUser(null);
 
   return (
     <div className="relative ml-3">
@@ -19,14 +21,15 @@ const AccountCircle = () => {
       </button>
 
       {isCircleOpen && (
-        <div
-          className=" text-white bg-gray absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+        <button
+          className=" text-white bg-gray absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
           role="menu"
           aria-orientation="vertical"
           aria-labelledby="user-menu-button"
+          onClick={() => logout()}
         >
-          <button>Logout</button>
-        </div>
+          Logout
+        </button>
       )}
     </div>
   );

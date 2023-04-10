@@ -8,6 +8,7 @@ import { RegisterScreen } from "./components/RegisterScreen";
 import { MainNavbar } from "./components/MainNavbar";
 import { RecoveryScreen } from "./components/RecoveryScreen";
 import DeleteMapDialog from "./components/DeleteMapDialog";
+import { ErrorDialog } from "./components";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
         <Route path="/recover-account" element={<RecoveryScreen />} />
       </Routes>
       <DeleteMapDialog />
+      <ErrorDialog />
     </BrowserRouter>
   );
 }
