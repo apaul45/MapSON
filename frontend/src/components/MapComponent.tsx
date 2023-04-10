@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 
 import { type FeatureCollection } from "geojson";
 import { GeoJSON, MapContainer, FeatureGroup, TileLayer } from "react-leaflet";
@@ -6,14 +6,12 @@ import { GeoJSON, MapContainer, FeatureGroup, TileLayer } from "react-leaflet";
 import * as L from "leaflet";
 
 import MapControls from "./MapControls";
+import { FeatureExt, LGeoJsonExt, Map } from "../types";
 
 import "leaflet/dist/leaflet.css";
 import "leaflet-draw/dist/leaflet.draw.css";
 
-import { v4 as uuidv4 } from "uuid";
-import { FeatureExt, LGeoJsonExt, Map } from "../types";
-
-type SelectedFeature = { layer: LGeoJsonExt; id: number } | null;
+export type SelectedFeature = { layer: LGeoJsonExt; id: number } | null;
 
 const HOVERED = {
   fillColor: "green",
@@ -34,25 +32,27 @@ const position: L.LatLngTuple = [37.335556, -122.009167];
 
 interface IMapComponent extends Map {
   canEdit: boolean;
+  setSelectedFeature: Function;
 }
 
-const MapComponent = ({ features, canEdit }: IMapComponent) => {
-  const [key, setKey] = useState(uuidv4());
+const MapComponent = ({
+  features,
+  canEdit,
+  setSelectedFeature,
+}: IMapComponent) => {
   const fg = useRef<LGeoJsonExt>(null);
   const geoJSON: FeatureCollection = {
     type: "FeatureCollection",
     features,
   };
+
+  //second one is the most recently selected
   const selectedFeatures = useRef<[SelectedFeature, SelectedFeature]>([
     null,
     null,
   ]);
 
   const editLayer = useRef<SelectedFeature>(null);
-
-  useEffect(() => {
-    setKey(uuidv4());
-  }, []);
 
   const isSelected = (id: number) => {
     return (
@@ -70,6 +70,8 @@ const MapComponent = ({ features, canEdit }: IMapComponent) => {
     selectedFeatures.current[0] = selectedFeatures.current[1];
     selectedFeatures.current[1] = { layer, id };
 
+    setSelectedFeature({ layer, id });
+
     return res;
   };
 
@@ -77,8 +79,10 @@ const MapComponent = ({ features, canEdit }: IMapComponent) => {
     if (selectedFeatures.current[0]?.id === id) {
       selectedFeatures.current[0] = selectedFeatures.current[1];
       selectedFeatures.current[1] = null;
+      setSelectedFeature(selectedFeatures.current[0]);
     } else if (selectedFeatures.current[1]?.id === id) {
       selectedFeatures.current[1] = null;
+      setSelectedFeature(null);
     }
   };
 
@@ -153,48 +157,49 @@ const MapComponent = ({ features, canEdit }: IMapComponent) => {
   };
 
   return (
-    <MapContainer
-      style={{ width: "100%", minHeight: "100%", height: "100%", zIndex: 0 }}
-      center={position}
-      zoom={4}
-      markerZoomAnimation={false}
-      doubleClickZoom={false}
-      key={key}
-      ref={(ref) =>
-        window.addEventListener("resize", () => {
-          ref?.invalidateSize();
-        })
-      }
-    >
-      <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-      <FeatureGroup ref={fg}>
-        {canEdit && (
-          <MapControls
-            onCreate={(e) => {
-              console.log(e);
-              //TODO: STORE NEW FEATURE IN DB AND GET ID AS WELL
-              const feature = {};
-              // @ts-ignore
-              onEachFeature(feature, e.layer as LGeoJsonExt);
-            }}
-          />
-        )}
+    <div className="w-screen h-screen">
+      <MapContainer
+        style={{ width: "100%", minHeight: "95%", height: "95%", zIndex: 0 }}
+        center={position}
+        zoom={4}
+        markerZoomAnimation={false}
+        doubleClickZoom={false}
+        ref={(ref) =>
+          window.addEventListener("resize", () => {
+            ref?.invalidateSize();
+          })
+        }
+      >
+        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        <FeatureGroup ref={fg}>
+          {canEdit && (
+            <MapControls
+              onCreate={(e) => {
+                console.log(e);
+                //TODO: STORE NEW FEATURE IN DB AND GET ID AS WELL
+                const feature = {};
+                // @ts-ignore
+                onEachFeature(feature, e.layer as LGeoJsonExt);
+              }}
+            />
+          )}
 
-        <GeoJSON
-          data={geoJSON}
-          style={{
-            fillColor: "red",
-            fillOpacity: 0.15,
-            color: "blue",
-            weight: 1,
-          }}
-          /* @ts-ignore */
-          // Fine to ignore since we are guaranteeing the extensions to L.GeoJSON
-          onEachFeature={onEachFeature}
-          ref={fg}
-        />
-      </FeatureGroup>
-    </MapContainer>
+          <GeoJSON
+            data={geoJSON}
+            style={{
+              fillColor: "red",
+              fillOpacity: 0.15,
+              color: "blue",
+              weight: 1,
+            }}
+            /* @ts-ignore */
+            // Fine to ignore since we are guaranteeing the extensions to L.GeoJSON
+            onEachFeature={onEachFeature}
+            ref={fg}
+          />
+        </FeatureGroup>
+      </MapContainer>
+    </div>
   );
 };
 
