@@ -5,12 +5,16 @@ describe("MapCard Tests", () => {
     cy.contains('Lorem ipsum dolor sit amet, consectetur adipiscing elit.')
       .should('not.exist')
 
-    cy.get('#expand-collapse-button').click()
+    cy.get('#expand-collapse-button')
+      .should('exist')
+      .click()
 
     cy.contains('Lorem ipsum dolor sit amet, consectetur adipiscing elit.')
       .should('be.visible')
 
-    cy.get('#expand-collapse-button').click()
+    cy.get('#expand-collapse-button')
+      .should('exist')
+      .click()
 
     cy.contains('Lorem ipsum dolor sit amet, consectetur adipiscing elit.')
       .should('not.exist')
