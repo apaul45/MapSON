@@ -1,9 +1,14 @@
 import { useState } from "react";
 import { store } from "../models";
+import { useNavigate } from "react-router";
 
 const AccountCircle = () => {
   const [isCircleOpen, setCircleOpen] = useState(false);
-  const logout = () => store.dispatch.user.setCurrentUser(null);
+  const navigate = useNavigate();
+  const logout = () => {
+    store.dispatch.user.setCurrentUser(null);
+    navigate('/');
+  }
 
   return (
     <div className="relative ml-3">
