@@ -127,7 +127,7 @@ export default function MapCard() {
                     <span id='download-count' className='text-lg'>{downloadCount}</span>
                 </span>
 
-                <button id='expand-collapse-button' className="absolute bottom-0 right-0 px-3 py-3" onClick={(e) => { e.stopPropagation(); setExpand(!expand) }}>
+                <button id='expand-collapse-button' className="ml-auto px-2" onClick={(e) => { e.stopPropagation(); setExpand(!expand) }}>
                     {
                         !expand ?
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
