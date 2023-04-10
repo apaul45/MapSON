@@ -12,6 +12,7 @@ import { ProjectScreen } from "./ProjectScreen";
 import { RecoveryScreen } from "./RecoveryScreen";
 import { RegisterScreen } from "./RegisterScreen";
 import { RequestDialog } from "./RequestDialog";
+import CommentCard from "./CommentCard";
 
 export {
     AddMapDialog,
@@ -27,5 +28,6 @@ export {
     ProjectScreen,
     RecoveryScreen,
     RegisterScreen,
-    RequestDialog
+    RequestDialog,
+    CommentCard
 }
