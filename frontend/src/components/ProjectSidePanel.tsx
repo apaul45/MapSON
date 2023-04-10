@@ -18,7 +18,7 @@ interface IProjectSidePanel {
 
 const ProjectSidePanel = ({ selectedFeature }: IProjectSidePanel) => {
   return (
-    <div className="bg-gray" style={{ minWidth: "20vw" }}>
+    <div className="bg-gray z-0" style={{ minWidth: "20vw" }}>
       <Tabs value="Feature">
         <TabsHeader
           className="bg-transparent"
