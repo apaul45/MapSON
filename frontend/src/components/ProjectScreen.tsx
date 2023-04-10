@@ -55,7 +55,7 @@ export const ProjectScreen = () => {
   const canEdit = true; // allow editing for build 2
 
   return (
-    <div className="bg-black w-screen h-screen">
+    <div className="bg-black w-screen h-[calc(100vh-64px)]">
       <ProjectNavbar
         commentsOpen={commentsOpen}
         setCommentsOpen={setCommentsOpen}
