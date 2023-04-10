@@ -2,7 +2,7 @@ export const RecoveryScreen = () => {
   return (
     <div className="lr-bg" >
       <div className="w-full p-6 m-auto lg:max-w-xl">
-        <div className="text-white text-3xl">
+        <div className="text-white text-3xl mt-32">
           Enter the email you used to register for the account below
         </div>
 
