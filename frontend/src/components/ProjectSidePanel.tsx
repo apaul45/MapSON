@@ -7,6 +7,7 @@ import {
   TabPanel,
 } from "@material-tailwind/react";
 import { SelectedFeature } from "./MapComponent";
+import { Divider } from "@mui/material";
 
 const EXAMPLE_PROPERTIES = Object.fromEntries(
   Array.from(Array(10).keys()).map((v) => [`Key${v}`, `Value${v}`])
@@ -18,16 +19,20 @@ interface IProjectSidePanel {
 
 const ProjectSidePanel = ({ selectedFeature }: IProjectSidePanel) => {
   return (
-    <div className="bg-gray z-0" style={{ minWidth: "20vw" }}>
+    <div className="bg-gray z-0 text-white" style={{ minWidth: "20vw" }}>
       <Tabs value="Feature">
         <TabsHeader
-          className="bg-transparent"
+          className="bg-gray"
           indicatorProps={{
-            className: "bg-blue",
+            className: "bg-white/10",
           }}
         >
-          <Tab value="Feature">Feature</Tab>
-          <Tab value="Map">Map</Tab>
+          <Tab value="Feature" className="text-white">
+            Feature
+          </Tab>
+          <Tab value="Map" className="text-white">
+            Map
+          </Tab>
         </TabsHeader>
         <TabsBody>
           <TabPanel value="Feature">

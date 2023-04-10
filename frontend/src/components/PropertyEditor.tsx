@@ -47,7 +47,7 @@ const PropertyEditor = ({ onSave, properties }: IPropertyEditor) => {
 
   return (
     <div className="bg-gray m-2">
-      <ul>
+      <ul className="text-black">
         {Object.entries(props).map(([k, v]) => (
           <li key={k}>
             <Property k={k} v={v} onUpdate={() => {}} />
