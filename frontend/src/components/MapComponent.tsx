@@ -12,8 +12,17 @@ import "leaflet-draw/dist/leaflet.draw.css";
 
 import { v4 as uuidv4 } from "uuid";
 import { FeatureExt, LGeoJsonExt, Map } from "../types";
+import { Stack } from "@mui/material";
+import PropertyEditor from "./PropertyEditor";
+import {
+  Tabs,
+  Tab,
+  TabsBody,
+  TabsHeader,
+  TabPanel,
+} from "@material-tailwind/react";
 
-type SelectedFeature = { layer: LGeoJsonExt; id: number } | null;
+export type SelectedFeature = { layer: LGeoJsonExt; id: number } | null;
 
 const HOVERED = {
   fillColor: "green",
@@ -30,6 +39,9 @@ const SELECTED = {
   fillOpacity: 0.2,
 };
 
+const EXAMPLE_PROPERTIES = Object.fromEntries(
+  Array.from(Array(10).keys()).map((v) => [`Key${v}`, `Value${v}`])
+);
 const position: L.LatLngTuple = [37.335556, -122.009167];
 
 interface IMapComponent extends Map {
@@ -43,6 +55,10 @@ const MapComponent = ({ features, canEdit }: IMapComponent) => {
     type: "FeatureCollection",
     features,
   };
+
+  const [selectedFeature, setSelectedFeature] = useState<SelectedFeature>(null);
+
+  //second one is the most recently selected
   const selectedFeatures = useRef<[SelectedFeature, SelectedFeature]>([
     null,
     null,
@@ -70,6 +86,8 @@ const MapComponent = ({ features, canEdit }: IMapComponent) => {
     selectedFeatures.current[0] = selectedFeatures.current[1];
     selectedFeatures.current[1] = { layer, id };
 
+    setSelectedFeature({ layer, id });
+
     return res;
   };
 
@@ -77,8 +95,10 @@ const MapComponent = ({ features, canEdit }: IMapComponent) => {
     if (selectedFeatures.current[0]?.id === id) {
       selectedFeatures.current[0] = selectedFeatures.current[1];
       selectedFeatures.current[1] = null;
+      setSelectedFeature(selectedFeatures.current[0]);
     } else if (selectedFeatures.current[1]?.id === id) {
       selectedFeatures.current[1] = null;
+      setSelectedFeature(null);
     }
   };
 
@@ -153,48 +173,93 @@ const MapComponent = ({ features, canEdit }: IMapComponent) => {
   };
 
   return (
-    <MapContainer
-      style={{ width: "100%", minHeight: "95%", height: "95%", zIndex: 0 }}
-      center={position}
-      zoom={4}
-      markerZoomAnimation={false}
-      doubleClickZoom={false}
-      key={key}
-      ref={(ref) =>
-        window.addEventListener("resize", () => {
-          ref?.invalidateSize();
-        })
-      }
-    >
-      <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-      <FeatureGroup ref={fg}>
-        {canEdit && (
-          <MapControls
-            onCreate={(e) => {
-              console.log(e);
-              //TODO: STORE NEW FEATURE IN DB AND GET ID AS WELL
-              const feature = {};
-              // @ts-ignore
-              onEachFeature(feature, e.layer as LGeoJsonExt);
-            }}
-          />
-        )}
+    <Stack direction={"row"}>
+      <div className="w-screen h-screen">
+        <MapContainer
+          style={{ width: "100%", minHeight: "95%", height: "95%", zIndex: 0 }}
+          center={position}
+          zoom={4}
+          markerZoomAnimation={false}
+          doubleClickZoom={false}
+          key={key}
+          ref={(ref) =>
+            window.addEventListener("resize", () => {
+              ref?.invalidateSize();
+            })
+          }
+        >
+          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+          <FeatureGroup ref={fg}>
+            {canEdit && (
+              <MapControls
+                onCreate={(e) => {
+                  console.log(e);
+                  //TODO: STORE NEW FEATURE IN DB AND GET ID AS WELL
+                  const feature = {};
+                  // @ts-ignore
+                  onEachFeature(feature, e.layer as LGeoJsonExt);
+                }}
+              />
+            )}
 
-        <GeoJSON
-          data={geoJSON}
-          style={{
-            fillColor: "red",
-            fillOpacity: 0.15,
-            color: "blue",
-            weight: 1,
-          }}
-          /* @ts-ignore */
-          // Fine to ignore since we are guaranteeing the extensions to L.GeoJSON
-          onEachFeature={onEachFeature}
-          ref={fg}
-        />
-      </FeatureGroup>
-    </MapContainer>
+            <GeoJSON
+              data={geoJSON}
+              style={{
+                fillColor: "red",
+                fillOpacity: 0.15,
+                color: "blue",
+                weight: 1,
+              }}
+              /* @ts-ignore */
+              // Fine to ignore since we are guaranteeing the extensions to L.GeoJSON
+              onEachFeature={onEachFeature}
+              ref={fg}
+            />
+          </FeatureGroup>
+        </MapContainer>
+      </div>
+      <div className="bg-gray" style={{ minWidth: "20vw" }}>
+        <Tabs value="Feature">
+          <TabsHeader
+            className="bg-transparent"
+            indicatorProps={{
+              className: "bg-blue",
+            }}
+          >
+            <Tab value="Feature">Feature</Tab>
+            <Tab value="Map">Map</Tab>
+          </TabsHeader>
+          <TabsBody>
+            <TabPanel value="Feature">
+              {selectedFeature ? (
+                <div>
+                  <b>Feature Properties: </b>
+                  <PropertyEditor
+                    properties={EXAMPLE_PROPERTIES}
+                    onSave={(props) => {
+                      //TODO
+                      console.log(props);
+                    }}
+                  />
+                </div>
+              ) : (
+                <div>Select feature to view properties</div>
+              )}
+            </TabPanel>
+            <TabPanel value="Map">
+              <b>Map Properties: </b>
+              <PropertyEditor
+                properties={EXAMPLE_PROPERTIES}
+                onSave={(props) => {
+                  //TODO
+                  console.log(props);
+                }}
+              />
+            </TabPanel>
+          </TabsBody>
+        </Tabs>
+      </div>
+    </Stack>
   );
 };
 

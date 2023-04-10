@@ -9,8 +9,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@emotion/react": "^11.10.6",
+    "@emotion/styled": "^11.10.6",
     "@geoman-io/leaflet-geoman-free": "^2.14.2",
     "@material-tailwind/react": "^1.4.2",
+    "@mui/material": "^5.11.16",
     "@rematch/core": "^2.2.0",
     "@turf/turf": "^6.5.0",
     "@types/geojson": "^7946.0.10",

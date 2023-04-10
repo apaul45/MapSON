@@ -1,8 +1,6 @@
 import { ProjectNavbar } from "./ProjectNavbar";
 import { Map } from "../types";
-import { FeatureCollection } from "geojson";
 import { useNavigate } from "react-router-dom";
-import { store } from "../models";
 import DeletedMapDialog from "./DeletedMapDialog";
 import ShareMapDialog from "./ShareMapDialog";
 import { useEffect, useState } from "react";
@@ -63,7 +61,9 @@ export const ProjectScreen = () => {
         mapName={map.name}
         setMapName={(name: string) => setMap({ ...map, name: name })}
       />
+
       <MapComponent canEdit={canEdit} key={"MAP"} {...map} />
+
       <DeletedMapDialog
         isOpen={isMapDeleted}
         closeDialog={closeDeletedDialog}
