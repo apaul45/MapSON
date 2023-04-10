@@ -4,7 +4,7 @@ export const LoginScreen = () => {
   return (
     <div className="lr-bg" >
       <div className="w-full p-6 m-auto lg:max-w-xl">
-        <form className="mt-16">
+        <form className="mt-24">
           <div>
             <input
               name="email"

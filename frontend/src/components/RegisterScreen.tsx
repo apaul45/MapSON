@@ -4,7 +4,7 @@ export const RegisterScreen = () => {
   return (
     <div className="lr-bg overflow-hidden">
       <div className="w-full p-6 m-auto lg:max-w-xl">
-        <form>
+        <form className="mt-24">
           <div>
             <input
               name="username"

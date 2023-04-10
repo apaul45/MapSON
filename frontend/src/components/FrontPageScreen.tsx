@@ -3,7 +3,7 @@ import mapsonLogo from "../assets/MapSON-logo-outlined copy.png";
 
 export const FrontPageScreen = () => {
     return (
-        <div className="bg-[url('/img/welcome2.png')] bg-center bg-cover relative flex flex-col justify-center h-screen overflow-hidden">
+        <div className="bg-[url('/img/welcome2.png')] bg-center bg-cover relative flex flex-col justify-center h-[calc(100vh-64px)] overflow-hidden">
             <div className="w-1/2 p-10 h-screen">
 
                 <img

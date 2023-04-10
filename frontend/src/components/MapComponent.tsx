@@ -154,7 +154,7 @@ const MapComponent = ({ features, canEdit }: IMapComponent) => {
 
   return (
     <MapContainer
-      style={{ width: "100%", minHeight: "95%", height: "95%", zIndex: 0 }}
+      style={{ width: "100%", minHeight: "100%", height: "100%", zIndex: 0 }}
       center={position}
       zoom={4}
       markerZoomAnimation={false}
