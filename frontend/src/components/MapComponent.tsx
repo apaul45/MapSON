@@ -159,7 +159,11 @@ const MapComponent = ({
   return (
     <div className="w-screen h-screen">
       <MapContainer
-        style={{ width: "100%", minHeight: "95%", height: "95%", zIndex: 0 }}
+        style={{
+          width: "100%",
+          zIndex: 0,
+        }}
+        className="h-[calc(100vh-64px)]"
         center={position}
         zoom={4}
         markerZoomAnimation={false}
