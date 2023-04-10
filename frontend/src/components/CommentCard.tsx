@@ -8,12 +8,12 @@ import {
 
 const CommentCard = () => {
   return (
-    <Card color="white" shadow={false} className="w-full max-w-[20rem]">
+    <Card color="white" shadow={false} className="m-4">
       <CardHeader
         color="transparent"
         floated={false}
         shadow={false}
-        className="mx-0 flex items-center gap-4 pt-0 pb-8"
+        className="flex items-center pt-0 pb-8"
       >
         <Avatar
           size="lg"
