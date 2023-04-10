@@ -28,6 +28,7 @@ export const LoginScreen = () => {
       <div className="w-full p-6 m-auto lg:max-w-xl">
           <div>
             <input
+              id="username"
               name="username"
               type="text"
               className="form-inputs"
@@ -38,6 +39,7 @@ export const LoginScreen = () => {
           </div>
           <div>
             <input
+              id='password'
               name="password"
               type="text"
               className="form-inputs"
