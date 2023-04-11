@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { RootState } from '../models';
 import AccountCircle from './AccountCircle';
 import { useSelector } from 'react-redux';
-import { Menu, MenuHandler, Button, MenuList, MenuItem, IconButton } from '@material-tailwind/react';
+import { Menu, MenuHandler } from '@material-tailwind/react';
 import ProjectMenu from './ProjectMenu';
 
 interface Props {
@@ -66,7 +66,6 @@ export const ProjectNavbar = ({commentsOpen, setCommentsOpen, shareOpen, setShar
               {
                 commentsOpen ? <svg id="filled-comment" width="34" height="34" viewBox="0 0 135 120" fill="none" xmlns="http://www.w3.org/2000/svg"><g clipPath="url(#clip0_93_108)"><path d="M45 90H102.583L112.5 96.925V45H118.125C119.617 45 121.048 45.5268 122.102 46.4645C123.157 47.4021 123.75 48.6739 123.75 50V117.5L98.6906 100H50.625C49.1332 100 47.7024 99.4732 46.6475 98.5355C45.5926 97.5979 45 96.3261 45 95V90ZM30.6844 80L5.625 97.5V20C5.625 18.6739 6.21763 17.4021 7.27252 16.4645C8.32742 15.5268 9.75816 15 11.25 15H95.625C97.1168 15 98.5476 15.5268 99.6025 16.4645C100.657 17.4021 101.25 18.6739 101.25 20V80H30.6844Z" fill="white"/></g><defs><clipPath id="clip0_93_108"><rect width="135" height="120" fill="white"/></clipPath></defs></svg>
                 : <svg id="unfilled-comment" width="34" height="34" viewBox="0 0 137 147" fill="none" xmlns="http://www.w3.org/2000/svg"><g clipPath="url(#clip0_82_648)"><path d="M31.1386 91.875L5.70801 113.312V18.375C5.70801 16.7505 6.30942 15.1926 7.37994 14.044C8.45046 12.8953 9.9024 12.25 11.4163 12.25H97.0413C98.5553 12.25 100.007 12.8953 101.078 14.044C102.148 15.1926 102.75 16.7505 102.75 18.375V91.875H31.1386ZM27.1885 79.625H91.333V24.5H17.1247V88.1081L27.1885 79.625ZM45.6663 104.125H104.103L114.166 112.608V49H119.875C121.389 49 122.841 49.6453 123.911 50.794C124.982 51.9426 125.583 53.5005 125.583 55.125V137.812L100.152 116.375H51.3747C49.8607 116.375 48.4088 115.73 47.3383 114.581C46.2678 113.432 45.6663 111.874 45.6663 110.25V104.125Z" fill="white"/></g><defs><clipPath id="clip0_82_648"><rect width="137" height="147" fill="white"/></clipPath></defs></svg>
-
               }
             </button>
 
