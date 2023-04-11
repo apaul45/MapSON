@@ -1,9 +1,17 @@
-import { useState } from "react";
-import { store } from "../models";
-import { useNavigate } from "react-router";
+import { useRef, useState } from "react";
+import { RootState, store } from "../models";
+import { useSelector } from "react-redux";
+import tinycolor from "tinycolor2";
+import { useNavigate } from "react-router-dom";
 
 const AccountCircle = () => {
   const [isCircleOpen, setCircleOpen] = useState(false);
+
+  //Generate and darken random color
+  const backgroundColor = useRef(tinycolor.random().darken(30).toHexString());
+
+  const user = useSelector((state: RootState) => state.user.currentUser?.username);
+  
   const navigate = useNavigate();
   const logout = () => {
     store.dispatch.user.setCurrentUser(null);
@@ -14,15 +22,12 @@ const AccountCircle = () => {
     <div className="relative ml-3">
       <button
         type="button"
-        className="flex rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
+        className={`text-white flex w-10 h-10 justify-center place-items-center rounded-full focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800`}
+        style={{backgroundColor: backgroundColor.current}}
         id="user-menu-button"
         onClick={() => setCircleOpen(!isCircleOpen)}
       >
-        <img
-          className="h-8 w-8 rounded-full"
-          src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-          alt=""
-        />
+        {user?.charAt(0)}
       </button>
 
       {isCircleOpen && (
