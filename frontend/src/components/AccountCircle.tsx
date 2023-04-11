@@ -10,7 +10,12 @@ const AccountCircle = () => {
   const backgroundColor = useRef(tinycolor.random().darken(30).toHexString());
 
   const user = useSelector((state: RootState) => state.user.currentUser?.username);
-  const logout = () => store.dispatch.user.setCurrentUser(null);
+  
+  const navigate = useNavigate();
+  const logout = () => {
+    store.dispatch.user.setCurrentUser(null);
+    navigate('/');
+  }
 
   return (
     <div className="relative ml-3">

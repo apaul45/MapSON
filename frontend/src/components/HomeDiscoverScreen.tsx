@@ -21,7 +21,7 @@ export const HomeDiscoverScreen = () => {
 
     return (
         <>
-            <div className='h-max bg-gray px-3 py-3 relative'>
+            <div className='h-max bg-gray px-3 py-3 relative min-h-screen'>
                 <div className='text-right relative pb-3 '>
                     <button onClick={() => setMenuOpen(!isMenuOpen)} className='text-base bg-sort rounded px-1'>
                         Sort by: {sortBy}

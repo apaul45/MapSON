@@ -1,9 +1,11 @@
 import { useSelector } from "react-redux"
 import { RootState, store } from "../models"
+import { useNavigate } from "react-router-dom";
 
 export const AddMapDialog = () => {
     const isOpen = useSelector((state: RootState) => state.mapStore.addDialog);
     const closeDialog = () => store.dispatch.mapStore.setAddDialog(false);
+    const navigate = useNavigate()
 
     return (
         <>
@@ -24,7 +26,7 @@ export const AddMapDialog = () => {
                                 </span>
 
                                 <input
-                                    className="text-black peer w-3/4 h-10 rounded-[7px] border border-blue-gray-200 border-t-transparent bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 placeholder-shown:border-t-blue-gray-200 "
+                                    className="peer w-3/4 h-10 rounded-[7px] border border-blue-gray-200 border-t-transparent bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 placeholder-shown:border-t-blue-gray-200 "
                                     placeholder="Enter a name"
                                 />
 
@@ -49,7 +51,7 @@ export const AddMapDialog = () => {
                                 </div>
 
 
-                                <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded my-5" onClick={() => closeDialog()}>
+                                <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded my-5" onClick={() => {navigate('/project/default')}}>
                                     Submit
                                 </button>
 
