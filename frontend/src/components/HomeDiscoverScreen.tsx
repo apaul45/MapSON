@@ -3,19 +3,15 @@ import MapCard from './MapCard'
 import { useState } from 'react'
 import { AddMapDialog } from './AddMapDialog'
 import { store } from '../models'
+import { Menu, MenuHandler, MenuItem, MenuList } from '@material-tailwind/react'
 
 export const HomeDiscoverScreen = () => {
     const mapStore = store.dispatch.mapStore;
     const location = useLocation();
     const navigate = useNavigate()
 
-    const [isMenuOpen, setMenuOpen] = useState<boolean>(false)
+    const sortOptions = ['Upvotes', 'Downvotes', 'Oldest-Newest', 'Newest-Oldest'];
     const [sortBy, setSortBy] = useState<string>('upvote')
-
-    const sortMaps = (type: string) => {
-        setSortBy(type)
-        setMenuOpen(false)
-    }
 
     const openAddDialog = () => mapStore.setAddDialog(true);
 
@@ -23,22 +19,24 @@ export const HomeDiscoverScreen = () => {
         <>
             <div className='h-max bg-gray px-3 py-3 relative min-h-screen'>
                 <div className='text-right relative pb-3 '>
-                    <button onClick={() => setMenuOpen(!isMenuOpen)} className='text-base bg-sort rounded px-1'>
-                        Sort by: {sortBy}
-                        <svg className="w-4 h-4 inline pb-1" xmlns="http://www.w3.org/2000/svg" fill="current" viewBox="0 0 320 512">
-                            <path d="M41 288h238c21.4 0 32.1 25.9 17 41L177 448c-9.4 9.4-24.6 9.4-33.9 0L24 329c-15.1-15.1-4.4-41 17-41z" />
-                        </svg>
-                    </button>
-                    {
-                        isMenuOpen &&
-                        <div id="sort-menu" className="bg-gray text-white absolute right-0 z-10 w-48 origin-top-right py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none text-left space-y-2 p-2 rounded" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button">
-                            <p className='text-lg text-sort-by'>Sort By...</p>
-                            <button onClick={() => { sortMaps('Upvotes') }} className='sort-btn'>Upvotes</button> <br />
-                            <button onClick={() => { sortMaps('Downloads') }} className='sort-btn'>Downloads</button> <br />
-                            <button onClick={() => { sortMaps('Oldest-Newest') }} className='sort-btn'>Oldest-Newest</button> <br />
-                            <button onClick={() => { sortMaps('Newest-Oldest') }} className='sort-btn'>Newest-Oldest</button>
-                        </div>
-                    }
+                    <Menu>
+                        <MenuHandler>
+                            <button className='text-base bg-sort rounded px-1'>
+                                Sort by: {sortBy}
+                                <svg className="w-4 h-4 inline pb-1" xmlns="http://www.w3.org/2000/svg" fill="current" viewBox="0 0 320 512">
+                                    <path d="M41 288h238c21.4 0 32.1 25.9 17 41L177 448c-9.4 9.4-24.6 9.4-33.9 0L24 329c-15.1-15.1-4.4-41 17-41z" />
+                                </svg>
+                            </button>
+                        </MenuHandler>
+                        <MenuList className="bg-gray text-white p-0 font-sans text-base">
+                            <MenuItem className='text-lg text-sort-by pointer-events-none'>Sort By...</MenuItem>
+                            {
+                                sortOptions.map((option) => 
+                                    <MenuItem onClick={() => setSortBy(option)} >{option}</MenuItem>
+                                )
+                            }
+                        </MenuList>
+                    </Menu>
                 </div>
                 <div className='grid grid-cols-5 gap-3 relative '>
                     {
@@ -62,24 +60,7 @@ export const HomeDiscoverScreen = () => {
                             </>
                     }
 
-                    <div>
-                        <MapCard />
-                    </div>
-                    <div>
-                        <MapCard />
-                    </div>
-                    <div >
-                        <MapCard />
-                    </div>
-                    <div>
-                        <MapCard />
-                    </div>
-                    <div>
-                        <MapCard />
-                    </div>
-                    <div>
-                        <MapCard />
-                    </div>
+                    {[...Array(5).keys()].map(() => <div><MapCard /></div>)}
                 </div>
             </div>
             <AddMapDialog />
