@@ -9,13 +9,12 @@ describe('Home Screen Tests', () => {
       .should('be.visible')
       .click()
 
-    cy.get('#sort-menu').should('exist')
-    cy.contains('Downloads')
+    cy.get('#menu-Downloads')
       .should('be.visible')
-      .click()
+      .click();
 
     cy.contains('Sort by: Downloads').should('exist')
-    cy.get('#sort-menu').should('not.exist')
+    cy.get('#menu-Downloads').should('not.exist')
   })
 
   it('should go to project screen', () => {
@@ -39,13 +38,11 @@ describe('Discover Screen Tests', () => {
       .should('be.visible')
       .click()
 
-    cy.get('#sort-menu').should('exist')
-
-    cy.contains('Downloads')
+    cy.get('#menu-Upvotes')
       .should('be.visible')
-      .click()
+      .click();
 
-    cy.contains('Sort by: Downloads').should('exist')
+    cy.contains('Sort by: Upvotes').should('exist')
     cy.get('#sort-menu').should('not.exist')
   })
 })

@@ -10,7 +10,7 @@ export const HomeDiscoverScreen = () => {
     const location = useLocation();
     const navigate = useNavigate()
 
-    const sortOptions = ['Upvotes', 'Downvotes', 'Oldest-Newest', 'Newest-Oldest'];
+    const sortOptions = ['Upvotes', 'Downloads', 'Oldest-Newest', 'Newest-Oldest'];
     const [sortBy, setSortBy] = useState<string>('upvote')
 
     const openAddDialog = () => mapStore.setAddDialog(true);
@@ -32,7 +32,9 @@ export const HomeDiscoverScreen = () => {
                             <MenuItem className='text-lg text-sort-by pointer-events-none'>Sort By...</MenuItem>
                             {
                                 sortOptions.map((option) => 
-                                    <MenuItem onClick={() => setSortBy(option)} >{option}</MenuItem>
+                                    <MenuItem id={`menu-${option}`} onClick={() => setSortBy(option)} >
+                                        {option}
+                                    </MenuItem>
                                 )
                             }
                         </MenuList>

@@ -20,11 +20,10 @@ const AccountCircle = () => {
   return (
     <div className="relative ml-3">
       <Menu>
-        <MenuHandler>
+        <MenuHandler id="user-menu-button">
           <button
           className={`text-white flex w-10 h-10 justify-center place-items-center rounded-full focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800`}
           style={{backgroundColor: backgroundColor.current}}
-          id="user-menu-button"
           >
             {user?.charAt(0)}
           </button>
