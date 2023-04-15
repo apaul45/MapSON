@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom"
+import { Link } from 'react-router-dom'
 
 export const RegisterScreen = () => {
   return (
@@ -11,14 +11,12 @@ export const RegisterScreen = () => {
               className="form-inputs"
               placeholder="Username"
             />
-            <Link to="/login" className="lr-text">Already have an account? Login</Link>
+            <Link to="/login" className="lr-text">
+              Already have an account? Login
+            </Link>
           </div>
           <div>
-            <input
-              name="email"
-              className="form-inputs"
-              placeholder="Email"
-            />
+            <input name="email" className="form-inputs" placeholder="Email" />
           </div>
           <div>
             <input
@@ -28,7 +26,7 @@ export const RegisterScreen = () => {
             />
           </div>
           <div className="mt-6">
-              <input type="submit" value="Register" className="lr-btn"/>
+            <input type="submit" value="Register" className="lr-btn" />
           </div>
         </form>
       </div>

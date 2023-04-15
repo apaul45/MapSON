@@ -9,7 +9,7 @@ jobs:
       # Checks out repository under $GITHUB_WORKSPACE, so workflow can access it
       - name: Checkout
         uses: actions/checkout@v3
-      
+
       #Setup node in order for both frontend and backend to properly start up
       - name: Setup Node
         uses: actions/setup-node@v1
@@ -50,4 +50,3 @@ jobs:
           working-directory: ./frontend
           build: npm run build
           start: npm run dev
-

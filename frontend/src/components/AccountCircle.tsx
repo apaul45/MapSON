@@ -1,20 +1,22 @@
-import { useRef } from "react";
-import { RootState, store } from "../models";
-import { useSelector } from "react-redux";
-import tinycolor from "tinycolor2";
-import { useNavigate } from "react-router-dom";
-import { Menu, MenuHandler, MenuItem, MenuList } from "@material-tailwind/react";
+import { useRef } from 'react'
+import { RootState, store } from '../models'
+import { useSelector } from 'react-redux'
+import tinycolor from 'tinycolor2'
+import { useNavigate } from 'react-router-dom'
+import { Menu, MenuHandler, MenuItem, MenuList } from '@material-tailwind/react'
 
 const AccountCircle = () => {
   //Generate and darken random color
-  const backgroundColor = useRef(tinycolor.random().darken(30).toHexString());
+  const backgroundColor = useRef(tinycolor.random().darken(30).toHexString())
 
-  const user = useSelector((state: RootState) => state.user.currentUser?.username);
-  
-  const navigate = useNavigate();
+  const user = useSelector(
+    (state: RootState) => state.user.currentUser?.username
+  )
+
+  const navigate = useNavigate()
   const logout = () => {
-    store.dispatch.user.setCurrentUser(null);
-    navigate('/');
+    store.dispatch.user.setCurrentUser(null)
+    navigate('/')
   }
 
   return (
@@ -22,8 +24,8 @@ const AccountCircle = () => {
       <Menu>
         <MenuHandler id="user-menu-button">
           <button
-          className={`text-white flex w-10 h-10 justify-center place-items-center rounded-full focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800`}
-          style={{backgroundColor: backgroundColor.current}}
+            className={`text-white flex w-10 h-10 justify-center place-items-center rounded-full focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800`}
+            style={{ backgroundColor: backgroundColor.current }}
           >
             {user?.charAt(0)}
           </button>
@@ -33,7 +35,7 @@ const AccountCircle = () => {
         </MenuList>
       </Menu>
     </div>
-  );
-};
+  )
+}
 
-export default AccountCircle;
+export default AccountCircle
