@@ -1,0 +1,33 @@
+name: Jest and Supertest Tests
+
+on:
+  push:
+    paths:
+      - 'backend/**'
+
+jobs:
+  jest-run:
+    runs-on: ubuntu-latest
+    steps:
+      # Checks out repository under $GITHUB_WORKSPACE, so workflow can access it
+      - name: Checkout
+        uses: actions/checkout@v3
+
+        #Setup node in order for both frontend and backend to properly start up
+      - name: Setup Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 15
+
+      - name: Install backend dependencies
+        working-directory: ./backend
+        run: npm install
+
+      - name: Run the tests
+        working-directory: ./backend
+        run: npm test
+        env:
+          port: 4000
+          DB: ${{ secrets.DB }}
+          SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
+          API_KEY: ${{ secrets.API_KEY }}
