@@ -215,6 +215,17 @@ const reset = async (req: Request, res: Response) => {
         })
 }
 
+const update = async (req: Request, res: Response) => {
+    const { user } = req.body;
+
+    await User.findOneAndUpdate({email: user.email}, user);
+
+    res
+        .status(200)
+        .json({
+            error: false
+        })
+}
 
 export const auth = (req: Request, res: Response, next: NextFunction) => {
     const { alias } = req.session as any;
@@ -236,5 +247,6 @@ router.post('/login', login);
 router.post('/logout', logout)
 router.post('/recover', recover);
 router.patch('/recover', reset);
+router.post('/update', update);
 
 export default router;
