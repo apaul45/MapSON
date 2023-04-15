@@ -71,7 +71,7 @@ router.post('/login', async (req: Request, res: Response) => {
     })
   }
 
-  if (!bcrypt.compare(password, user.passwordHash)) {
+  if (!(await bcrypt.compare(password, user.passwordHash))) {
     return res.status(401).json({
       error: true,
       errorMessage: 'invalid username/email or password',
@@ -174,33 +174,30 @@ router.patch('/recover', async (req: Request, res: Response) => {
 })
 
 router.post('/update', async (req: Request, res: Response) => {
-  const { userObj } = req.body;
+  const { userObj } = req.body
 
   if (!userObj) {
-    return res
-      .status(400)
-      .json({
-        error: true,
-        errorMessage: 'invalid user object'
-      })
+    return res.status(400).json({
+      error: true,
+      errorMessage: 'invalid user object',
+    })
   }
 
-  const newUser = await User.findByIdAndUpdate({ email: userObj.email }, userObj)
+  const newUser = await User.findByIdAndUpdate(
+    { email: userObj.email },
+    userObj
+  )
 
   if (!newUser) {
-    return res
-      .status(400)
-      .json({
-        error: true,
-        errorMessage: 'user not found',
-      })
+    return res.status(400).json({
+      error: true,
+      errorMessage: 'user not found',
+    })
   }
 
-  res
-    .status(200)
-    .json({
-      error: false,
-    })
+  res.status(200).json({
+    error: false,
+  })
 })
 
 export const auth = (req: Request, res: Response, next: NextFunction) => {
