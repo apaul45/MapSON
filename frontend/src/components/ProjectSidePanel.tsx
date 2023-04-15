@@ -6,7 +6,7 @@ import {
   TabsHeader,
   TabPanel,
 } from '@material-tailwind/react'
-import { SelectedFeature } from './MapComponent'
+import { SelectedFeature } from './map/MapComponent'
 
 const EXAMPLE_PROPERTIES = Object.fromEntries(
   Array.from(Array(10).keys()).map((v) => [`Key${v}`, `Value${v}`])
