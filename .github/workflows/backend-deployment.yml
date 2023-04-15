@@ -1,11 +1,11 @@
-name: "Deploy backend"
+name: 'Deploy backend'
 
 on:
   push:
     branches:
-      - "main"
+      - 'main'
     paths:
-      - "backend/**"
+      - 'backend/**'
 
 jobs:
   deploy:

@@ -1,20 +1,20 @@
-import { ProjectNavbar } from "./ProjectNavbar";
-import { Map } from "../types";
-import { useNavigate } from "react-router-dom";
-import DeletedMapDialog from "./DeletedMapDialog";
-import ShareMapDialog from "./ShareMapDialog";
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import MapComponent, { SelectedFeature } from "./MapComponent";
-import { RootState } from "../models";
-import { useSelector } from "react-redux";
-import ProjectSidePanel from "./ProjectSidePanel";
-import CommentsSidePanel from "./CommentsSidePanel";
+import { ProjectNavbar } from './ProjectNavbar'
+import { Map } from '../types'
+import { useNavigate } from 'react-router-dom'
+import DeletedMapDialog from './DeletedMapDialog'
+import ShareMapDialog from './ShareMapDialog'
+import { useEffect, useState } from 'react'
+import { useParams } from 'react-router-dom'
+import MapComponent, { SelectedFeature } from './MapComponent'
+import { RootState } from '../models'
+import { useSelector } from 'react-redux'
+import ProjectSidePanel from './ProjectSidePanel'
+import CommentsSidePanel from './CommentsSidePanel'
 
 const defaultMap: Map = {
-  _id: "DEFAULT_MAP",
-  name: "My Map",
-  username: "",
+  _id: 'DEFAULT_MAP',
+  name: 'My Map',
+  username: '',
   upvotes: [],
   downvotes: [],
   forks: 0,
@@ -22,38 +22,38 @@ const defaultMap: Map = {
   published: { isPublished: false },
   comments: [],
   features: [],
-};
+}
 
 export const ProjectScreen = () => {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
-  const user = useSelector((state: RootState) => state.user.currentUser);
+  const user = useSelector((state: RootState) => state.user.currentUser)
 
-  const { id } = useParams();
+  const { id } = useParams()
 
   useEffect(() => {
     //load data from db
-    setMap(defaultMap);
-  }, [id]);
+    setMap(defaultMap)
+  }, [id])
 
-  const [map, setMap] = useState<Map>(defaultMap);
-  const [isMapDeleted, setMapDeleted] = useState(false);
-  const [shareOpen, setShareOpen] = useState(false);
-  const [selectedFeature, setSelectedFeature] = useState<SelectedFeature>(null);
+  const [map, setMap] = useState<Map>(defaultMap)
+  const [isMapDeleted, setMapDeleted] = useState(false)
+  const [shareOpen, setShareOpen] = useState(false)
+  const [selectedFeature, setSelectedFeature] = useState<SelectedFeature>(null)
   // true for comments, false for property editor
-  const [sidePanelToggle, setSidePanelToggle] = useState(false);
+  const [sidePanelToggle, setSidePanelToggle] = useState(false)
 
   const closeDeletedDialog = () => {
-    setMapDeleted(false);
+    setMapDeleted(false)
     //navigate(user ? '/home' : '/discover');
-  };
+  }
 
   const closeShareDialog = () => {
-    setShareOpen(false);
-  };
+    setShareOpen(false)
+  }
 
   // const canEdit = (user && user.maps?.some((v) => v._id === map._id)) ?? false;
-  const canEdit = true; // allow editing for build 2
+  const canEdit = true // allow editing for build 2
 
   return (
     <div className="bg-black w-screen h-[calc(100vh-64px)]">
@@ -70,7 +70,7 @@ export const ProjectScreen = () => {
         <MapComponent
           canEdit={canEdit}
           setSelectedFeature={setSelectedFeature}
-          key={"MAP"}
+          key={'MAP'}
           {...map}
         />
         {!sidePanelToggle && (
@@ -85,5 +85,5 @@ export const ProjectScreen = () => {
       />
       <ShareMapDialog isOpen={shareOpen} closeDialog={closeShareDialog} />
     </div>
-  );
-};
+  )
+}

@@ -1,21 +1,36 @@
-import { Fragment } from "react"
-import { useSelector } from "react-redux"
-import { RootState, store } from "../models"
-import { Dialog, DialogBody, DialogFooter, DialogHeader } from "@material-tailwind/react";
+import { Fragment } from 'react'
+import { useSelector } from 'react-redux'
+import { RootState, store } from '../models'
+import {
+  Dialog,
+  DialogBody,
+  DialogFooter,
+  DialogHeader,
+} from '@material-tailwind/react'
 
 export const ErrorDialog = () => {
-  const errorMessage = useSelector((state: RootState) => state.error.errorMessage);
-  const closeDialog = () => store.dispatch.error.setError(null);
+  const errorMessage = useSelector(
+    (state: RootState) => state.error.errorMessage
+  )
+  const closeDialog = () => store.dispatch.error.setError(null)
 
   return (
     <Fragment>
-      <Dialog open={errorMessage !== null} handler={() => closeDialog()} size="xs" className="bg-gray block place-items-center">
-        <DialogBody className="flex justify-center place-items-center"> 
-          <i className="fa-solid fa-triangle-exclamation fa-2xl mt-2" style={{color: "#ff004c"}}></i>
+      <Dialog
+        open={errorMessage !== null}
+        handler={() => closeDialog()}
+        size="xs"
+        className="bg-gray block place-items-center"
+      >
+        <DialogBody className="flex justify-center place-items-center">
+          <i
+            className="fa-solid fa-triangle-exclamation fa-2xl mt-2"
+            style={{ color: '#ff004c' }}
+          ></i>
         </DialogBody>
 
         <DialogHeader className="text-white justify-center">
-             {errorMessage}
+          {errorMessage}
         </DialogHeader>
 
         <DialogFooter className="justify-center">

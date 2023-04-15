@@ -4,7 +4,7 @@ import {
   CardBody,
   Typography,
   Avatar,
-} from "@material-tailwind/react";
+} from '@material-tailwind/react'
 
 const CommentCard = () => {
   return (
@@ -26,7 +26,7 @@ const CommentCard = () => {
         </Typography>
       </CardHeader>
     </Card>
-  );
-};
+  )
+}
 
-export default CommentCard;
+export default CommentCard

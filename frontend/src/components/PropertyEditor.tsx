@@ -1,19 +1,19 @@
-import { useState } from "react";
-import { Button } from "@material-tailwind/react";
+import { useState } from 'react'
+import { Button } from '@material-tailwind/react'
 
 interface IProperty {
-  k?: string;
-  v?: string;
+  k?: string
+  v?: string
   onUpdate: (
     newKey: string,
     newValue?: string,
     oldKey?: string,
     deleteKey?: boolean
-  ) => void;
+  ) => void
 }
 const Property = ({ k, v, onUpdate }: IProperty) => {
-  const [key, setKey] = useState(k);
-  const [value, setValue] = useState(v);
+  const [key, setKey] = useState(k)
+  const [value, setValue] = useState(v)
 
   return (
     <div className="flex flex-row">
@@ -33,16 +33,16 @@ const Property = ({ k, v, onUpdate }: IProperty) => {
         placeholder="value"
       ></input>
     </div>
-  );
-};
+  )
+}
 
 interface IPropertyEditor {
-  onSave?: (properties: Record<string, string>) => void;
-  properties: Record<string, string>;
+  onSave?: (properties: Record<string, string>) => void
+  properties: Record<string, string>
 }
 
 const PropertyEditor = ({ onSave, properties }: IPropertyEditor) => {
-  const [props, setProps] = useState(properties);
+  const [props, setProps] = useState(properties)
 
   return (
     <div className="bg-gray m-2">
@@ -63,15 +63,15 @@ const PropertyEditor = ({ onSave, properties }: IPropertyEditor) => {
           variant="text"
           onClick={() => {
             setProps((prev) => {
-              return { ...prev, "": "" };
-            });
+              return { ...prev, '': '' }
+            })
           }}
         >
           Add Item
         </Button>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default PropertyEditor;
+export default PropertyEditor
