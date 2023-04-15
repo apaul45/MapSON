@@ -2,8 +2,8 @@ import { Request, Response, NextFunction, Router } from 'express';
 import User from '../models/user-model';
 import bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
-import { createTransport } from 'nodemailer';
 import dotenv from 'dotenv';
+import axios from 'axios';
 
 dotenv.config();
 
@@ -14,15 +14,6 @@ declare module 'express-session' {
         alias: string; // suppose to be email/username
     }
 }
-
-const transport = createTransport({
-    service: 'smtp-relay.sendinblue.com',
-    port: 587,
-    auth: {
-      user: process.env.EMAIL,
-      pass: process.env.SMTP_PASS,
-    }
-})
 
 const register = async (req: Request, res: Response) => {
     const { email, username, password } = req.body;
@@ -50,7 +41,6 @@ const register = async (req: Request, res: Response) => {
     const saltRounds = 10;
     const salt = await bcrypt.genSalt(saltRounds);
     const passwordHash = await bcrypt.hash(password, salt);
-
 
     await User.create({
         username: username,
@@ -81,8 +71,6 @@ const login = async (req: Request, res: Response) => {
 
     const user = await User.findOne({ $or: [{ email: emailOrUsername }, { username: emailOrUsername }] })
 
-    console.log(user)
-
     if (!user) {
         return res
             .status(400)
@@ -111,7 +99,6 @@ const login = async (req: Request, res: Response) => {
 }
 
 const logout = (req: Request, res: Response) => {
-    console.log(req.session)
     req.session.destroy((err) => {
         if (err) {
             res
@@ -137,65 +124,79 @@ const recover = async (req: Request, res: Response) => {
 
     if (!email) {
         return res
-                .status(400)
-                .json({
-                    error: true,
-                    errorMessage: 'invalid email input'
-                })
+            .status(400)
+            .json({
+                error: true,
+                errorMessage: 'invalid email input'
+            })
     }
 
-    const user = await User.findOne({email: email})
+    const user = await User.findOne({ email: email })
 
-    if(!user){
+    if (!user) {
         return res
-                .status(400)
-                .json({
-                    error: true,
-                    errorMessage: "user not found"
-                })
+            .status(400)
+            .json({
+                error: true,
+                errorMessage: "user not found"
+            })
     }
 
     const recoverKey = uuidv4();
-    const recoverLink = `https://mapson.vercel.app/recover-account?email=${encodeURIComponent(email)}&key=${encodeURIComponent(recoverKey)}`
+    const recoverLink = `https://mapson.vercel.app/reset-password?email=${encodeURIComponent(email)}&key=${encodeURIComponent(recoverKey)}`
 
     user.recoveryKey = recoverKey;
     await user.save()
 
-    await transport.sendMail({
-        from: process.env.SENDER_EMAIL,
-        to: email,
-        subject: "Password Recovery for MapSON",
-        text: recoverLink
-    })
+    const url = 'https://api.sendinblue.com/v3/smtp/email';
+
+    const headers = {
+        'Content-Type': 'application/json',
+        'api-key': process.env.API_KEY
+    };
+
+    const data = {
+        sender: {email: 'mapson2023@gmail.com'},
+        to: [{email: email,}],
+        subject: 'Mapson Password Recovery',
+        htmlContent: recoverLink
+    };
+    axios.post(url, data, { headers: headers })
+        .then(function (response) {
+            console.log("send email response", response.data);
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
 
     res
         .status(200)
         .json({
             error: false
         })
-}   
+}
 
-const reset = async  (req: Request, res: Response) => {
-    const {email, recoverKey, password} = req.body;
+const reset = async (req: Request, res: Response) => {
+    const { email, recoverKey, password } = req.body;
 
     if (!recoverKey || !email || !password) {
         return res
-                .status(400)
-                .json({
-                    error: true,
-                    errorMessage: "invalid recovery key or email"
-                })
+            .status(400)
+            .json({
+                error: true,
+                errorMessage: "invalid recovery key or email"
+            })
     }
 
-    const user = await User.findOne({email: email})
+    const user = await User.findOne({ email: email })
 
-    if(!user || user.recoveryKey !== recoverKey) {
-        return res      
-                .status(401)
-                .json({
-                    error: true,
-                    errorMessage: 'invalid recovery key'
-                })
+    if (!user || user.recoveryKey !== recoverKey) {
+        return res
+            .status(401)
+            .json({
+                error: true,
+                errorMessage: 'invalid recovery key'
+            })
     }
 
     const saltRounds = 10;
@@ -216,15 +217,15 @@ const reset = async  (req: Request, res: Response) => {
 
 
 export const auth = (req: Request, res: Response, next: NextFunction) => {
-    const {alias} = req.session as any;
+    const { alias } = req.session as any;
 
-    if(!alias) {
+    if (!alias) {
         return res
-                .status(401)
-                .json({
-                    error: true,
-                    errorMessage: "invalid session"
-                })
+            .status(401)
+            .json({
+                error: true,
+                errorMessage: "invalid session"
+            })
     }
 
     next()

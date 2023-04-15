@@ -13,7 +13,7 @@ const app: Express = express();
 const port = process.env.PORT;
 
 
-const mongoStr = `mongodb+srv://${process.env.DB}/users`
+const mongoStr = `mongodb+srv://${process.env.DB}/mapson`
 
 mongoConnect(mongoStr)
   .then(() => {
