@@ -6,7 +6,7 @@ import { GeoJSON, MapContainer, FeatureGroup, TileLayer } from 'react-leaflet'
 import * as L from 'leaflet'
 
 import MapControls from './MapControls'
-import { FeatureExt, LGeoJsonExt, Map } from '../types'
+import { FeatureExt, LGeoJsonExt, Map } from '../../types'
 
 import 'leaflet/dist/leaflet.css'
 import 'leaflet-draw/dist/leaflet.draw.css'

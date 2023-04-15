@@ -1,9 +1,9 @@
 import { useLocation, useNavigate } from 'react-router-dom'
-import MapCard from './MapCard'
 import { useState } from 'react'
-import { AddMapDialog } from './AddMapDialog'
-import { store } from '../models'
+import { AddMapDialog } from '../dialogs/AddMapDialog'
+import { store } from '../../models'
 import { Menu, MenuHandler, MenuItem, MenuList } from '@material-tailwind/react'
+import { MapCard } from '../map'
 
 export const HomeDiscoverScreen = () => {
   const mapStore = store.dispatch.mapStore

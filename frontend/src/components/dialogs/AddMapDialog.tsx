@@ -1,5 +1,5 @@
 import { useSelector } from 'react-redux'
-import { RootState, store } from '../models'
+import { RootState, store } from '../../models'
 import { useNavigate } from 'react-router-dom'
 
 export const AddMapDialog = () => {

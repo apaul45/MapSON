@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import mapsonLogo from '../assets/MapSON-logo-outlined copy.png'
+import mapsonLogo from '/img/MapSON-logo-outlined copy.png'
 import { Link, useLocation } from 'react-router-dom'
 import { RootState, store } from '../models'
 import AccountCircle from './AccountCircle'

@@ -1,6 +1,6 @@
 import { Fragment } from 'react'
 import { Dialog, DialogFooter, DialogHeader } from '@material-tailwind/react'
-import { RootState, store } from '../models'
+import { RootState, store } from '../../models'
 import { useSelector } from 'react-redux'
 
 const DeleteMapDialog = () => {

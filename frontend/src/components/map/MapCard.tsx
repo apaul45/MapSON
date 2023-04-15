@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { store } from '../models'
+import { store } from '../../models'
 
 export default function MapCard() {
   const [expand, setExpand] = useState<boolean>(false)

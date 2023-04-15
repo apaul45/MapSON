@@ -1,28 +1,32 @@
-import { AddMapDialog } from './AddMapDialog'
-import DeleteMapDialog from './DeleteMapDialog'
-import { ErrorDialog } from './ErrorDialog'
-import ShareMapDialog from './ShareMapDialog'
-import { HomeDiscoverScreen } from './HomeDiscoverScreen'
-import { LoginScreen } from './LoginScreen'
+import { HomeDiscoverScreen } from './pages/HomeDiscoverScreen'
+import { LoginScreen } from './pages/LoginScreen'
 import { MainNavbar } from './MainNavbar'
-import { Map } from './Map'
-import MapCard from './MapCard'
+import MapCard from './map/MapCard'
 import { ProjectNavbar } from './ProjectNavbar'
-import { ProjectScreen } from './ProjectScreen'
-import { RecoveryScreen } from './RecoveryScreen'
-import { RegisterScreen } from './RegisterScreen'
-import { RequestDialog } from './RequestDialog'
 import CommentCard from './CommentCard'
+import {
+  AddMapDialog,
+  DeleteMapDialog,
+  ErrorDialog,
+  ShareMapDialog,
+  RequestDialog,
+} from './dialogs'
+import {
+  FrontPageScreen,
+  ProjectScreen,
+  RecoveryScreen,
+  RegisterScreen,
+} from './pages'
 
 export {
   AddMapDialog,
   DeleteMapDialog,
   ErrorDialog,
   ShareMapDialog,
+  FrontPageScreen,
   HomeDiscoverScreen,
   LoginScreen,
   MainNavbar,
-  Map,
   MapCard,
   ProjectNavbar,
   ProjectScreen,

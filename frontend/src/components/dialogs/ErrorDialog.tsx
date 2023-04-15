@@ -1,6 +1,6 @@
 import { Fragment } from 'react'
 import { useSelector } from 'react-redux'
-import { RootState, store } from '../models'
+import { RootState, store } from '../../models'
 import {
   Dialog,
   DialogBody,

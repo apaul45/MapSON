@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom'
-import { User } from '../types'
-import { store } from '../models'
+import { User } from '../../types'
+import { store } from '../../models'
 import { useState } from 'react'
 
 export const LoginScreen = () => {

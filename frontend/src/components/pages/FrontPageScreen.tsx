@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import mapsonLogo from '../assets/MapSON-logo-outlined copy.png'
+import mapsonLogo from '/img/MapSON-logo-outlined copy.png'
 
 export const FrontPageScreen = () => {
   return (

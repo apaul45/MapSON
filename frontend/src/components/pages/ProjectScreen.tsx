@@ -1,15 +1,15 @@
-import { ProjectNavbar } from './ProjectNavbar'
-import { Map } from '../types'
+import { ProjectNavbar } from '../ProjectNavbar'
+import { Map } from '../../types'
 import { useNavigate } from 'react-router-dom'
-import DeletedMapDialog from './DeletedMapDialog'
-import ShareMapDialog from './ShareMapDialog'
+import DeletedMapDialog from '../dialogs/DeletedMapDialog'
+import ShareMapDialog from '../dialogs/ShareMapDialog'
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import MapComponent, { SelectedFeature } from './MapComponent'
-import { RootState } from '../models'
+import MapComponent, { SelectedFeature } from '../map/MapComponent'
+import { RootState } from '../../models'
 import { useSelector } from 'react-redux'
-import ProjectSidePanel from './ProjectSidePanel'
-import CommentsSidePanel from './CommentsSidePanel'
+import CommentsSidePanel from '../CommentsSidePanel'
+import ProjectSidePanel from '../ProjectSidePanel'
 
 const defaultMap: Map = {
   _id: 'DEFAULT_MAP',
