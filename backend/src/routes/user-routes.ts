@@ -173,6 +173,36 @@ router.patch('/recover', async (req: Request, res: Response) => {
   res.status(200).json({ error: false })
 })
 
+router.post('/update', async (req: Request, res: Response) => {
+  const { userObj } = req.body;
+
+  if (!userObj) {
+    return res
+      .status(400)
+      .json({
+        error: true,
+        errorMessage: 'invalid user object'
+      })
+  }
+
+  const newUser = await User.findByIdAndUpdate({ email: userObj.email }, userObj)
+
+  if (!newUser) {
+    return res
+      .status(400)
+      .json({
+        error: true,
+        errorMessage: 'user not found',
+      })
+  }
+
+  res
+    .status(200)
+    .json({
+      error: false,
+    })
+})
+
 export const auth = (req: Request, res: Response, next: NextFunction) => {
   const { alias } = req.session as any
 

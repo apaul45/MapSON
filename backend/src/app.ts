@@ -19,8 +19,8 @@ app.use(session({
   saveUninitialized: false,
   secret: "secret",
   store: MongoStore.create({
-      mongoUrl: mongoStr,
-      ttl: 60 * 60, // = 1hr
+    mongoUrl: mongoStr,
+    ttl: 60 * 60, // = 1hr
   })
 }))
 
