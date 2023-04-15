@@ -1,0 +1,22 @@
+name: 'Deploy backend'
+
+on:
+  push:
+    branches:
+      - 'main'
+    paths:
+      - 'backend/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout files
+        uses: actions/checkout@v3
+
+      - name: DigitalOcean App Platform deployment
+        uses: digitalocean/app_action@main
+        with:
+          app_name: ${{ vars.DO_APP_NAME }}
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}

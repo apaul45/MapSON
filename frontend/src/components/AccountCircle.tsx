@@ -1,43 +1,41 @@
-import { useState } from "react";
-import { store } from "../models";
-import { useNavigate } from "react-router";
+import { useRef } from 'react'
+import { RootState, store } from '../models'
+import { useSelector } from 'react-redux'
+import tinycolor from 'tinycolor2'
+import { useNavigate } from 'react-router-dom'
+import { Menu, MenuHandler, MenuItem, MenuList } from '@material-tailwind/react'
 
 const AccountCircle = () => {
-  const [isCircleOpen, setCircleOpen] = useState(false);
-  const navigate = useNavigate();
+  //Generate and darken random color
+  const backgroundColor = useRef(tinycolor.random().darken(30).toHexString())
+
+  const user = useSelector(
+    (state: RootState) => state.user.currentUser?.username
+  )
+
+  const navigate = useNavigate()
   const logout = () => {
-    store.dispatch.user.setCurrentUser(null);
-    navigate('/');
+    store.dispatch.user.setCurrentUser(null)
+    navigate('/')
   }
 
   return (
     <div className="relative ml-3">
-      <button
-        type="button"
-        className="flex rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
-        id="user-menu-button"
-        onClick={() => setCircleOpen(!isCircleOpen)}
-      >
-        <img
-          className="h-8 w-8 rounded-full"
-          src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-          alt=""
-        />
-      </button>
-
-      {isCircleOpen && (
-        <button
-          className=" text-white bg-gray absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
-          role="menu"
-          aria-orientation="vertical"
-          aria-labelledby="user-menu-button"
-          onClick={() => logout()}
-        >
-          Logout
-        </button>
-      )}
+      <Menu>
+        <MenuHandler id="user-menu-button">
+          <button
+            className={`text-white flex w-10 h-10 justify-center place-items-center rounded-full focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800`}
+            style={{ backgroundColor: backgroundColor.current }}
+          >
+            {user?.charAt(0)}
+          </button>
+        </MenuHandler>
+        <MenuList className="bg-gray text-white p-0 font-sans text-base">
+          <MenuItem onClick={logout}>Logout</MenuItem>
+        </MenuList>
+      </Menu>
     </div>
-  );
-};
+  )
+}
 
-export default AccountCircle;
+export default AccountCircle

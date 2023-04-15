@@ -1,33 +1,32 @@
-import { useState } from "react";
-import mapsonLogo from "../assets/MapSON-logo-outlined copy.png";
-import { Link, useLocation } from "react-router-dom";
-import { RootState, store } from "../models";
-import AccountCircle from "./AccountCircle";
-import { useSelector } from "react-redux";
+import { useState } from 'react'
+import mapsonLogo from '/img/MapSON-logo-outlined copy.png'
+import { Link, useLocation } from 'react-router-dom'
+import { RootState, store } from '../models'
+import AccountCircle from './AccountCircle'
+import { useSelector } from 'react-redux'
+import { Menu, MenuHandler, MenuItem, MenuList } from '@material-tailwind/react'
 
 export const MainNavbar = () => {
-  const location = useLocation();
-  const user = useSelector((state: RootState) => state.user.currentUser);
-
-  const [isMenuOpen, setMenuOpen] = useState(false); //For opening and closing user's add menu
+  const location = useLocation()
+  const user = useSelector((state: RootState) => state.user.currentUser)
 
   const isSelected = (path: string) =>
-    location.pathname === path ? "selected-nav-btn" : "nav-btn";
+    location.pathname === path ? 'selected-nav-btn' : 'nav-btn'
 
   //Render the main navbar everywhere except any project related screens
   return (
     <>
-      {" "}
-      {!location.pathname.includes("project") && (
+      {' '}
+      {!location.pathname.includes('project') && (
         <nav id="main-nav" className="bg-navbar text-white">
           <div className="w-full px-5">
             <div className="relative flex h-16 items-center justify-between">
               <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
                 <div className="flex flex-shrink-0 items-center">
-                  <Link to='/'>
+                  <Link to="/">
                     <img
-                        className="hidden h-8 w-auto lg:block"
-                        src={mapsonLogo}
+                      className="hidden h-8 w-auto lg:block"
+                      src={mapsonLogo}
                     ></img>
                   </Link>
                 </div>
@@ -37,18 +36,18 @@ export const MainNavbar = () => {
                     {
                       //Only render user page if user logged in
                       user && (
-                        <Link to="/home" className={isSelected("/home")}>
+                        <Link to="/home" className={isSelected('/home')}>
                           Home
                         </Link>
                       )
                     }
-                    <Link to="/discover" className={isSelected("/discover")}>
-                      Discover{" "}
+                    <Link to="/discover" className={isSelected('/discover')}>
+                      Discover{' '}
                     </Link>
 
                     {
                       // Render search textfield for discover page only
-                      location.pathname === "/discover" && (
+                      location.pathname === '/discover' && (
                         <div id="search-field" className="w-72">
                           <div className="relative h-10 w-full min-w-[200px]">
                             <input
@@ -68,76 +67,67 @@ export const MainNavbar = () => {
                   /* <!-- Profile dropdown --> */
                   user ? (
                     <>
-                      <div className="relative">
-                        <button
-                          onClick={() => setMenuOpen(!isMenuOpen)}
-                          className="mr-2"
-                        >
-                          <svg
-                            className="w-6 h-6 inline"
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth={1.5}
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M12 4.5v15m7.5-7.5h-15"
-                            />
-                          </svg>
-                          <svg
-                            className="w-4 h-4 inline"
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="#FFFFFF"
-                            viewBox="0 0 320 512"
-                          >
-                            <path d="M41 288h238c21.4 0 32.1 25.9 17 41L177 448c-9.4 9.4-24.6 9.4-33.9 0L24 329c-15.1-15.1-4.4-41 17-41z" />
-                          </svg>
-                        </button>
-
-                        {isMenuOpen && (
-                          <div
-                            className="bg-gray text-white outline outline-1 outline-white absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
-                            role="menu"
-                            aria-orientation="vertical"
-                            aria-labelledby="user-menu-button"
-                          >
-                            <button
-                              onClick={() =>
-                                store.dispatch.mapStore.setAddDialog(true)
-                              }
+                      <Menu placement="bottom-start">
+                        <MenuHandler>
+                          <button className="mr-2">
+                            <svg
+                              className="w-6 h-6 inline"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              strokeWidth={1.5}
+                              stroke="currentColor"
                             >
-                              Import from Shapefile
-                            </button>
-                            <hr />
-                            <button>Create new Map</button>
-                          </div>
-                        )}
-                      </div>
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M12 4.5v15m7.5-7.5h-15"
+                              />
+                            </svg>
+                            <svg
+                              className="w-4 h-4 inline"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="#FFFFFF"
+                              viewBox="0 0 320 512"
+                            >
+                              <path d="M41 288h238c21.4 0 32.1 25.9 17 41L177 448c-9.4 9.4-24.6 9.4-33.9 0L24 329c-15.1-15.1-4.4-41 17-41z" />
+                            </svg>
+                          </button>
+                        </MenuHandler>
+                        <MenuList className="bg-gray text-white p-0 font-sans text-base">
+                          <MenuItem
+                            onClick={() =>
+                              store.dispatch.mapStore.setAddDialog(true)
+                            }
+                          >
+                            Import from Shapefile/GeoJSON
+                          </MenuItem>
+                          <hr className="align-middle" />
+                          <MenuItem>Create new Map</MenuItem>
+                        </MenuList>
+                      </Menu>
                       <AccountCircle />
                     </>
                   ) : (
                     <>
-                      {location.pathname !== "/login" && (
+                      {location.pathname !== '/login' && (
                         <Link
                           to="/login"
                           id="login-button"
                           className="acct-btn mr-2"
                         >
-                          {" "}
-                          Login{" "}
+                          {' '}
+                          Login{' '}
                         </Link>
                       )}
-                      {location.pathname !== "/register" && (
+                      {location.pathname !== '/register' && (
                         <Link
                           to="/register"
                           id="register-button"
                           className="acct-btn"
                         >
-                          {" "}
-                          Register{" "}
+                          {' '}
+                          Register{' '}
                         </Link>
                       )}
                     </>
@@ -149,5 +139,5 @@ export const MainNavbar = () => {
         </nav>
       )}
     </>
-  );
-};
+  )
+}

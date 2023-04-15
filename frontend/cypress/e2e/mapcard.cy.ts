@@ -1,33 +1,36 @@
-describe("MapCard Tests", () => {
-  beforeEach(() => cy.visit('http://127.0.0.1:5173/home'));
+describe('MapCard Tests', () => {
+  beforeEach(() => cy.visit('http://127.0.0.1:5173/home'))
 
   it('should expand card with description', () => {
-    cy.contains('Lorem ipsum dolor sit amet, consectetur adipiscing elit.')
-      .should('not.exist')
+    cy.contains(
+      'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
+    ).should('not.exist')
 
-    cy.get('#expand-collapse-button').click()
+    cy.get('#expand-collapse-button').should('exist').click()
 
-    cy.contains('Lorem ipsum dolor sit amet, consectetur adipiscing elit.')
-      .should('be.visible')
+    cy.contains(
+      'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
+    ).should('be.visible')
 
-    cy.get('#expand-collapse-button').click()
+    cy.get('#expand-collapse-button').should('exist').click()
 
-    cy.contains('Lorem ipsum dolor sit amet, consectetur adipiscing elit.')
-      .should('not.exist')
+    cy.contains(
+      'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
+    ).should('not.exist')
   })
 
   it('should upvote and unupvote a map', () => {
     cy.get('#upvote-count').then(($cnt) => {
       const upvote = Number($cnt.text())
 
-      cy.get('#upvote-button').click()
+      cy.get('#upvote-button').should('be.visible').click()
 
       cy.get('#upvote-count').then(($cnt2) => {
         const newUpvote = Number($cnt2.text())
         expect(newUpvote).to.be.greaterThan(upvote)
       })
 
-      cy.get('#upvote-button').click()
+      cy.get('#upvote-button').should('be.visible').click()
 
       cy.get('#upvote-count').then(($cnt2) => {
         const newUpvote = Number($cnt2.text())
@@ -36,18 +39,18 @@ describe("MapCard Tests", () => {
     })
   })
 
-  it("should downvote and undownvote a map", () => {
+  it('should downvote and undownvote a map', () => {
     cy.get('#upvote-count').then(($cnt) => {
       const downvote = Number($cnt.text())
 
-      cy.get('#downvote-button').click()
+      cy.get('#downvote-button').should('be.visible').click()
 
       cy.get('#downvote-count').then(($cnt2) => {
         const newUpvote = Number($cnt2.text())
         expect(newUpvote).to.be.greaterThan(downvote)
       })
 
-      cy.get('#downvote-button').click()
+      cy.get('#downvote-button').should('be.visible').click()
 
       cy.get('#downvote-count').then(($cnt2) => {
         const newDownvote = Number($cnt2.text())
@@ -57,13 +60,13 @@ describe("MapCard Tests", () => {
   })
 
   it('should unupvote and downvote a map', () => {
-    cy.get('#upvote-button').click()
+    cy.get('#upvote-button').should('be.visible').click()
     cy.get('#upvote-count').then(($cnt) => {
       const upvote = Number($cnt.text())
 
       cy.get('#downvote-count').then(($cnt2) => {
         const downvote = Number($cnt2.text())
-        
+
         cy.get('#downvote-button').click()
 
         cy.get('#upvote-count').then(($cnt3) => {
@@ -83,7 +86,7 @@ describe("MapCard Tests", () => {
     cy.get('#download-count').then(($cnt) => {
       const downloads = Number($cnt.text())
 
-      cy.get('#download-button').click({force: true})
+      cy.get('#download-button').click()
 
       cy.get('#download-count').then(($cnt2) => {
         const newDownloads = Number($cnt2.text())
@@ -91,7 +94,6 @@ describe("MapCard Tests", () => {
       })
     })
   })
-
 })
 
-export{}
+export {}
