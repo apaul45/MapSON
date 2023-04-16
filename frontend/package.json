@@ -35,11 +35,13 @@
     "shpjs": "^4.0.4",
     "socket.io": "^4.6.1",
     "tinycolor2": "^1.6.0",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "vite-plugin-node-polyfills": "^0.8.1"
   },
   "devDependencies": {
     "@types/react": "^18.0.28",
     "@types/react-dom": "^18.0.11",
+    "@types/shpjs": "^3.4.2",
     "@types/tinycolor2": "^1.4.3",
     "@vitejs/plugin-react-swc": "^3.0.0",
     "autoprefixer": "^10.4.14",
