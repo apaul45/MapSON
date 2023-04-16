@@ -15,6 +15,19 @@ declare module 'express-session' {
   }
 }
 
+export const auth = (req: Request, res: Response, next: NextFunction) => {
+  const { alias } = req.session as any
+
+  if (!alias) {
+    return res.status(401).json({
+      error: true,
+      errorMessage: 'invalid session',
+    })
+  }
+
+  next()
+}
+
 router.post('/register', async (req: Request, res: Response) => {
   const { email, username, password } = req.body
 
@@ -48,6 +61,7 @@ router.post('/register', async (req: Request, res: Response) => {
     maps: [],
   })
 
+  req.session.alias = username
   res.status(200).json({ error: false })
 })
 
@@ -79,10 +93,15 @@ router.post('/login', async (req: Request, res: Response) => {
   }
 
   req.session.alias = emailOrUsername
-  res.status(200).json({ error: false })
+
+  res.status(200).json({
+    error: false,
+    username: user.username,
+    email: user.email,
+  })
 })
 
-router.post('/logout', (req: Request, res: Response) => {
+router.post('/logout', auth, (req: Request, res: Response) => {
   req.session.destroy((err) => {
     if (err) {
       res.status(400).json({
@@ -207,18 +226,5 @@ router.post('/update', async (req: Request, res: Response) => {
     error: false,
   })
 })
-
-export const auth = (req: Request, res: Response, next: NextFunction) => {
-  const { alias } = req.session as any
-
-  if (!alias) {
-    return res.status(401).json({
-      error: true,
-      errorMessage: 'invalid session',
-    })
-  }
-
-  next()
-}
 
 export default router

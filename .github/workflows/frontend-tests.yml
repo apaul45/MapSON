@@ -16,31 +16,17 @@ jobs:
         with:
           node-version: 15
 
-      # - name: 'Create env file for backend'
-      #   working-directory: ./backend
-      #   run: |
-      #     touch .env
-      #     echo PORT=${{ secrets.PORT }} >> .env
-      #     echo API_KEY=${{ secrets.DB }} >> .env
-      #     cat .env
+      - name: Install backend dependencies
+        working-directory: ./backend
+        run: npm install
 
-      # - name: Load backend's environment variables
-      #   working-directory: ./backend
-      #   run: |
-      #     echo ${{secrets.BACKEND_ENV}} > .env
-      #     source .env
-
-      # - name: Install backend dependencies
-      #   working-directory: ./backend
-      #   run: npm install
-
-      # #Run server in background by ending command w/a "&"
-      # - name: Start server
-      #   working-directory: ./backend
-      #   run: node index.js &
-      #   env:
-      #     PORT: ${{ secrets.PORT }}
-      #     DB: ${{ secrets.DB }}
+      #Run server in background by ending command w/a "&"
+      - name: Start server
+        working-directory: ./backend
+        run: npm run dev &
+        env:
+          PORT: 4000
+          DB: ${{ secrets.DB }}
 
       # Install NPM dependencies, cache them correctly
       # and run all Cypress tests
@@ -50,3 +36,7 @@ jobs:
           working-directory: ./frontend
           build: npm run build
           start: npm run dev
+        env:
+          VITE_BACKEND_URL: http://localhost:4000
+          CYPRESS_USER: ${{ secrets.CYPRESS_USER }}
+          CYPRESS_PASSWORD: ${{ secrets.CYPRESS_PASSWORD }}

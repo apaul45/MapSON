@@ -15,7 +15,7 @@ const AccountCircle = () => {
 
   const navigate = useNavigate()
   const logout = () => {
-    store.dispatch.user.setCurrentUser(null)
+    store.dispatch.user.logout()
     navigate('/')
   }
 
