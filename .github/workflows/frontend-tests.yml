@@ -36,3 +36,5 @@ jobs:
           working-directory: ./frontend
           build: npm run build
           start: npm run dev
+        env:
+          VITE_BACKEND_URL: http://localhost:4000
