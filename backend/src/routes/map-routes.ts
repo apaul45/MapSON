@@ -170,11 +170,11 @@ router.put('/map/:id', auth, async (req: Request, res: Response) => {
         map.upvotes: req.upvotes
         map.downvotes: req.downvotes
         map.forks: req.forks
-        map.downloads: map.downloads
-        map.published: map.published
-        map.description: map.description
-        map.comments: map.comments
-        map.features: map.features
+        map.downloads: req.downloads
+        map.published: req.published
+        map.description: req.description
+        map.comments: req.comments
+        map.features: req.features
     })
 
     return res.status(201).json({ error: false, map: map }) 
