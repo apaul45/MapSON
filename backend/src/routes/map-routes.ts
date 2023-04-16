@@ -1,19 +1,16 @@
 import { Request, Response, NextFunction, Router } from 'express'
-import router from 'user-routes.ts'
+import { auth } from '../routes/user-routes'
 import { v4 as uuidv4 } from 'uuid'
 import dotenv from 'dotenv'
+import User from '../models/user-model'
+import Map from '../models/map-model'
 
-dotenv.config()
+dotenv.config();
 
-// A function that checks for cookie to verify if a user is logged in. Calls the intended function if verified 
-const auth = router.auth
-
-const router = Router()
-
-const Map = require('../models/map-model');
+const mapRouter = Router()
 
 // Handles create a new map in the database request
-router.post('/map', auth, async (req: Request, res: Response) => {
+mapRouter.post('/map', auth, async (req: Request, res: Response) => {
     const { username } = req.body
 
     await Map.create({
@@ -28,13 +25,13 @@ router.post('/map', auth, async (req: Request, res: Response) => {
         description: '',
         comments: [],
         features: [],
-    })
+    });
 
-    res.status(201).json({ error: false })
-}
+    res.status(201).json({ error: false });
+})
 
 // Handles a delete a map request
-router.delete('/map/:id', auth, async (req: Request, res: Response) => {
+mapRouter.delete('/map/:id', auth, async (req: Request, res: Response) => {
     const { id, username, userAccess } = req.body
 
     //if credentials not provided correctly 
@@ -46,7 +43,7 @@ router.delete('/map/:id', auth, async (req: Request, res: Response) => {
     }
 
     //if user doesnt exist
-    user = await User.findOne({ username: username})
+    const user = await User.findOne({ username: username })
     if (!user) {
         return res.status(400).json({
             error: true,
@@ -55,7 +52,7 @@ router.delete('/map/:id', auth, async (req: Request, res: Response) => {
     }
 
     //if map doesn't exist
-    map = await Map.findOne({ _id: id })
+    const map = await Map.findOne({ _id: id })
     if (!map) {
         return res.status(400).json({
             error: true,
@@ -72,13 +69,13 @@ router.delete('/map/:id', auth, async (req: Request, res: Response) => {
     }
 
     //delete map
-    await Map.Delete({ _id: map._id })
+    await Map.findOneAndDelete({ _id: map._id })
 
     res.status(200).json({ error: false })
-}
+})
 
 // Handles a get a map request, no auth for guest
-router.get('/map/:id', async (req: Request, res: Response) => {
+mapRouter.get('/map/:id', async (req: Request, res: Response) => {
     const { id } = req.body
 
     //if id doesnt exist
@@ -89,17 +86,22 @@ router.get('/map/:id', async (req: Request, res: Response) => {
         })
     }
 
-    await Map.find({ _id: req.params.id }, (err, map) => {
-        if (err) {
-            return res.status(400).json({ error: true, errorMessage: 'Map doesn't exist' });
-        }
-        return res.status(201).json({ error: false, map: map })
-    }).catch(err => console.log(err))
-}
+    const map = await Map.find({ _id: id })
+    
+    //if map doesnt exist
+    if (!map) { 
+        return res.status(400).json({ 
+            error: true, 
+            errorMessage: 'Map doesnt exist'
+        })
+    }
+
+    res.status(201).json({ error: false, map: map })
+})
 
 // Handles get all the published maps request, no auth for guest
-router.get('/allmaps', async (req: Request, res: Response) => {
-    maps = await Map.find({})
+mapRouter.get('/allmaps', async (req: Request, res: Response) => {
+    const maps = await Map.find( { published: { isPublished: true }})
 
     if (!maps.length) {
         return res.status(400).json({
@@ -108,13 +110,11 @@ router.get('/allmaps', async (req: Request, res: Response) => {
         })
     }
 
-    allMaps = maps.filter(published => published === true)
-
-    return res.status(201).json({ error: false, allMaps: allMaps })
-}
+    return res.status(201).json({ error: false, maps: maps })
+})
 
 //Handles get all of a user's maps request
-router.get('/maps', auth, async (req: Request, res: Response) => {
+mapRouter.get('/maps', auth, async (req: Request, res: Response) => {
     const  { username } = req.body
 
     if (!username) {
@@ -125,7 +125,7 @@ router.get('/maps', auth, async (req: Request, res: Response) => {
     }
 
     //if user doesnt exist
-    user = await User.findOne({ username: username})
+    const user = await User.findOne({ username: username})
     if (!user) {
         return res.status(400).json({
             error: true,
@@ -133,7 +133,7 @@ router.get('/maps', auth, async (req: Request, res: Response) => {
         })
     }
 
-    maps = await Map.find({})
+    const maps = await Map.find({ owner: username })
 
     if (!maps.length) {
         return res.status(400).json({
@@ -142,13 +142,11 @@ router.get('/maps', auth, async (req: Request, res: Response) => {
         })
     }
 
-    allMaps = maps.filter(owner => owner === username)
-
     return res.status(201).json({ error: false, maps: maps })
-}
+})
 
 // Handles update a map in the database request
-router.put('/map/:id', auth, async (req: Request, res: Response) => {
+mapRouter.put('/map/:id', auth, async (req: Request, res: Response) => {
     const body = req.body
     
     if (!body) {
@@ -158,43 +156,36 @@ router.put('/map/:id', auth, async (req: Request, res: Response) => {
         })
     }
 
-    await Map.findOne({ _id: req.params.id }, (err, map) => {
-        if (err) {
-            return res.status(400).json({
-                error: true,
-                errorMessage: 'Map not found'
-            }) 
-        }
+    const map = await Map.findOne({ _id: req.params.id })
 
-        map.name = req.name;
-        map.userAccess = req.userAccess;
-        map.upvotes = req.upvotes;
-        map.downvotes = req.downvotes;
-        map.forks = req.forks;
-        map.downloads = req.downloads;
-        map.published = req.published;
-        map.description = req.description;
-        map.comments = req.comments;
-        map.features = req.features;
-    })
+    if (!map) {
+        return res.status(400).json({
+            error: true,
+                errorMessage: 'Map not found'
+        }) 
+    }
+
+    map.name = body.name;
+    map.userAccess = body.userAccess;
+    map.upvotes = body.upvotes;
+    map.downvotes = body.downvotes;  
+    map.forks = body.forks;
+    map.downloads = body.downloads;
+    map.published = body.published;
+    map.description = body.description;
+    map.comments = body.comments;
+    map.features = body.features;
 
     return res.status(201).json({ error: false, map: map }) 
-}
+})
 
 // Handles search maps request
-//router.get('/search', auth, async (req: Request, res: Response) => {
-    // const { id } = req.body 
-
-    // await Map.find({ _id: req.params.id }, (err, map) => {
-    //     if (err) {
-    //         return res.status(400).json({ error: true, errorMessage: 'Map doesn't exist });
-    //     }
-    //     return res.status(201).json({ error: false, map: map })
-    // }).catch(err => console.log(err))
-//s}
+//mapRouter.get('/search', auth, async (req: Request, res: Response) => {})
 
 // Handles fork map request
-//router.post('/fork/:id', auth, async (req: Request, res: Response) => {}
+//mapRouter.post('/fork/:id', auth, async (req: Request, res: Response) => {})
 
 // Handles request access request
-//router.post('/access/:id', auth, async (req: Request, res: Response) => {}
+//mapRouter.post('/access/:id', auth, async (req: Request, res: Response) => {})
+
+export default mapRouter

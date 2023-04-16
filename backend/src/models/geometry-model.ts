@@ -2,16 +2,16 @@ import mongoose, { Schema, Types } from "mongoose";
 
 export interface IGeometry {
     name: string
-    coordinates: Types.Mixed
-    geometries: [Geometry]
+    coordinates: Schema.Types.Mixed
+    geometries: [IGeometry]
     bbox: number
 }
 
 const geometrySchema: Schema = new Schema<IGeometry>(
     {
         name: { type: String, required: true },
-        coordinates: { type: Types.Mixed, required: true },
-        geometries: [{ type: Geometry, required: true }],
+        coordinates: { type: Schema.Types.Mixed, required: true },
+        geometries: [{ type: new Schema<IGeometry>, required: true }],
         bbox: {type: Number, required: true},
     }
 )

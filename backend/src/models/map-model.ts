@@ -1,5 +1,5 @@
 import mongoose, { Schema, Types } from "mongoose";
-import Feature from "feature-model.ts"
+import Feature from "../models/feature-model"
 
 export interface IMap {
   name: string
