@@ -1,9 +1,6 @@
 name: Jest and Supertest Tests
 
-on:
-  push:
-    paths:
-      - 'backend/**'
+on: [push]
 
 jobs:
   jest-run:
