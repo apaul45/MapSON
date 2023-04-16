@@ -121,6 +121,13 @@ router.post('/recover', async (req: Request, res: Response) => {
   user.recoveryKey = recoverKey
   await user.save()
 
+  if (process.env.DEV) {
+    return res.status(200).json({
+      error: false,
+      key: recoverKey,
+    })
+  }
+
   const url = 'https://api.sendinblue.com/v3/smtp/email'
 
   const headers = {
@@ -183,9 +190,10 @@ router.post('/update', async (req: Request, res: Response) => {
     })
   }
 
-  const newUser = await User.findByIdAndUpdate(
+  const newUser = await User.findOneAndUpdate(
     { email: userObj.email },
-    userObj
+    userObj,
+    { new: true }
   )
 
   if (!newUser) {
