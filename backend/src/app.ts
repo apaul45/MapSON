@@ -17,7 +17,7 @@ app.use(
     credentials: true,
     origin: [
       'http://127.0.0.1:5173',
-      'https://mapson.vercel.app/',
+      'https://mapson.vercel.app',
       'https://mapson-apaul45.vercel.app',
     ],
   })
@@ -35,6 +35,9 @@ app.use(
       mongoUrl: mongoStr,
       ttl: 60 * 60, // = 1hr
     }),
+    cookie: {
+      sameSite: false,
+    },
   })
 )
 
