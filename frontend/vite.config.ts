@@ -8,10 +8,6 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react()],
-    build: {
-      outDir: './wwwroot/app/',
-      sourcemap: true,
-    },
 
     server: {
       proxy: {
