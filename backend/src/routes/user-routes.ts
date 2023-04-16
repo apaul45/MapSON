@@ -95,6 +95,7 @@ router.post('/login', async (req: Request, res: Response) => {
   req.session.alias = emailOrUsername
 
   res.status(200).json({
+    error: false,
     username: user.username,
     email: user.email,
   })

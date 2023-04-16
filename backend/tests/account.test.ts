@@ -17,7 +17,8 @@ afterAll(async () => {
   await mongoose.disconnect()
 })
 
-let cookie: string
+let loginCookie: string
+let registerCookie: string
 
 describe('POST /user/register', () => {
   it('should register a user', async () => {
@@ -29,6 +30,7 @@ describe('POST /user/register', () => {
 
     expect(res.statusCode).toBe(200)
     expect(res.body.error).toBe(false)
+    registerCookie = res.header['set-cookie']
   })
 
   it('should fail to register a user with invalid fields', async () => {
@@ -73,7 +75,7 @@ describe('POST /user/login', () => {
     expect(res.statusCode).toBe(200)
     expect(res.body.error).toBe(false)
     expect(res.header).toHaveProperty('set-cookie')
-    cookie = res.header['set-cookie']
+    loginCookie = res.header['set-cookie']
   })
 
   it('should fail to login a user with invalid username', async () => {
@@ -144,10 +146,22 @@ describe('POST /user/update', () => {
 
 describe('POST /user/logout', () => {
   it('should successfully login and logout user', async () => {
-    const res = await request(app).post('/user/logout').set('Cookie', cookie)
+    let res = await request(app).post('/user/logout').set('Cookie', loginCookie)
 
     expect(res.statusCode).toBe(200)
     expect(res.body.error).toBe(false)
+
+    res = await request(app).post('/user/logout').set('Cookie', registerCookie)
+
+    expect(res.statusCode).toBe(200)
+    expect(res.body.error).toBe(false)
+  })
+
+  it('should fail to logout without logging in first', async () => {
+    const res = await request(app).post('/user/logout')
+
+    expect(res.statusCode).toBe(401)
+    expect(res.body.error).toBe(true)
   })
 })
 
