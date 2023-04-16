@@ -85,7 +85,7 @@ router.post('/login', async (req: Request, res: Response) => {
     })
   }
 
-  if (!bcrypt.compare(password, user.passwordHash)) {
+  if (!(await bcrypt.compare(password, user.passwordHash))) {
     return res.status(401).json({
       error: true,
       errorMessage: 'invalid username/email or password',
@@ -139,6 +139,13 @@ router.post('/recover', async (req: Request, res: Response) => {
   user.recoveryKey = recoverKey
   await user.save()
 
+  if (process.env.DEV) {
+    return res.status(200).json({
+      error: false,
+      key: recoverKey,
+    })
+  }
+
   const url = 'https://api.sendinblue.com/v3/smtp/email'
 
   const headers = {
@@ -189,6 +196,34 @@ router.patch('/recover', async (req: Request, res: Response) => {
   await user.save()
 
   res.status(200).json({ error: false })
+})
+
+router.post('/update', async (req: Request, res: Response) => {
+  const { userObj } = req.body
+
+  if (!userObj) {
+    return res.status(400).json({
+      error: true,
+      errorMessage: 'invalid user object',
+    })
+  }
+
+  const newUser = await User.findOneAndUpdate(
+    { email: userObj.email },
+    userObj,
+    { new: true }
+  )
+
+  if (!newUser) {
+    return res.status(400).json({
+      error: true,
+      errorMessage: 'user not found',
+    })
+  }
+
+  res.status(200).json({
+    error: false,
+  })
 })
 
 export default router
