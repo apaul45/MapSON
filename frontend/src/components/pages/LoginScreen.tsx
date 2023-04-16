@@ -1,5 +1,4 @@
 import { Link, useNavigate } from 'react-router-dom'
-import { User } from '../../types'
 import { store } from '../../models'
 import { useState } from 'react'
 
@@ -8,18 +7,20 @@ export const LoginScreen = () => {
   const [password, setPassword] = useState('')
   const navigate = useNavigate()
 
-  const handleSubmit = (event: any) => {
+  const { error, user } = store.dispatch
+
+  const handleSubmit = async () => {
     if (!username || !password) {
-      store.dispatch.error.setError('Please enter your username and password.')
+      error.setError('Please enter your username and password.')
       return
     }
 
-    const user: User = {
-      username: username,
+    const payload = {
+      emailOrUsername: username,
       password: password,
     }
 
-    store.dispatch.user.setCurrentUser(user)
+    await user.login(payload)
     navigate('/home')
   }
 
@@ -53,7 +54,7 @@ export const LoginScreen = () => {
           Forgot Password?
         </Link>
         <br />
-        <button onClick={(e) => handleSubmit(e)} className="mt-6 lr-btn">
+        <button onClick={handleSubmit} className="mt-6 lr-btn">
           Login
         </button>
       </div>
