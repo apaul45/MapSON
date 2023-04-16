@@ -161,7 +161,7 @@ mapRouter.put('/map/:id', auth, async (req: Request, res: Response) => {
     if (!map) {
         return res.status(400).json({
             error: true,
-                errorMessage: 'Map not found'
+            errorMessage: 'Map not found'
         }) 
     }
 

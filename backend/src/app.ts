@@ -2,6 +2,7 @@ import express, { Express, Request, Response } from 'express'
 import session from 'express-session'
 
 import { default as user } from './routes/user-routes'
+import { default as maps } from './routes/map-routes'
 import { default as MongoStore } from 'connect-mongo'
 
 import dotenv from 'dotenv'
@@ -32,5 +33,6 @@ app.get('/', (req: Request, res: Response) => {
 })
 
 app.use('/user', user)
+app.use('/maps', maps)
 
 export default app
