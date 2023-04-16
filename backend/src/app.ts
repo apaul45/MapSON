@@ -12,23 +12,25 @@ const app: Express = express()
 const mongoStr = `mongodb+srv://${process.env.DB}/mapson`
 
 app.use(express.json())
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true }))
 
-app.use(session({
-  resave: false,
-  saveUninitialized: false,
-  secret: "secret",
-  store: MongoStore.create({
-    mongoUrl: mongoStr,
-    ttl: 60 * 60, // = 1hr
+app.use(
+  session({
+    resave: false,
+    saveUninitialized: false,
+    secret: 'secret',
+    store: MongoStore.create({
+      mongoUrl: mongoStr,
+      ttl: 60 * 60, // = 1hr
+    }),
   })
-}))
+)
 
 app.get('/', (req: Request, res: Response) => {
   res.send('Express + TypeScript Server')
   console.log('hii!')
-});
+})
 
-app.use('/user', user);
+app.use('/user', user)
 
-export default app;
+export default app
