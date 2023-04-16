@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction, Router } from 'express'
-import { router.auth } from 'user-routes.ts'
+import router from 'user-routes.ts'
 import { v4 as uuidv4 } from 'uuid'
 import dotenv from 'dotenv'
 
@@ -17,7 +17,7 @@ router.post('/map', auth, async (req: Request, res: Response) => {
 
     await Map.create({
         name: 'My New Map',
-        owner: username
+        owner: username,
         userAccess: [],
         upvotes: [],
         downvotes: [],
@@ -90,7 +90,7 @@ router.get('/map/:id', async (req: Request, res: Response) => {
 
     await Map.find({ _id: req.params.id }, (err, map) => {
         if (err) {
-            return res.status(400).json({ error: true, errorMessage: 'Map doesn't exist });
+            return res.status(400).json({ error: true, errorMessage: 'Map doesn't exist' });
         }
         return res.status(201).json({ error: false, map: map })
     }).catch(err => console.log(err))
@@ -112,7 +112,7 @@ router.get('/allmaps', async (req: Request, res: Response) => {
     return res.status(201).json({ error: false, allMaps: allMaps })
 }
 
-/ Handles get all of a user's maps request
+//Handles get all of a user's maps request
 router.get('/maps', auth, async (req: Request, res: Response) => {
     const  { username } = req.body
 
@@ -165,23 +165,23 @@ router.put('/map/:id', auth, async (req: Request, res: Response) => {
             }) 
         }
 
-        map.name: req.name
-        map.userAccess: req.userAccess
-        map.upvotes: req.upvotes
-        map.downvotes: req.downvotes
-        map.forks: req.forks
-        map.downloads: req.downloads
-        map.published: req.published
-        map.description: req.description
-        map.comments: req.comments
-        map.features: req.features
+        map.name = req.name;
+        map.userAccess = req.userAccess;
+        map.upvotes = req.upvotes;
+        map.downvotes = req.downvotes;
+        map.forks: = req.forks;
+        map.downloads = req.downloads;
+        map.published = req.published;
+        map.description = req.description;
+        map.comments = req.comments;
+        map.features = req.features;
     })
 
     return res.status(201).json({ error: false, map: map }) 
 }
 
 // Handles search maps request
-router.get('/search', auth, async (req: Request, res: Response) => {
+//router.get('/search', auth, async (req: Request, res: Response) => {
     // const { id } = req.body 
 
     // await Map.find({ _id: req.params.id }, (err, map) => {
@@ -190,14 +190,10 @@ router.get('/search', auth, async (req: Request, res: Response) => {
     //     }
     //     return res.status(201).json({ error: false, map: map })
     // }).catch(err => console.log(err))
-}
+//s}
 
 // Handles fork map request
-router.post('/fork/:id', auth, async (req: Request, res: Response) => {
-
-}
+//router.post('/fork/:id', auth, async (req: Request, res: Response) => {}
 
 // Handles request access request
-router.post('/access/:id', auth, async (req: Request, res: Response) => {
-
-}
+//router.post('/access/:id', auth, async (req: Request, res: Response) => {}
