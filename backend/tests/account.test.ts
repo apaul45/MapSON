@@ -74,6 +74,8 @@ describe('POST /user/login', () => {
 
     expect(res.statusCode).toBe(200)
     expect(res.body.error).toBe(false)
+    expect(res.body.username).toStrictEqual('test')
+    expect(res.body.email).toStrictEqual('test@gmail.com')
     expect(res.header).toHaveProperty('set-cookie')
     loginCookie = res.header['set-cookie']
   })
