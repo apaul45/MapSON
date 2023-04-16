@@ -1,9 +1,6 @@
 name: Jest and Supertest Tests
 
-on:
-  push:
-    paths:
-      - 'backend/**'
+on: [push]
 
 jobs:
   jest-run:
@@ -31,3 +28,4 @@ jobs:
           DB: ${{ secrets.DB }}
           SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
           API_KEY: ${{ secrets.API_KEY }}
+          DEV: true

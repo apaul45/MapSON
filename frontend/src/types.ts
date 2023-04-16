@@ -1,6 +1,7 @@
 import { Feature, FeatureCollection, Geometry } from 'geojson'
 
 export interface User {
+  email?: string
   username: string
   password: string
   maps?: Map[]

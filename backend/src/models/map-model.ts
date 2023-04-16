@@ -36,7 +36,7 @@ const mapSchema: Schema = new Schema<IMap>(
   },
   { timestamps: true }
 )
-  
+
 const Map = mongoose.model<IMap>('Map', mapSchema)
 
-export default Map;
+export default Map
