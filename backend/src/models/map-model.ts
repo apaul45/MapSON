@@ -1,8 +1,10 @@
-import mongoose, { Schema, Types } from 'mongoose'
+import mongoose, { Schema, Types } from "mongoose";
+import Feature from "../models/feature-model"
 
 export interface IMap {
   name: string
   owner: { type: Types.ObjectId; ref: 'User' }
+  userAccess: [{ type: Types.ObjectId, ref: 'User' }]
   upvotes: [{ type: Types.ObjectId; ref: 'User' }]
   downvotes: [{ type: Types.ObjectId; ref: 'User' }]
   forks: number
@@ -17,6 +19,7 @@ const mapSchema: Schema = new Schema<IMap>(
   {
     name: { type: String, required: true },
     owner: { type: Types.ObjectId, ref: 'User', required: true },
+    userAccess: [{ type: Types.ObjectId, ref: 'User '}],
     upvotes: [{ type: Types.ObjectId, ref: 'User' }],
     downvotes: [{ type: Types.ObjectId, ref: 'User' }],
     forks: { type: Number, required: true },
