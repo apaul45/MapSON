@@ -1,6 +1,6 @@
 import mongoose, { Schema, Types } from "mongoose";
 
-export interfact IGeometry {
+export interface IGeometry {
     name: string
     coordinates: Types.Mixed
     geometries: [Geometry]

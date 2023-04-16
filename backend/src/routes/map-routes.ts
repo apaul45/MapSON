@@ -4,12 +4,13 @@ import { v4 as uuidv4 } from 'uuid'
 import dotenv from 'dotenv'
 
 dotenv.config()
-const router = Router()
-
-const Map = require('../models/map-model');
 
 // A function that checks for cookie to verify if a user is logged in. Calls the intended function if verified 
 const auth = router.auth
+
+const router = Router()
+
+const Map = require('../models/map-model');
 
 // Handles create a new map in the database request
 router.post('/map', auth, async (req: Request, res: Response) => {
@@ -169,7 +170,7 @@ router.put('/map/:id', auth, async (req: Request, res: Response) => {
         map.userAccess = req.userAccess;
         map.upvotes = req.upvotes;
         map.downvotes = req.downvotes;
-        map.forks: = req.forks;
+        map.forks = req.forks;
         map.downloads = req.downloads;
         map.published = req.published;
         map.description = req.description;

@@ -1,7 +1,7 @@
 import mongoose, { Schema, Types } from "mongoose";
 import Geometry from "geometry-model"
 
-export interfact IFeature {
+export interface IFeature {
     name: string
     id: Types.Mixed
     properties: Object
@@ -13,9 +13,9 @@ const featureSchema: Schema = new Schema<IFeature>(
     {
         name: { type: String, required: true },
         id: { type: Types.mixed, required: true},
-        properties: { type: Object, required: true},
-        geometry: 
-        bbox: {type: Number, required: true}
+        properties { type: Object, required: true},
+        geometry: { type: Geometry, required: true },
+        bbox: { type: Number, required: true },
     }
 )
 
