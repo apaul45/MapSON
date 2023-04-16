@@ -7,6 +7,14 @@ const ProjectMenu = () => {
   const user = useSelector((state: RootState) => state.user.currentUser)
   const openDeleteDialog = () => store.dispatch.mapStore.setDeleteDialog(true)
 
+  const exportGeojson = () => {
+    // write feature to file
+  }
+
+  const exportShapefile = () => {
+    // convert to shapefile then write with geojson2shp
+  }
+
   return (
     <MenuList
       id="project-menu"
@@ -26,8 +34,22 @@ const ProjectMenu = () => {
         </MenuHandler>
 
         <MenuList className="bg-gray text-white p-0 font-sans text-base">
-          <MenuItem className="hover:bg-sort-hover">Shapefile</MenuItem>
-          <MenuItem className="hover:bg-sort-hover">GeoJSON</MenuItem>
+          <MenuItem
+            className="hover:bg-sort-hover"
+            onClick={() => {
+              exportShapefile()
+            }}
+          >
+            Shapefile
+          </MenuItem>
+          <MenuItem
+            className="hover:bg-sort-hover"
+            onClick={() => {
+              exportGeojson()
+            }}
+          >
+            GeoJSON
+          </MenuItem>
         </MenuList>
       </Menu>
 
