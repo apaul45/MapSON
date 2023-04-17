@@ -2,16 +2,24 @@ import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { store } from '../../models'
 
-export default function MapCard() {
+export default function MapCard(props) {
   const [expand, setExpand] = useState<boolean>(false)
   const [upvoteClass, setUpvoteClass] = useState<string>('')
   const [downvoteClass, setdownvoteClass] = useState<string>('')
-  const [upvoteCount, setUpvoteCount] = useState<number>(10)
-  const [downvoteCount, setDownvoteCount] = useState<number>(10)
-  const [downloadCount, setDownloadCount] = useState<number>(10)
+  // const [upvoteCount, setUpvoteCount] = useState<number>(10)
+  // const [downvoteCount, setDownvoteCount] = useState<number>(10)
+  // const [downloadCount, setDownloadCount] = useState<number>(10)
+  const { map, name, username, upvoteCount, downvoteCount, downloadCount, description, date } = props;
 
-  const description: string =
-    'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam odio nulla, tincidunt sit amet ultricies placerat, mollis a sem. Phasellus eget dui in ante porta vehicula ac in ante. Praesent bibendum volutpat risus, id efficitur turpis porta vel. Praesent tempus posuere tortor non faucibus. Sed imperdiet ex cursus felis condimentum bibendum. Sed scelerisque, velit eget bibendum ultrices, tortor quam aliquet risus, id hendrerit arcu metus et ante. '
+  const dateFormat = new Date(date).toLocaleDateString('en-us', { year:"numeric", day:"numeric", month:"long"})
+
+  //const description: string = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam odio nulla, tincidunt sit amet ultricies placerat, mollis a sem. Phasellus eget dui in ante porta vehicula ac in ante. Praesent bibendum volutpat risus, id efficitur turpis porta vel. Praesent tempus posuere tortor non faucibus. Sed imperdiet ex cursus felis condimentum bibendum. Sed scelerisque, velit eget bibendum ultrices, tortor quam aliquet risus, id hendrerit arcu metus et ante. '
+
+  // const mapStore = store.dispatch.mapStore
+
+  // const handleSetCurrentMap = () => {
+  //   store.setCurrentMap(map)
+  // }
 
   const location = useLocation()
   console.log(location.pathname)
@@ -77,7 +85,8 @@ export default function MapCard() {
         {location.pathname.includes('home') ? (
           <button
             onClick={(e) => {
-              deleteCard(e)
+              deleteCard(e);
+              //handleSetCurrentMap();
             }}
             className="absolute top-0 right-0 "
           >
@@ -103,7 +112,7 @@ export default function MapCard() {
       </div>
 
       <div className="py-3 px-3">
-        <div className="font-bold text-xl text-left">afghanistan</div>
+        <div className="font-bold text-xl text-left">{name}</div>
         {expand ? (
           <p className="text-gray-700 text-base text-left">{description}</p>
         ) : (
@@ -114,9 +123,9 @@ export default function MapCard() {
       <div className="px-3 text-left">
         <div className="text-gray-700 text-base">
           <span className="">By</span>{' '}
-          <span className="underline text-blue">Imtiyaz</span>
+          <span className="underline text-blue">{username}</span>
         </div>
-        <div className="text-gray-700 text-base">April 7, 2023</div>
+        <div className="text-gray-700 text-base">{dateFormat}</div>
       </div>
       <div className="px-1 pt-4 pb-3 flex relative">
         <span className="pr-3 space-x-2 flex ">
