@@ -141,6 +141,7 @@ export const AddMapDialog = () => {
     }
 
     const id = await mapStore.createNewMap({
+      mapName: mapName,
       geojson: geojson,
     })
 
