@@ -11,14 +11,15 @@ const router = Router()
 
 declare module 'express-session' {
   interface SessionData {
-    alias: string // suppose to be email/username
+    username: string // suppose to be email/username
+    email: string
   }
 }
 
 export const auth = (req: Request, res: Response, next: NextFunction) => {
-  const { alias } = req.session as any
+  const { email, username } = req.session as any
 
-  if (!alias) {
+  if (!email || !username) {
     return res.status(401).json({
       error: true,
       errorMessage: 'invalid session',
@@ -61,7 +62,8 @@ router.post('/register', async (req: Request, res: Response) => {
     maps: [],
   })
 
-  req.session.alias = username
+  req.session.username = username
+  req.session.email = email
   res.status(200).json({ error: false })
 })
 
@@ -92,7 +94,8 @@ router.post('/login', async (req: Request, res: Response) => {
     })
   }
 
-  req.session.alias = emailOrUsername
+  req.session.email = user.email;
+  req.session.username = user.username;
 
   res.status(200).json(user.toJSON())
 })

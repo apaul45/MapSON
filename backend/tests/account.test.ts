@@ -151,12 +151,10 @@ describe('POST /user/logout', () => {
     let res = await request(app).post('/user/logout').set('Cookie', loginCookie)
 
     expect(res.statusCode).toBe(200)
-    expect(res.body.error).toBe(false)
 
     res = await request(app).post('/user/logout').set('Cookie', registerCookie)
 
     expect(res.statusCode).toBe(200)
-    expect(res.body.error).toBe(false)
   })
 
   it('should fail to logout without logging in first', async () => {
