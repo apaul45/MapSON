@@ -76,7 +76,7 @@ router.post('/login', async (req: Request, res: Response) => {
   }
   const user = await User.findOne({
     $or: [{ email: emailOrUsername }, { username: emailOrUsername }],
-  })
+  }).populate('maps')
 
   if (!user) {
     return res.status(400).json({
@@ -94,11 +94,7 @@ router.post('/login', async (req: Request, res: Response) => {
 
   req.session.alias = emailOrUsername
 
-  res.status(200).json({
-    error: false,
-    username: user.username,
-    email: user.email,
-  })
+  res.status(200).json(user.toJSON())
 })
 
 router.post('/logout', auth, (req: Request, res: Response) => {
