@@ -30,7 +30,7 @@ export const mapStore = createModel<RootModel>()({
     updateUserMaps: (state, payload: Map) => {
       userMaps.push(payload)
       return { ...state, userMaps: userMaps }
-    }
+    },
     setShareDialog: (state, payload: boolean) => {
       return { ...state, shareDialog: payload }
     },
