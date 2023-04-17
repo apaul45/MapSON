@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import mapsonLogo from '/img/MapSON-logo-outlined copy.png'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { RootState, store } from '../models'
 import AccountCircle from './AccountCircle'
 import { useSelector } from 'react-redux'
@@ -8,10 +8,19 @@ import { Menu, MenuHandler, MenuItem, MenuList } from '@material-tailwind/react'
 
 export const MainNavbar = () => {
   const location = useLocation()
+  const navigate = useNavigate()
+  const { mapStore } = store.dispatch
   const user = useSelector((state: RootState) => state.user.currentUser)
 
   const isSelected = (path: string) =>
     location.pathname === path ? 'selected-nav-btn' : 'nav-btn'
+
+  const handleCreateMap = async () => {
+    const id = await mapStore.createNewMap({
+      mapName: 'My Map',
+    })
+    navigate(`/project/${id}`)
+  }
 
   //Render the main navbar everywhere except any project related screens
   return (
@@ -77,6 +86,7 @@ export const MainNavbar = () => {
                               viewBox="0 0 24 24"
                               strokeWidth={1.5}
                               stroke="currentColor"
+                              id="plus-sign"
                             >
                               <path
                                 strokeLinecap="round"
@@ -103,7 +113,13 @@ export const MainNavbar = () => {
                             Import from Shapefile/GeoJSON
                           </MenuItem>
                           <hr className="align-middle" />
-                          <MenuItem>Create new Map</MenuItem>
+                          <MenuItem
+                            onClick={() => {
+                              handleCreateMap()
+                            }}
+                          >
+                            Create new Map
+                          </MenuItem>
                         </MenuList>
                       </Menu>
                       <AccountCircle />
