@@ -34,19 +34,19 @@ describe('Project Nav Bar Tests', () => {
   it('should download a geojson', () => {
     cy.get('#menu-button').click()
 
-    cy.contains('Download as').trigger('mouseover')
+    cy.contains('Download as').invoke('show').click({ force: true }).click()
 
-    // cy.contains('GeoJSON').should('exist').click()
-    // cy.readFile('cypress/downloads/test.geo.json')
+    cy.contains('GeoJSON').should('exist').click()
+    cy.readFile('cypress/downloads/test.geo.json').should('exist')
   })
 
   it('should download a shapefile zip', () => {
     cy.get('#menu-button').click()
 
-    cy.contains('Download as').trigger('mouseenter')
+    cy.contains('Download as').invoke('show').click({ force: true }).click()
 
-    // cy.contains('Shapefile').should('exist').click()
-    // cy.readFile('cypress/downloads/test.zip')
+    cy.contains('Shapefile').should('exist').click()
+    cy.readFile('cypress/downloads/test.geo.json').should('exist')
   })
 })
 
