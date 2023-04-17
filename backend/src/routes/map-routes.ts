@@ -4,7 +4,7 @@ import dotenv from 'dotenv'
 import User from '../models/user-model'
 import Map, { IMap } from '../models/map-model'
 import Feature from '../models/feature-model'
-import { Feature as FeatureType } from "geojson"
+import { FeatureCollection, Feature as FeatureType } from "geojson"
 
 // const populatedFields = [
 //     'owner',
@@ -25,10 +25,18 @@ mapRouter.post('/map', auth, async (req: Request, res: Response) => {
     email: req.session.email,
   })
 
-
   if (!req.body?.mapName) {
     return res.status(400).json({ error: true, errorMesage: "Invalid body" })
   }
+
+  let fg: FeatureCollection | null = null
+
+  if (req.body.geojson?.features instanceof Array) {
+    fg = req.body.geojson as FeatureCollection
+
+    fg.features = await Promise.all(req.body.geojson?.features.map(async (v: FeatureType) => await Feature.create(v)))
+  }
+
 
   const newMap: IMap = {
     name: req.body.mapName,
@@ -42,7 +50,7 @@ mapRouter.post('/map', auth, async (req: Request, res: Response) => {
     published: null,
     description: '',
     comments: [],
-    features: req.body.geojson ?? {},
+    features: fg ?? { type: 'FeatureCollection', features: [] },
   }
 
   const map = await Map.create(newMap)
