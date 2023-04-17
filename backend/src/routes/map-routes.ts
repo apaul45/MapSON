@@ -21,7 +21,7 @@ const mapRouter = Router()
 // Handles create a new map in the database request
 mapRouter.post('/map', auth, async (req: Request, res: Response) => {
   const user = await User.findOne({
-    $or: [{ email: req.session.alias }, { username: req.session.alias }],
+    email: req.session.email,
   })
 
   const newMap: IMap = {
@@ -50,12 +50,12 @@ mapRouter.post('/map', auth, async (req: Request, res: Response) => {
 
 // Handles a delete a map request
 mapRouter.delete('/map/:id', auth, async (req: Request, res: Response) => {
-  const emailOrUsername = req.session.alias
+  const email = req.session.email
   const { id } = req.params
 
   //if user doesnt exist
   const user = await User.findOne({
-    $or: [{ email: emailOrUsername }, { username: emailOrUsername }],
+    email: email,
   })
 
   if (!user) {
@@ -79,7 +79,7 @@ mapRouter.delete('/map/:id', auth, async (req: Request, res: Response) => {
   //if the user is not the owner and doesnt have permission to delete the map
   //@ts-ignore
   // prettier-ignore
-  if (!user._id.equals(map.owner) &&!map.userAccess.includes(emailOrUsername)) {
+  if (!user._id.equals(map.owner) && !map.userAccess.includes(emailOrUsername)) {
     return res.status(401).json({
       error: true,
       errorMessage: 'Unauthorized',
@@ -152,10 +152,20 @@ mapRouter.get('/allmaps', async (req: Request, res: Response) => {
 //     return res.status(201).json({ maps: user.maps })
 // })
 
+type Feature = any;
+
+interface FeatureChanges {
+  create: Feature[],
+  delete: string[],
+  edit: {
+    [key: string]: Feature
+  }
+}
+
 // Handles update a map in the database request
 mapRouter.put('/map/:id', auth, async (req: Request, res: Response) => {
   const { id } = req.params
-  const { changes } = req.body
+  const changes: FeatureChanges = req.body.changes
   console.log(changes)
 
   if (!changes) {
@@ -177,6 +187,35 @@ mapRouter.put('/map/:id', auth, async (req: Request, res: Response) => {
   res.status(201).json() //Need to send json to prevent stalling
 })
 
+mapRouter.post('/map/:id/feature', auth, async (req, res) => {
+  const { id } = req.params
+
+  const body = req.body;
+
+  if (!body) {
+    return res.status(400).json({
+      error: true,
+      errorMessage: 'Bad request',
+    })
+  }
+
+  const map = await Map.findById({ _id: id })
+
+  if (!map) {
+    return res.status(400).json({
+      error: true,
+      errorMessage: 'Map not found',
+    })
+  }
+
+  const feature =
+
+
+    map?.f
+
+
+})
+
 // Handles search maps request
 //mapRouter.get('/search', auth, async (req: Request, res: Response) => {})
 
@@ -185,5 +224,7 @@ mapRouter.put('/map/:id', auth, async (req: Request, res: Response) => {
 
 // Handles request access request
 //mapRouter.post('/access/:id', auth, async (req: Request, res: Response) => {})
+
+
 
 export default mapRouter

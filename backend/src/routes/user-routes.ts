@@ -11,7 +11,8 @@ const router = Router()
 
 declare module 'express-session' {
   interface SessionData {
-    alias: string // suppose to be email/username
+    username: string // suppose to be email/username
+    email: string
   }
 }
 
@@ -61,7 +62,8 @@ router.post('/register', async (req: Request, res: Response) => {
     maps: [],
   })
 
-  req.session.alias = username
+  req.session.username = username
+  req.session.email = email
   res.status(200).json({ error: false })
 })
 
@@ -92,7 +94,8 @@ router.post('/login', async (req: Request, res: Response) => {
     })
   }
 
-  req.session.alias = emailOrUsername
+  req.session.email = user.email;
+  req.session.username = user.username;
 
   res.status(200).json(user.toJSON())
 })
