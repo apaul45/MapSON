@@ -15,6 +15,14 @@ export const HomeDiscoverScreen = () => {
 
   const openAddDialog = () => mapStore.setAddDialog(true)
 
+  const handleCreateMap = async () => {
+    const id = await mapStore.createNewMap({
+      mapName: 'My Map',
+    })
+
+    navigate(`/project/${id}`)
+  }
+
   return (
     <>
       <div className="h-max bg-gray px-3 py-3 relative min-h-screen">
@@ -97,7 +105,12 @@ export const HomeDiscoverScreen = () => {
                     d="M12 4.5v15m7.5-7.5h-15"
                   />
                 </svg>
-                <div className="text-3xl text-white">
+                <div
+                  className="text-3xl text-white hover:cursor-pointer"
+                  onClick={() => {
+                    handleCreateMap()
+                  }}
+                >
                   Create New Map from Scratch
                 </div>
               </div>

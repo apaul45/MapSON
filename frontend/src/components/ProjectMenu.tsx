@@ -2,17 +2,45 @@ import { MenuList, MenuItem, Menu, MenuHandler } from '@material-tailwind/react'
 import { useSelector } from 'react-redux'
 import { RootState, store } from '../models'
 import { Link } from 'react-router-dom'
+import { saveAs } from 'file-saver'
+import axios from 'axios'
 
 const ProjectMenu = () => {
   const user = useSelector((state: RootState) => state.user.currentUser)
+  const map = useSelector((state: RootState) => state.mapStore.currentMap)
   const openDeleteDialog = () => store.dispatch.mapStore.setDeleteDialog(true)
 
   const exportGeojson = () => {
-    // write feature to file
+    const blob = new Blob([JSON.stringify(map?.features)])
+    saveAs(blob, map?.name + '.geo.json')
   }
 
-  const exportShapefile = () => {
-    // convert to shapefile then write with geojson2shp
+  const exportShapefile = async () => {
+    const geojson = {
+      type: 'FeatureCollection',
+      features: [
+        {
+          type: 'Feature',
+          properties: {
+            name: 'My Point',
+          },
+          geometry: {
+            type: 'Point',
+            coordinates: [-122.5, 45.5],
+          },
+        },
+      ],
+    }
+    const api = axios.create({
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      withCredentials: false,
+    })
+    const res = await api.post('http://ogre.adc4gis.com/convertJson', {
+      json: JSON.stringify(geojson),
+    })
+    console.log(res)
   }
 
   return (

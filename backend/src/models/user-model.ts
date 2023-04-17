@@ -7,7 +7,7 @@ export interface IUser {
   email: string
   passwordHash: string
   recoveryKey: string
-  maps: [{ type: Types.ObjectId; ref: 'Map' }]
+  maps: Types.ObjectId[]
 }
 
 const userSchema: Schema = new Schema<IUser>(
@@ -16,7 +16,7 @@ const userSchema: Schema = new Schema<IUser>(
     email: { type: String, required: true },
     passwordHash: { type: String, required: true },
     recoveryKey: { type: String },
-    maps: [{ type: Types.ObjectId, ref: 'Map' }],
+    maps: [{ type: Schema.Types.ObjectId, ref: 'Map' }],
   },
   { timestamps: true }
 )
