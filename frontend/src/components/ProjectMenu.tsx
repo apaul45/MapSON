@@ -9,38 +9,33 @@ const ProjectMenu = () => {
   const user = useSelector((state: RootState) => state.user.currentUser)
   const map = useSelector((state: RootState) => state.mapStore.currentMap)
   const openDeleteDialog = () => store.dispatch.mapStore.setDeleteDialog(true)
+  const { error } = store.dispatch
 
   const exportGeojson = () => {
+    if (!map?.features) {
+      error.setError('Please fill the map with polygons')
+      return
+    }
     const blob = new Blob([JSON.stringify(map?.features)])
     saveAs(blob, map?.name + '.geo.json')
   }
 
   const exportShapefile = async () => {
-    const geojson = {
-      type: 'FeatureCollection',
-      features: [
-        {
-          type: 'Feature',
-          properties: {
-            name: 'My Point',
-          },
-          geometry: {
-            type: 'Point',
-            coordinates: [-122.5, 45.5],
-          },
-        },
-      ],
+    if (!map?.features) {
+      error.setError('Please fill the map with polygons')
+      return
     }
-    const api = axios.create({
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      withCredentials: false,
-    })
-    const res = await api.post('http://ogre.adc4gis.com/convertJson', {
-      json: JSON.stringify(geojson),
-    })
-    console.log(res)
+
+    const params = new URLSearchParams()
+    params.append('json', JSON.stringify(map?.features))
+
+    const res = await axios.post(
+      'http://ogre.adc4gis.com/convertJson',
+      params,
+      { withCredentials: false, responseType: 'blob' }
+    )
+    const blob = new Blob([res.data])
+    saveAs(blob, map?.name + '.zip')
   }
 
   return (
