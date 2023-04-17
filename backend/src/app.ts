@@ -16,12 +16,7 @@ const mongoStr = `mongodb+srv://${process.env.DB}/mapson`
 app.use(
   cors({
     credentials: true,
-    origin: [
-      'http://127.0.0.1:5173',
-      'https://mapson.vercel.app',
-      'https://mapson-apaul45.vercel.app',
-      'http://localhost:5173'
-    ],
+    origin: true,
   })
 )
 
