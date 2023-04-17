@@ -47,6 +47,8 @@ export interface Map {
   published: Published
   comments: Comment[]
   features: Features
+  description?: string
+  updatedAt?: string
 }
 
 export interface Store {

@@ -1,7 +1,8 @@
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
+import { useSelector } from 'react-redux'
 import { AddMapDialog } from '../dialogs/AddMapDialog'
-import { store } from '../../models'
+import { RootState, store } from '../../models'
 import { Menu, MenuHandler, MenuItem, MenuList } from '@material-tailwind/react'
 import { MapCard } from '../map'
 
@@ -14,6 +15,12 @@ export const HomeDiscoverScreen = () => {
   const [sortBy, setSortBy] = useState<string>('upvote')
 
   const openAddDialog = () => mapStore.setAddDialog(true)
+
+  let maps = useSelector((state: RootState) => state.mapStore.userMaps)
+
+  const username = useSelector(
+    (state: RootState) => state.user.currentUser?.username
+  )
 
   const handleCreateMap = async () => {
     const id = await mapStore.createNewMap({
@@ -85,6 +92,7 @@ export const HomeDiscoverScreen = () => {
               </div>
 
               <div
+                key={''}
                 id="new-project"
                 className="max-w-sm rounded overflow-hidden border-white border-2 grid place-content-center border-dashed hover:cursor-pointer"
               >
@@ -102,23 +110,35 @@ export const HomeDiscoverScreen = () => {
                     d="M12 4.5v15m7.5-7.5h-15"
                   />
                 </svg>
-                <div
-                  className="text-3xl text-white hover:cursor-pointer"
-                  onClick={() => {
-                    handleCreateMap()
-                  }}
-                >
+                <div className="text-3xl text-white">
                   Create New Map from Scratch
                 </div>
               </div>
             </>
           )}
 
-          {[...Array(5).keys()].map(() => (
-            <div>
-              <MapCard />
-            </div>
-          ))}
+          {location.pathname.includes('home') &&
+            maps?.map((map) => (
+              <div key={''}>
+                <MapCard
+                  map={map}
+                  name={map.name}
+                  username={username}
+                  upvoteCount={map.upvotes.length}
+                  downvoteCount={map.downvotes.length}
+                  downloadCount={map.downloads}
+                  description={map.description}
+                  date={map.updatedAt}
+                />
+              </div>
+            ))}
+
+          {location.pathname.includes('discover') &&
+            [...Array(5).keys()].map(() => (
+              <div>
+                <MapCard />
+              </div>
+            ))}
         </div>
       </div>
       <AddMapDialog />
