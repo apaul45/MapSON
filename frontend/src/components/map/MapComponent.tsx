@@ -181,9 +181,10 @@ const MapComponent = ({
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         <FeatureGroup ref={fg}>
-          
+            //TODO: fix types and ignores
             <MapControls
               onCreate={async (e) => {
+                //@ts-ignore
                 const feature = e.layer.toGeoJSON();
                 const id = await mapStore.createFeature(feature);
 
@@ -194,11 +195,14 @@ const MapComponent = ({
               }}
               onEdit={async (e) => {
                 console.log(e)
+                //@ts-ignore
                 const feature = e.layer.toGeoJSON();
+                //@ts-ignore
                 await mapStore.updateFeature({id: e.layer._id, feature});
               }}
               onRemove={async (e) => {
                 console.log(e)
+                //@ts-ignore
                 await mapStore.deleteFeature(e.layer._id);
               }}
               canEdit={canEdit}

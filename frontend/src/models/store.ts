@@ -46,6 +46,7 @@ export const mapStore = createModel<RootModel>()({
       try {
         const loaded = await map.getMap(payload)
         this.setCurrentMap(loaded.data.map)
+        return loaded.data.map._id;
       } catch (e: any) {
         dispatch.error.setError(e)
       }

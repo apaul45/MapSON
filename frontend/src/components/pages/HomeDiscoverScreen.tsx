@@ -87,9 +87,6 @@ export const HomeDiscoverScreen = () => {
               <div
                 id="new-project"
                 className="max-w-sm rounded overflow-hidden border-white border-2 grid place-content-center border-dashed hover:cursor-pointer"
-                onClick={() => {
-                  navigate('/project/default')
-                }}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
