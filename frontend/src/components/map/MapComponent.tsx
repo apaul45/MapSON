@@ -11,6 +11,8 @@ import { FeatureExt, LGeoJsonExt, Map } from '../../types'
 import 'leaflet/dist/leaflet.css'
 import 'leaflet-draw/dist/leaflet.draw.css'
 
+import {store} from '../../models'
+
 export type SelectedFeature = { layer: LGeoJsonExt; id: number } | null
 
 const HOVERED = {
@@ -40,11 +42,10 @@ const MapComponent = ({
   canEdit,
   setSelectedFeature,
 }: IMapComponent) => {
+  const {mapStore} = store.dispatch;
+
   const fg = useRef<LGeoJsonExt>(null)
-  const geoJSON: FeatureCollection = {
-    type: 'FeatureCollection',
-    features,
-  }
+  const geoJSON: FeatureCollection = features
 
   //second one is the most recently selected
   const selectedFeatures = useRef<[SelectedFeature, SelectedFeature]>([
@@ -93,6 +94,10 @@ const MapComponent = ({
   }
 
   const onEachFeature = (feature: FeatureExt, layer: LGeoJsonExt) => {
+    if(layer._isConfigured) {
+      return
+    }
+
     layer._id = feature._id
 
     if (feature?.properties?.name) {
@@ -145,7 +150,7 @@ const MapComponent = ({
       }
     }
 
-    layer.clearCustomEventHandlers?.()
+    // layer.clearCustomEventHandlers?.()
 
     layer.on('mouseover', mouseover)
 
@@ -157,16 +162,7 @@ const MapComponent = ({
       layer.on('dblclick', dblclick)
     }
 
-    layer.clearCustomEventHandlers = () => {
-      layer.off('mouseover', mouseover)
-
-      layer.off('mouseout', mouseout)
-
-      layer.off('click', click)
-      if (canEdit) {
-        layer.off('dblclick', dblclick)
-      }
-    }
+    layer._isConfigured = true;
   }
 
   return (
@@ -185,17 +181,29 @@ const MapComponent = ({
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         <FeatureGroup ref={fg}>
-          {canEdit && (
+          
             <MapControls
-              onCreate={(e) => {
-                console.log(e)
-                //TODO: STORE NEW FEATURE IN DB AND GET ID AS WELL
-                const feature = {}
+              onCreate={async (e) => {
+                const feature = e.layer.toGeoJSON();
+                const id = await mapStore.createFeature(feature);
+
+                feature._id = id;
+
                 // @ts-ignore
                 onEachFeature(feature, e.layer as LGeoJsonExt)
               }}
+              onEdit={async (e) => {
+                console.log(e)
+                const feature = e.layer.toGeoJSON();
+                await mapStore.updateFeature({id: e.layer._id, feature});
+              }}
+              onRemove={async (e) => {
+                console.log(e)
+                await mapStore.deleteFeature(e.layer._id);
+              }}
+              canEdit={canEdit}
             />
-          )}
+          
 
           <GeoJSON
             data={geoJSON}

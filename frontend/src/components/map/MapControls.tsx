@@ -7,7 +7,8 @@ import { useEffect } from 'react'
 interface IMapControls {
   onCreate?: PM.CreateEventHandler
   onEdit?: PM.EditEventHandler
-  onRemove?: PM.RemoveEventHandler
+  onRemove?: PM.RemoveEventHandler,
+  canEdit: boolean
 }
 
 const customControls: PM.CustomControlOptions[] = [
@@ -34,7 +35,7 @@ const customControls: PM.CustomControlOptions[] = [
   },
 ]
 
-const MapControls = ({ onCreate, onEdit, onRemove }: IMapControls) => {
+const MapControls = ({ onCreate, onEdit, onRemove, canEdit }: IMapControls) => {
   const map = useMap()
 
   const defaultHandler = (e: any) => console.log(e)
@@ -69,6 +70,7 @@ const MapControls = ({ onCreate, onEdit, onRemove }: IMapControls) => {
       globalOptions={{
         continueDrawing: true,
         editable: false,
+        allowEditing: canEdit
       }}
       pathOptions={{
         color: 'red',

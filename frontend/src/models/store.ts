@@ -1,6 +1,7 @@
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
 import { Store, Map } from '../types'
+import map, { deleteFeature, updateFeature } from '../api/map'
 
 const initialState: Store = {
   currentMap: null,
@@ -16,14 +17,14 @@ export const mapStore = createModel<RootModel>()({
 
   //Pure reducer functions
   reducers: {
-    setCurrentMap: (state, payload: Map[]) => {
-      return
+    setCurrentMap: (state, payload: Map) => {
+      return { ...state, currentMap: payload }
     },
     setMaps: (state, payload: Map[]) => {
-      return
+      return { ...state, maps: payload }
     },
     setUserMaps: (state, payload: Map[]) => {
-      return
+      return { ...state, userMaps: payload }
     },
     setShareDialog: (state, payload: boolean) => {
       return { ...state, shareDialog: payload }
@@ -39,20 +40,70 @@ export const mapStore = createModel<RootModel>()({
   //Effects are (possibly async) functions that take in the store's state and payload, and return anything
 
   effects: (dispatch) => ({
+    async loadMap(payload, state) {
+      try {
+        const loaded = await map.getMap(payload)
+        this.setCurrentMap(loaded.data.map)
+      } catch (e: any) {
+        dispatch.error.setError(e)
+      }
+    },
     async loadUserMaps(payload, state) {
       return
     },
     async loadAllMaps(payload, state) {
-      return
+
+      try {
+        const maps = await map.getAllMaps()
+        this.setMaps(maps.data);
+      } catch (e: any) {
+        dispatch.error.setError(e)
+      }
     },
     async updateCurrentMap(payload, state) {
-      return
+      try {
+        const id = state.mapStore.currentMap?._id;
+        if (!id) {
+          console.error("No map selected")
+          dispatch.error.setError("No map selected")
+          return
+        }
+
+        const update = await map.updateMap(id, payload)
+
+        this.setCurrentMap(update.data)
+      } catch (e: any) {
+        dispatch.error.setError(e)
+      }
+
     },
     async createNewMap(payload, state) {
-      return
+      try {
+        const newMap = await map.createMap(payload);
+        const data = newMap.data
+
+        this.setMaps([...state.mapStore.maps, data])
+        this.setUserMaps([...state.mapStore.userMaps, data])
+
+        this.setCurrentMap(data)
+      } catch (e: any) {
+        dispatch.error.setError(e)
+      }
+
     },
     async deleteMap(payload, state) {
-      return
+      try {
+        map.deleteMap(payload);
+
+        this.setMaps(state.mapStore.maps.filter(m => m._id !== payload))
+        this.setUserMaps(state.mapStore.userMaps.filter(m => m._id !== payload))
+
+        if (state.mapStore.currentMap?._id === payload) {
+          this.setCurrentMap(null)
+        }
+      } catch (e: any) {
+        dispatch.error.setError(e)
+      }
     },
 
     sortMaps(payload, state) {
@@ -61,5 +112,67 @@ export const mapStore = createModel<RootModel>()({
     filterMaps(payload, state) {
       return
     },
+    async createFeature(payload, state) {
+      const id = state.mapStore.currentMap?._id;
+      console.log(state.mapStore.currentMap)
+
+      if (!id) {
+        console.error("No map selected")
+        dispatch.error.setError("No map selected")
+        return
+      }
+
+      try {
+        const feature = await map.createFeature(id, payload);
+        return feature.data._id
+      } catch (e: any) {
+        dispatch.error.setError(e)
+      }
+    },
+    async updateFeature(payload, state) {
+      const id = state.mapStore.currentMap?._id;
+
+      let { id: featureid, feature } = payload
+
+      if (!id) {
+        console.error("No map selected")
+        dispatch.error.setError("No map selected")
+        return
+      }
+
+      if (!featureid || !feature) {
+        console.error("Invalid feature")
+        dispatch.error.setError("Invalid feature")
+        return
+      }
+
+
+      try {
+        await map.updateFeature(id, featureid, feature)
+      } catch (e: any) {
+        dispatch.error.setError(e)
+      }
+    },
+    async deleteFeature(payload, state) {
+      const id = state.mapStore.currentMap?._id;
+      if (!id) {
+        console.error("No map selected")
+        dispatch.error.setError("No map selected")
+        return
+      }
+
+      if (!payload) {
+        console.error("No feature selected")
+        dispatch.error.setError("No feature selected")
+        return
+      }
+
+      try {
+        await map.deleteFeature(id, payload)
+      } catch (e: any) {
+        dispatch.error.setError(e)
+      }
+
+    }
   }),
 })

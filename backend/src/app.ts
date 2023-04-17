@@ -1,4 +1,4 @@
-import express, { Express, Request, Response } from 'express'
+import express, { Express, NextFunction, Request, Response } from 'express'
 import session from 'express-session'
 
 import { default as user } from './routes/user-routes'
@@ -50,5 +50,10 @@ app.get('/', (req: Request, res: Response) => {
 
 app.use('/user', user)
 app.use('/maps', maps)
+
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  console.error(err.stack)
+  res.status(500).send()
+});
 
 export default app

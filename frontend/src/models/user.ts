@@ -1,7 +1,7 @@
 import { createModel } from '@rematch/core'
 import { User, UserModel } from '../types'
 import { RootModel } from '.'
-import api from '../api'
+import api from '../api/auth'
 import { AxiosError } from 'axios'
 
 export const user = createModel<RootModel>()({

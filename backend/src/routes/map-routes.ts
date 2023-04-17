@@ -5,6 +5,7 @@ import User from '../models/user-model'
 import Map, { IMap } from '../models/map-model'
 import Feature from '../models/feature-model'
 import { Feature as FeatureType } from "geojson"
+import { isValidObjectId } from 'mongoose'
 
 // const populatedFields = [
 //     'owner',
@@ -59,6 +60,13 @@ mapRouter.delete('/map/:id', auth, async (req: Request, res: Response) => {
   const email = req.session.email
   const { id } = req.params
 
+  if (!isValidObjectId(id)) {
+    return res.status(400).json({
+      error: true,
+      errorMessage: "Invalid id"
+    })
+  }
+
   //if user doesnt exist
   const user = await User.findOne({
     email: email,
@@ -107,6 +115,13 @@ mapRouter.delete('/map/:id', auth, async (req: Request, res: Response) => {
 mapRouter.get('/map/:id', async (req: Request, res: Response) => {
   let { id } = req.params
 
+  if (!isValidObjectId(id)) {
+    return res.status(400).json({
+      error: true,
+      errorMessage: "Invalid id"
+    })
+  }
+
   //if id doesnt exist
   if (!id) {
     return res.status(400).json({
@@ -116,7 +131,7 @@ mapRouter.get('/map/:id', async (req: Request, res: Response) => {
   }
 
   // TODO: Need to add geojson schema later so feature field also has to be populated
-  const map = await Map.find({ _id: id }).populate('owner').populate('features')
+  const map = await Map.find({ _id: id }).populate('owner').populate('features.features')
 
   //if map doesnt exist
   if (!map) {
@@ -171,6 +186,14 @@ interface FeatureChanges {
 // Handles update a map in the database request
 mapRouter.put('/map/:id', auth, async (req: Request, res: Response) => {
   const { id } = req.params
+
+  if (!isValidObjectId(id)) {
+    return res.status(400).json({
+      error: true,
+      errorMessage: "Invalid id"
+    })
+  }
+
   const changes: FeatureChanges = req.body.changes
 
   if (!changes) {
@@ -180,7 +203,7 @@ mapRouter.put('/map/:id', auth, async (req: Request, res: Response) => {
     })
   }
 
-  const map = await Map.findByIdAndUpdate({ _id: id }, { $set: changes })
+  const map = await Map.findByIdAndUpdate(id, { $set: changes })
 
   if (!map) {
     return res.status(400).json({
@@ -195,6 +218,13 @@ mapRouter.put('/map/:id', auth, async (req: Request, res: Response) => {
 mapRouter.post('/map/:id/feature', auth, async (req, res) => {
   const { id } = req.params
 
+  if (!isValidObjectId(id)) {
+    return res.status(400).json({
+      error: true,
+      errorMessage: "Invalid id"
+    })
+  }
+
   if (!req.body) {
     return res.status(400).json({
       error: true,
@@ -204,7 +234,7 @@ mapRouter.post('/map/:id/feature', auth, async (req, res) => {
 
   const body: FeatureType = req.body;
 
-  const map = await Map.findById({ _id: id })
+  const map = await Map.findById(id)
 
   if (!map) {
     return res.status(400).json({
@@ -234,6 +264,13 @@ mapRouter.post('/map/:id/feature', auth, async (req, res) => {
 mapRouter.get('/map/:mapid/feature/:featureid', async (req, res) => {
   const { featureid } = req.params;
 
+  if (!isValidObjectId(featureid)) {
+    return res.status(400).json({
+      error: true,
+      errorMessage: "Invalid id"
+    })
+  }
+
   const feature = await Feature.findById(featureid);
 
   if (!feature) {
@@ -248,6 +285,13 @@ mapRouter.get('/map/:mapid/feature/:featureid', async (req, res) => {
 
 mapRouter.put('/map/:mapid/feature/:featureid', auth, async (req, res) => {
   const { featureid } = req.params;
+
+  if (!isValidObjectId(featureid)) {
+    return res.status(400).json({
+      error: true,
+      errorMessage: "Invalid id"
+    })
+  }
 
   const body: FeatureType = req.body;
 
@@ -274,7 +318,13 @@ mapRouter.put('/map/:mapid/feature/:featureid', auth, async (req, res) => {
 mapRouter.delete('/map/:mapid/feature/:featureid', auth, async (req, res) => {
   const { mapid, featureid } = req.params;
 
-  const map = await Map.findById({ _id: mapid })
+  if (!isValidObjectId(mapid) || !isValidObjectId(featureid)) {
+    return res.status(400).json({
+      error: true,
+      errorMessage: "Invalid id"
+    })
+  }
+  const map = await Map.findById(mapid)
 
   if (!map) {
     return res.status(400).json({

@@ -30,7 +30,7 @@ export const ErrorDialog = () => {
         </DialogBody>
 
         <DialogHeader className="text-white justify-center">
-          {errorMessage}
+          {errorMessage ?? ""}
         </DialogHeader>
 
         <DialogFooter className="justify-center">
