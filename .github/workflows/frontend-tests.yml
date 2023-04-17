@@ -36,6 +36,7 @@ jobs:
           working-directory: ./frontend
           build: npm run build
           start: npm run dev
+          browser: firefox
         env:
           VITE_BACKEND_URL: http://localhost:4000
           CYPRESS_USER: ${{ secrets.CYPRESS_USER }}
