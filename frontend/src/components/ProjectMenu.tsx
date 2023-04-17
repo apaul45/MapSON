@@ -30,7 +30,7 @@ const ProjectMenu = () => {
     params.append('json', JSON.stringify(map?.features))
 
     const res = await axios.post(
-      'http://ogre.adc4gis.com/convertJson',
+      'https://ogre.adc4gis.com/convertJson',
       params,
       { withCredentials: false, responseType: 'blob' }
     )
