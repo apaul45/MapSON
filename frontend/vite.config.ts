@@ -14,6 +14,5 @@ export default defineConfig(({ mode }) => {
         protocolImports: true,
       }),
     ],
-    define: { global: 'window' },
   }
 })

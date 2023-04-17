@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import shp, { FeatureCollectionWithFilename } from 'shpjs'
 import { GeoJsonProperties, Geometry, FeatureCollection } from 'geojson'
-import { Features } from '../../types'
 
 export const AddMapDialog = () => {
   const [uploadPrompt, setUploadPrompt] = useState(
