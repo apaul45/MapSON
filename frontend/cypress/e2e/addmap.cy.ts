@@ -5,6 +5,10 @@ describe('Add Map Dialog Tests', () => {
     login()
   })
 
+  afterEach(() => {
+    logout()
+  })
+
   it('should display and hide the dialog', () => {
     cy.get('#add-dialog').should('not.exist')
 
@@ -15,6 +19,7 @@ describe('Add Map Dialog Tests', () => {
 
     cy.get('#add-project').should('be.visible').click()
     cy.get('#add-dialog').should('be.visible')
+    cy.get('#close-dialog').should('be.visible').click()
   })
 
   it('should check a radio button', () => {
@@ -27,6 +32,7 @@ describe('Add Map Dialog Tests', () => {
     cy.get('#Shapefile').should('be.checked')
 
     cy.get('#geojson').should('not.be.checked')
+    cy.get('#close-dialog').should('be.visible').click()
   })
 
   it('should error when map name is empty', () => {
@@ -36,6 +42,7 @@ describe('Add Map Dialog Tests', () => {
 
     cy.get('#error-dialog').should('exist')
     cy.contains('Close').should('exist').click()
+    cy.get('#close-dialog').should('be.visible').click()
   })
 
   it('should error when map name is empty', () => {
@@ -45,6 +52,7 @@ describe('Add Map Dialog Tests', () => {
 
     cy.get('#error-dialog').should('exist')
     cy.contains('Close').should('exist').click()
+    cy.get('#close-dialog').should('be.visible').click()
   })
 
   it('should import a file then go to project page', () => {
@@ -61,7 +69,6 @@ describe('Add Map Dialog Tests', () => {
     cy.location('pathname').should((path) =>
       expect(path).to.include('/project')
     )
-    logout()
   })
 })
 
