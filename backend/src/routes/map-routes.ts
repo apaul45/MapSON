@@ -25,7 +25,7 @@ mapRouter.post('/map', auth, async (req: Request, res: Response) => {
   })
 
   const newMap: IMap = {
-    name: 'My New Map',
+    name: req.body.mapName,
     //@ts-ignore
     owner: user?._id,
     userAccess: [],
