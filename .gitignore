@@ -30,3 +30,4 @@ backend/.env
 *.sln
 *.sw?
 .vscode
+.vercel
