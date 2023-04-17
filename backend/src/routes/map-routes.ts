@@ -128,13 +128,6 @@ mapRouter.get('/allmaps', async (req: Request, res: Response) => {
     'owner'
   )
 
-  if (!maps.length) {
-    return res.status(400).json({
-      error: true,
-      errorMessage: 'Maps not found',
-    })
-  }
-
   res.status(200).json({ maps: maps })
 })
 
@@ -181,7 +174,7 @@ mapRouter.put('/map/:id', auth, async (req: Request, res: Response) => {
     })
   }
 
-  res.status(201).json({ map: map })
+  res.status(201).json() //Need to send json to prevent stalling
 })
 
 // Handles search maps request
