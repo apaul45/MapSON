@@ -1,4 +1,4 @@
-import { api } from './index'
+import { api } from './api'
 
 export const createMap = (payload: any) => api.post('/maps/map', payload);
 export const deleteMap = (id: string) => api.delete(`/maps/map/${id}`);

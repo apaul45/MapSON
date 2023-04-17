@@ -1,7 +1,7 @@
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
 import { Store, Map } from '../types'
-import map from '../api/map'
+import map from '../map'
 import { AxiosError } from 'axios'
 
 
