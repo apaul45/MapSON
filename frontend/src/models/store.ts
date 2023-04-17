@@ -1,6 +1,8 @@
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
 import { Store, Map } from '../types'
+import api from '../api'
+import { AxiosError } from 'axios'
 
 const initialState: Store = {
   currentMap: null,
@@ -16,8 +18,8 @@ export const mapStore = createModel<RootModel>()({
 
   //Pure reducer functions
   reducers: {
-    setCurrentMap: (state, payload: Map[]) => {
-      return
+    setCurrentMap: (state, payload: Map) => {
+      return { ...state, currentMap: payload }
     },
     setMaps: (state, payload: Map[]) => {
       return
@@ -49,7 +51,15 @@ export const mapStore = createModel<RootModel>()({
       return
     },
     async createNewMap(payload, state) {
-      return
+      try {
+        const res = await api.createMap(payload)
+        dispatch.mapStore.setCurrentMap(res.data.map)
+        return res.data.map._id
+      } catch (error: unknown) {
+        const err = error as AxiosError
+        // @ts-ignore
+        dispatch.error.setError(err.response?.data.errorMessage)
+      }
     },
     async deleteMap(payload, state) {
       return

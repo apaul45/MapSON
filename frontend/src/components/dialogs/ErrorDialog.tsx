@@ -17,6 +17,7 @@ export const ErrorDialog = () => {
   return (
     <Fragment>
       <Dialog
+        id="error-dialog"
         open={errorMessage !== null}
         handler={() => closeDialog()}
         size="xs"

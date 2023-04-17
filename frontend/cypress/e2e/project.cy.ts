@@ -1,3 +1,5 @@
+import { login, logout, upload } from './account'
+
 describe('Project Screen Tests', () => {
   beforeEach(() => cy.visit('http://127.0.0.1:5173/project/default'))
 
@@ -19,6 +21,32 @@ describe('Project Screen Tests', () => {
     cy.location('pathname').should((path) =>
       expect(path).to.include('/discover')
     )
+  })
+})
+
+describe('Project Nav Bar Tests', () => {
+  beforeEach(() => {
+    login()
+    upload()
+  })
+  afterEach(() => logout())
+
+  it('should download a geojson', () => {
+    cy.get('#menu-button').click()
+
+    cy.contains('Download as').invoke('show').click({ force: true }).click()
+
+    cy.contains('GeoJSON').should('exist').click()
+    cy.readFile('cypress/downloads/test.geo.json').should('exist')
+  })
+
+  it('should download a shapefile zip', () => {
+    cy.get('#menu-button').click()
+
+    cy.contains('Download as').invoke('show').click({ force: true }).click()
+
+    cy.contains('Shapefile').should('exist').click()
+    cy.readFile('cypress/downloads/test.geo.json').should('exist')
   })
 })
 
