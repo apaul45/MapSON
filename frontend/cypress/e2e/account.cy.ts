@@ -1,3 +1,5 @@
+import { logout } from './account'
+
 const username = Cypress.env('CYPRESS_USER')
 const password = Cypress.env('CYPRESS_PASSWORD')
 
@@ -12,6 +14,7 @@ describe('Login Screen Test', () => {
 
     cy.location('pathname').should((path) => expect(path).to.include('/home'))
     cy.get('#user-menu-button').should('exist').click()
+    logout()
   })
 
   it('should go to forget password page', () => {

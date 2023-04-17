@@ -2,10 +2,41 @@ import { MenuList, MenuItem, Menu, MenuHandler } from '@material-tailwind/react'
 import { useSelector } from 'react-redux'
 import { RootState, store } from '../models'
 import { Link } from 'react-router-dom'
+import { saveAs } from 'file-saver'
+import axios from 'axios'
 
 const ProjectMenu = () => {
   const user = useSelector((state: RootState) => state.user.currentUser)
+  const map = useSelector((state: RootState) => state.mapStore.currentMap)
   const openDeleteDialog = () => store.dispatch.mapStore.setDeleteDialog(true)
+  const { error } = store.dispatch
+
+  const exportGeojson = () => {
+    if (!map?.features) {
+      error.setError('Please fill the map with polygons')
+      return
+    }
+    const blob = new Blob([JSON.stringify(map?.features)])
+    saveAs(blob, map?.name + '.geo.json')
+  }
+
+  const exportShapefile = async () => {
+    if (!map?.features) {
+      error.setError('Please fill the map with polygons')
+      return
+    }
+
+    const params = new URLSearchParams()
+    params.append('json', JSON.stringify(map?.features))
+
+    const res = await axios.post(
+      'https://ogre.adc4gis.com/convertJson',
+      params,
+      { withCredentials: false, responseType: 'blob' }
+    )
+    const blob = new Blob([res.data])
+    saveAs(blob, map?.name + '.zip')
+  }
 
   return (
     <MenuList
@@ -26,8 +57,22 @@ const ProjectMenu = () => {
         </MenuHandler>
 
         <MenuList className="bg-gray text-white p-0 font-sans text-base">
-          <MenuItem className="hover:bg-sort-hover">Shapefile</MenuItem>
-          <MenuItem className="hover:bg-sort-hover">GeoJSON</MenuItem>
+          <MenuItem
+            className="hover:bg-sort-hover"
+            onClick={() => {
+              exportShapefile()
+            }}
+          >
+            Shapefile
+          </MenuItem>
+          <MenuItem
+            className="hover:bg-sort-hover"
+            onClick={() => {
+              exportGeojson()
+            }}
+          >
+            GeoJSON
+          </MenuItem>
         </MenuList>
       </Menu>
 

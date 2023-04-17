@@ -1,7 +1,9 @@
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
 import { Store, Map } from '../types'
-import map, { deleteFeature, updateFeature } from '../api/map'
+import map from '../api/map'
+import { AxiosError } from 'axios'
+
 
 const initialState: Store = {
   currentMap: null,
@@ -79,17 +81,14 @@ export const mapStore = createModel<RootModel>()({
     },
     async createNewMap(payload, state) {
       try {
-        const newMap = await map.createMap(payload);
-        const data = newMap.data
-
-        this.setMaps([...state.mapStore.maps, data])
-        this.setUserMaps([...state.mapStore.userMaps, data])
-
-        this.setCurrentMap(data)
-      } catch (e: any) {
-        dispatch.error.setError(e)
+        const res = await map.createMap(payload)
+        dispatch.mapStore.setCurrentMap(res.data.map)
+        return res.data.map._id
+      } catch (error: unknown) {
+        const err = error as AxiosError
+        // @ts-ignore
+        dispatch.error.setError(err.response?.data.errorMessage)
       }
-
     },
     async deleteMap(payload, state) {
       try {

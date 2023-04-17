@@ -1,5 +1,12 @@
+import { login, logout } from './account'
+
 describe('Home Screen Tests', () => {
-  beforeEach(() => cy.visit('http://127.0.0.1:5173/home'))
+  beforeEach(() => {
+    login()
+  })
+  afterEach(() => {
+    logout()
+  })
 
   it('should sort by downloads', () => {
     cy.get('#add-project').should('be.visible')
