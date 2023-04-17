@@ -187,6 +187,7 @@ export const AddMapDialog = () => {
                 <span className="text-xl text-white pt-10 pb-5">Map Name</span>
 
                 <input
+                  id="map-name"
                   className="peer w-3/4 h-10 rounded-[7px] border border-white bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-white"
                   placeholder="Enter a name"
                   onChange={(e) => setMapName(e.target.value)}
