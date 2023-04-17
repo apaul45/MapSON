@@ -2,7 +2,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { AddMapDialog } from '../dialogs/AddMapDialog'
-import { store } from '../../models'
+import { RootState, store } from '../../models'
 import { Menu, MenuHandler, MenuItem, MenuList } from '@material-tailwind/react'
 import { MapCard } from '../map'
 
@@ -16,9 +16,11 @@ export const HomeDiscoverScreen = () => {
 
   const openAddDialog = () => mapStore.setAddDialog(true)
 
-  let maps = useSelector((state: RootState) => state.user.currentUser?.maps);
-  
-  const username = useSelector((state: RootState) => state.user.currentUser?.username)
+  let maps = useSelector((state: RootState) => state.mapStore.userMaps)
+
+  const username = useSelector(
+    (state: RootState) => state.user.currentUser?.username
+  )
 
   const handleCreateMap = async () => {
     const id = await mapStore.createNewMap({
@@ -118,27 +120,28 @@ export const HomeDiscoverScreen = () => {
             </>
           )}
 
-          {location.pathname.includes('home') && maps.map(map => (
-            <div key={''}>
-              <MapCard 
-                map={map}
-                name={map.name} 
-                username={username}
-                upvoteCount={map.upvotes.length}
-                downvoteCount={map.downvotes.length}
-                downloadCount={map.downloads}
-                description={map.description}
-                date={map.updatedAt}
-              />
-            </div>
-          ))}
+          {location.pathname.includes('home') &&
+            maps?.map((map) => (
+              <div key={''}>
+                <MapCard
+                  map={map}
+                  name={map.name}
+                  username={username}
+                  upvoteCount={map.upvotes.length}
+                  downvoteCount={map.downvotes.length}
+                  downloadCount={map.downloads}
+                  description={map.description}
+                  date={map.updatedAt}
+                />
+              </div>
+            ))}
 
-          {location.pathname.includes('discover') && [...Array(5).keys()].map(() => (
-            <div>
-              <MapCard />
-            </div>
-          ))}
-
+          {location.pathname.includes('discover') &&
+            [...Array(5).keys()].map(() => (
+              <div>
+                <MapCard />
+              </div>
+            ))}
         </div>
       </div>
       <AddMapDialog />

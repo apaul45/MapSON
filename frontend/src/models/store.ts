@@ -28,8 +28,8 @@ export const mapStore = createModel<RootModel>()({
       return { ...state, userMaps: payload }
     },
     updateUserMaps: (state, payload: Map) => {
-      userMaps.push(payload)
-      return { ...state, userMaps: userMaps }
+      const newList = [payload, ...state.userMaps]
+      return { ...state, userMaps: newList }
     },
     setShareDialog: (state, payload: boolean) => {
       return { ...state, shareDialog: payload }
@@ -58,6 +58,7 @@ export const mapStore = createModel<RootModel>()({
       try {
         const res = await api.createMap(payload)
         dispatch.mapStore.setCurrentMap(res.data.map)
+        dispatch.mapStore.updateUserMaps(res.data.map)
         return res.data.map._id
       } catch (error: unknown) {
         const err = error as AxiosError

@@ -1,5 +1,5 @@
 import { createModel } from '@rematch/core'
-import { User, UserModel } from '../types'
+import { Map, User, UserModel } from '../types'
 import { RootModel } from '.'
 import api from '../api'
 import { AxiosError } from 'axios'
@@ -11,6 +11,11 @@ export const user = createModel<RootModel>()({
   reducers: {
     setCurrentUser: (state, payload: User | null) => {
       return { ...state, currentUser: payload }
+    },
+    setUserMaps: (state, payload: Map) => {
+      //@ts-ignore
+      const newList = [payload, ...state.currentUser?.maps]
+      return { ...state }
     },
   },
 
@@ -31,6 +36,7 @@ export const user = createModel<RootModel>()({
       try {
         const response = await api.login(payload)
         dispatch.user.setCurrentUser(response.data)
+        dispatch.mapStore.setUserMaps(response.data.maps)
       } catch (error: unknown) {
         const err = error as AxiosError
         // @ts-ignore
