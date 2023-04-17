@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import shp, { FeatureCollectionWithFilename } from 'shpjs'
 import { GeoJsonProperties, Geometry, FeatureCollection } from 'geojson'
+import { Features } from '../../types'
 
 export const AddMapDialog = () => {
   const [uploadPrompt, setUploadPrompt] = useState(
@@ -125,7 +126,9 @@ export const AddMapDialog = () => {
     setGeojson(geojson)
   }
 
-  const handleSubmit = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const handleSubmit = async (
+    e: React.MouseEvent<HTMLButtonElement, MouseEvent>
+  ) => {
     e.preventDefault()
     if (mapName === '') {
       error.setError('Please enter a map name')
@@ -137,8 +140,13 @@ export const AddMapDialog = () => {
       return
     }
 
-    // send map with geojson to backend then set curretn map
-    // navigate to project screen
+    await mapStore.createNewMap({
+      name: mapName,
+      features: geojson,
+      user: useSelector((state: RootState) => {
+        state.user.currentUser?.username
+      }),
+    })
   }
 
   return (

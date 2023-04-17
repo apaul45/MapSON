@@ -16,8 +16,8 @@ export const mapStore = createModel<RootModel>()({
 
   //Pure reducer functions
   reducers: {
-    setCurrentMap: (state, payload: Map[]) => {
-      return
+    setCurrentMap: (state, payload: Map) => {
+      return { ...state, currentMap: payload }
     },
     setMaps: (state, payload: Map[]) => {
       return

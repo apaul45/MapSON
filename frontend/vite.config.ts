@@ -1,4 +1,5 @@
 import { defineConfig, loadEnv } from 'vite'
+// @ts-ignore
 import { nodePolyfills } from 'vite-plugin-node-polyfills'
 import react from '@vitejs/plugin-react-swc'
 
@@ -14,16 +15,5 @@ export default defineConfig(({ mode }) => {
       }),
     ],
     define: { global: 'window' },
-    server: {
-      proxy: {
-        '^/api': {
-          target: env.VITE_BACKEND_URL,
-          changeOrigin: true,
-          secure: false,
-          withCredentials: true,
-          rewrite: (path) => path.replace(/^\/api/, ``),
-        },
-      },
-    },
   }
 })
