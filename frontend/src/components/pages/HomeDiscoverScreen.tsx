@@ -96,7 +96,7 @@ export const HomeDiscoverScreen = () => {
                 id="new-project"
                 className="max-w-sm rounded overflow-hidden border-white border-2 grid place-content-center border-dashed hover:cursor-pointer"
                 onClick={() => {
-                  navigate('/project/default')
+                  handleCreateMap()
                 }}
               >
                 <svg
