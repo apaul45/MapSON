@@ -208,10 +208,7 @@ mapRouter.post('/map/:id/feature', auth, async (req, res) => {
     })
   }
 
-  const feature =
-
-
-    map?.f
+  // TODO
 
 
 })
