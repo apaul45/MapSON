@@ -21,8 +21,8 @@ export const AddMapDialog = () => {
     | undefined
   >()
   const { error, mapStore } = store.dispatch
-  const navigate = useNavigate()
   const isOpen = useSelector((state: RootState) => state.mapStore.addDialog)
+  const navigate = useNavigate()
 
   const closeDialog = () => {
     store.dispatch.mapStore.setAddDialog(false)
@@ -140,13 +140,11 @@ export const AddMapDialog = () => {
       return
     }
 
-    await mapStore.createNewMap({
-      name: mapName,
-      features: geojson,
-      user: useSelector((state: RootState) => {
-        state.user.currentUser?.username
-      }),
+    const id = await mapStore.createNewMap({
+      geojson: geojson,
     })
+
+    navigate(`/project/${id}`)
   }
 
   return (
