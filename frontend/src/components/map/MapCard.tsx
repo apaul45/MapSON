@@ -2,16 +2,29 @@ import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { store } from '../../models'
 
-export default function MapCard(props) {
+export default function MapCard(props: any) {
   const [expand, setExpand] = useState<boolean>(false)
   const [upvoteClass, setUpvoteClass] = useState<string>('')
   const [downvoteClass, setdownvoteClass] = useState<string>('')
   // const [upvoteCount, setUpvoteCount] = useState<number>(10)
   // const [downvoteCount, setDownvoteCount] = useState<number>(10)
   // const [downloadCount, setDownloadCount] = useState<number>(10)
-  const { map, name, username, upvoteCount, downvoteCount, downloadCount, description, date } = props;
+  const {
+    map,
+    name,
+    username,
+    upvoteCount,
+    downvoteCount,
+    downloadCount,
+    description,
+    date,
+  } = props
 
-  const dateFormat = new Date(date).toLocaleDateString('en-us', { year:"numeric", day:"numeric", month:"long"})
+  const dateFormat = new Date(date).toLocaleDateString('en-us', {
+    year: 'numeric',
+    day: 'numeric',
+    month: 'long',
+  })
 
   //const description: string = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam odio nulla, tincidunt sit amet ultricies placerat, mollis a sem. Phasellus eget dui in ante porta vehicula ac in ante. Praesent bibendum volutpat risus, id efficitur turpis porta vel. Praesent tempus posuere tortor non faucibus. Sed imperdiet ex cursus felis condimentum bibendum. Sed scelerisque, velit eget bibendum ultrices, tortor quam aliquet risus, id hendrerit arcu metus et ante. '
 
@@ -37,14 +50,14 @@ export default function MapCard(props) {
     e.stopPropagation()
     if (downvoteClass === 'text-downvote') {
       setdownvoteClass('')
-      setDownvoteCount(downvoteCount - 1)
+      //setDownvoteCount(downvoteCount - 1)
     }
     if (upvoteClass.length === 0) {
       setUpvoteClass('text-upvote')
-      setUpvoteCount(upvoteCount + 1)
+      //setUpvoteCount(upvoteCount + 1)
     } else {
       setUpvoteClass('')
-      setUpvoteCount(upvoteCount - 1)
+      //setUpvoteCount(upvoteCount - 1)
     }
   }
 
@@ -53,21 +66,21 @@ export default function MapCard(props) {
     e.stopPropagation()
     if (upvoteClass === 'text-upvote') {
       setUpvoteClass('')
-      setUpvoteCount(upvoteCount - 1)
+      //setUpvoteCount(upvoteCount - 1)
     }
     if (downvoteClass.length === 0) {
       setdownvoteClass('text-downvote')
-      setDownvoteCount(downvoteCount + 1)
+      //setDownvoteCount(downvoteCount + 1)
     } else {
       setdownvoteClass('')
-      setDownvoteCount(downvoteCount - 1)
+      //setDownvoteCount(downvoteCount - 1)
     }
   }
 
   const downloadMap = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     console.log('download map')
     e.stopPropagation()
-    setDownloadCount(downloadCount + 1)
+    //setDownloadCount(downloadCount + 1)
   }
 
   const goToProject = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
@@ -85,7 +98,7 @@ export default function MapCard(props) {
         {location.pathname.includes('home') ? (
           <button
             onClick={(e) => {
-              deleteCard(e);
+              deleteCard(e)
               //handleSetCurrentMap();
             }}
             className="absolute top-0 right-0 "

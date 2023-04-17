@@ -36,7 +36,7 @@ export const user = createModel<RootModel>()({
       try {
         const response = await api.login(payload)
         dispatch.user.setCurrentUser(response.data)
-        dispatch.mapStore.setUserMaps(response.data.maps)
+        dispatch.mapStore.setUserMaps(response.data.maps as unknown as Map[])
       } catch (error: unknown) {
         const err = error as AxiosError
         // @ts-ignore
