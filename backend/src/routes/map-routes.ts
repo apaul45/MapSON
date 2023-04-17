@@ -36,7 +36,7 @@ mapRouter.post('/map', auth, async (req: Request, res: Response) => {
     published: null,
     description: '',
     comments: [],
-    features: {},
+    features: req.body.geojson ? req.body.geojson : {},
   }
 
   const map = await Map.create(newMap)
