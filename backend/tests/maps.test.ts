@@ -64,6 +64,26 @@ describe('POST /maps/map', () => {
     expect(res.statusCode).toBe(401)
     expect(res.body.errorMessage).toEqual('invalid session')
   })
+
+  it('should create a new map from existing data', async () => {
+    const res = await request(app)
+      .post('/maps/map')
+      .set('Cookie', loginCookie)
+      .send({
+        mapName: 'Jest Map', geojson: {
+          type: 'FeatureCollection',
+          features: [EXAMPLE_FEATURE]
+        }
+      })
+
+    expect(res.statusCode).toBe(200)
+
+    createdMapId = res.body.map._id
+
+    console.log(res.body.map.features)
+
+    expect(stripFeature(res.body.map.features.features[0])).toMatchObject(EXAMPLE_FEATURE)
+  })
 })
 
 describe('Get Map Tests', () => {
