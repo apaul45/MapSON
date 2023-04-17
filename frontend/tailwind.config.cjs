@@ -20,6 +20,7 @@ module.exports = withMT({
       'sort-hover': '#757575',
       'blue-500': '#3b82f6',
       'blue-700': '#1d4ed8',
+      'drag-text': '#B5B6BE',
     },
   },
   plugins: [],
