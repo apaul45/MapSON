@@ -17,9 +17,9 @@ declare module 'express-session' {
 }
 
 export const auth = (req: Request, res: Response, next: NextFunction) => {
-  const { alias } = req.session as any
+  const { email, username } = req.session as any
 
-  if (!alias) {
+  if (!email || !username) {
     return res.status(401).json({
       error: true,
       errorMessage: 'invalid session',

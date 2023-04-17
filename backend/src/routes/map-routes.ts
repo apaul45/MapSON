@@ -3,7 +3,8 @@ import { auth } from '../routes/user-routes'
 import dotenv from 'dotenv'
 import User from '../models/user-model'
 import Map, { IMap } from '../models/map-model'
-import { Types } from 'mongoose'
+import Feature from '../models/feature-model'
+import { Feature as FeatureType } from "geojson"
 
 // const populatedFields = [
 //     'owner',
@@ -24,6 +25,11 @@ mapRouter.post('/map', auth, async (req: Request, res: Response) => {
     email: req.session.email,
   })
 
+
+  if (!req.body?.mapName) {
+    return res.status(400).json({ error: true, errorMesage: "Invalid body" })
+  }
+
   const newMap: IMap = {
     name: req.body.mapName,
     //@ts-ignore
@@ -36,7 +42,7 @@ mapRouter.post('/map', auth, async (req: Request, res: Response) => {
     published: null,
     description: '',
     comments: [],
-    features: req.body.geojson ? req.body.geojson : {},
+    features: req.body.geojson ?? {},
   }
 
   const map = await Map.create(newMap)
@@ -64,7 +70,6 @@ mapRouter.delete('/map/:id', auth, async (req: Request, res: Response) => {
       errorMessage: 'User does not exist',
     })
   }
-  console.log(user)
 
   //if map doesn't exist
   const map = await Map.findOne({ _id: id })
@@ -74,7 +79,6 @@ mapRouter.delete('/map/:id', auth, async (req: Request, res: Response) => {
       errorMessage: 'Map does not exist',
     })
   }
-  console.log(map)
 
   //if the user is not the owner and doesnt have permission to delete the map
   //@ts-ignore
@@ -86,12 +90,15 @@ mapRouter.delete('/map/:id', auth, async (req: Request, res: Response) => {
     })
   }
 
-  //delete map
-  await Map.findOneAndDelete({ _id: map._id })
+  // delete features in map
+  await Feature.deleteMany({ _id: { $in: map.features.features } });
+
+  // delete map
+  await map.deleteOne()
 
   //Also need to modify user's array of maps
   user.maps = user?.maps.filter((userMap) => !userMap._id.equals(map._id))
-  await User.findOneAndUpdate({ _id: user?._id }, { maps: user?.maps })
+  await user.save();
 
   res.status(200).json({ error: false })
 })
@@ -109,7 +116,7 @@ mapRouter.get('/map/:id', async (req: Request, res: Response) => {
   }
 
   // TODO: Need to add geojson schema later so feature field also has to be populated
-  const map = await Map.find({ _id: id }).populate('owner')
+  const map = await Map.find({ _id: id }).populate('owner').populate('features')
 
   //if map doesnt exist
   if (!map) {
@@ -152,13 +159,12 @@ mapRouter.get('/allmaps', async (req: Request, res: Response) => {
 //     return res.status(201).json({ maps: user.maps })
 // })
 
-type Feature = any;
 
 interface FeatureChanges {
-  create: Feature[],
+  create: FeatureType[],
   delete: string[],
   edit: {
-    [key: string]: Feature
+    [key: string]: FeatureType
   }
 }
 
@@ -166,7 +172,6 @@ interface FeatureChanges {
 mapRouter.put('/map/:id', auth, async (req: Request, res: Response) => {
   const { id } = req.params
   const changes: FeatureChanges = req.body.changes
-  console.log(changes)
 
   if (!changes) {
     return res.status(400).json({
@@ -190,14 +195,14 @@ mapRouter.put('/map/:id', auth, async (req: Request, res: Response) => {
 mapRouter.post('/map/:id/feature', auth, async (req, res) => {
   const { id } = req.params
 
-  const body = req.body;
-
-  if (!body) {
+  if (!req.body) {
     return res.status(400).json({
       error: true,
       errorMessage: 'Bad request',
     })
   }
+
+  const body: FeatureType = req.body;
 
   const map = await Map.findById({ _id: id })
 
@@ -208,8 +213,90 @@ mapRouter.post('/map/:id/feature', auth, async (req, res) => {
     })
   }
 
-  // TODO
+  let feature;
+  try {
+    feature = await Feature.create(body);
+  } catch {
+    return res.status(400).json({
+      error: true,
+      errorMessage: 'Bad request',
+    })
+  };
 
+  map.features.features.push(feature);
+  await map.save();
+
+
+  return res.status(200).json({ error: false, _id: feature._id });
+})
+
+//no auth
+mapRouter.get('/map/:mapid/feature/:featureid', async (req, res) => {
+  const { featureid } = req.params;
+
+  const feature = await Feature.findById(featureid);
+
+  if (!feature) {
+    return res.status(400).json({
+      error: true,
+      errorMessage: 'Feature not found',
+    })
+  } else {
+    res.status(200).json({ error: false, feature })
+  }
+})
+
+mapRouter.put('/map/:mapid/feature/:featureid', auth, async (req, res) => {
+  const { featureid } = req.params;
+
+  const body: FeatureType = req.body;
+
+  let feature
+  try {
+    feature = await Feature.findByIdAndUpdate(featureid, body);
+  } catch {
+    return res.status(400).json({
+      error: true,
+      errorMessage: 'Bad request',
+    })
+  }
+
+  if (!feature) {
+    return res.status(400).json({
+      error: true,
+      errorMessage: 'Feature not found',
+    })
+  } else {
+    res.status(200).json({ error: false, feature: body })
+  }
+})
+
+mapRouter.delete('/map/:mapid/feature/:featureid', auth, async (req, res) => {
+  const { mapid, featureid } = req.params;
+
+  const map = await Map.findById({ _id: mapid })
+
+  if (!map) {
+    return res.status(400).json({
+      error: true,
+      errorMessage: 'Map not found',
+    })
+  }
+
+  const feature = await Feature.findByIdAndDelete(featureid);
+
+  if (!feature) {
+    return res.status(400).json({
+      error: true,
+      errorMessage: 'Feature not found',
+    })
+  }
+
+  map.features.features = map.features.features.filter(v => v as unknown as string != featureid);
+
+  await map.save();
+
+  res.status(200).json({ error: false })
 
 })
 
