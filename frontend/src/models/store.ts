@@ -42,7 +42,7 @@ export const mapStore = createModel<RootModel>()({
   //Effects are (possibly async) functions that take in the store's state and payload, and return anything
 
   effects: (dispatch) => ({
-    async loadMap(payload, state) {
+    async loadMap(payload, state): Promise<string | undefined> {
       try {
         const loaded = await map.getMap(payload)
         this.setCurrentMap(loaded.data.map)
@@ -80,7 +80,7 @@ export const mapStore = createModel<RootModel>()({
       }
 
     },
-    async createNewMap(payload, state) {
+    async createNewMap(payload, state): Promise<string | undefined> {
       try {
         const res = await map.createMap(payload)
         dispatch.mapStore.setCurrentMap(res.data.map)
@@ -95,8 +95,8 @@ export const mapStore = createModel<RootModel>()({
       try {
         map.deleteMap(payload);
 
-        this.setMaps(state.mapStore.maps.filter(m => m._id !== payload))
-        this.setUserMaps(state.mapStore.userMaps.filter(m => m._id !== payload))
+        this.setMaps(state.mapStore.maps.filter((m: Map) => m._id !== payload))
+        this.setUserMaps(state.mapStore.userMaps.filter((m: Map) => m._id !== payload))
 
         if (state.mapStore.currentMap?._id === payload) {
           this.setCurrentMap(null)
@@ -112,7 +112,7 @@ export const mapStore = createModel<RootModel>()({
     filterMaps(payload, state) {
       return
     },
-    async createFeature(payload, state) {
+    async createFeature(payload, state): Promise<string | undefined> {
       const id = state.mapStore.currentMap?._id;
       console.log(state.mapStore.currentMap)
 
