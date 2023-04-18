@@ -2,8 +2,6 @@ name: Cypress Tests
 
 on:
   push:
-    branches:
-      - main
     paths:
       - 'frontend/**'
 
@@ -21,6 +19,12 @@ jobs:
         with:
           node-version: 15
 
+      #Setup local mongodb server instead of using cluster
+      - name: Start MongoDB
+        uses: supercharge/mongodb-github-action@1.8.0
+        with:
+          mongodb-version: 6.0
+
       - name: Install backend dependencies
         working-directory: ./backend
         run: npm install
@@ -31,7 +35,8 @@ jobs:
         run: npm run dev &
         env:
           PORT: 4000
-          DB: ${{ secrets.DB }}
+          #Use the local mongodb server in the runner rather than cloud
+          DB: mongodb://localhost:27017
 
       # Install NPM dependencies, cache them correctly
       # and run all Cypress tests
@@ -44,5 +49,3 @@ jobs:
           browser: firefox
         env:
           VITE_BACKEND_URL: http://localhost:4000
-          CYPRESS_USER: ${{ secrets.CYPRESS_USER }}
-          CYPRESS_PASSWORD: ${{ secrets.CYPRESS_PASSWORD }}

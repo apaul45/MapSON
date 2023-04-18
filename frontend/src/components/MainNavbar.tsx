@@ -1,26 +1,30 @@
-import { useState } from 'react'
-import mapsonLogo from '/img/MapSON-logo-outlined copy.png'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { RootState, store } from '../models'
-import AccountCircle from './AccountCircle'
-import { useSelector } from 'react-redux'
-import { Menu, MenuHandler, MenuItem, MenuList } from '@material-tailwind/react'
+import { useState } from 'react';
+import mapsonLogo from '/img/MapSON-logo-outlined copy.png';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { RootState, store } from '../models';
+import AccountCircle from './AccountCircle';
+import { useSelector } from 'react-redux';
+import { Menu, MenuHandler, MenuItem, MenuList } from '@material-tailwind/react';
 
 export const MainNavbar = () => {
-  const location = useLocation()
-  const navigate = useNavigate()
-  const { mapStore } = store.dispatch
-  const user = useSelector((state: RootState) => state.user.currentUser)
-
+  const location = useLocation();
   const isSelected = (path: string) =>
-    location.pathname === path ? 'selected-nav-btn' : 'nav-btn'
+    location.pathname === path ? 'selected-nav-btn' : 'nav-btn';
+
+  const user = useSelector((state: RootState) => state.user.currentUser);
+  const { mapStore } = store.dispatch;
+
+  const navigate = useNavigate();
+
+  const openAddDialog = () => mapStore.setAddDialog(true);
 
   const handleCreateMap = async () => {
     const id = await mapStore.createNewMap({
       mapName: 'My Map',
-    })
-    navigate(`/project/${id}`)
-  }
+    });
+
+    if (id) navigate(`/project/${id}`);
+  };
 
   //Render the main navbar everywhere except any project related screens
   return (
@@ -33,10 +37,7 @@ export const MainNavbar = () => {
               <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
                 <div className="flex flex-shrink-0 items-center">
                   <Link to="/">
-                    <img
-                      className="hidden h-8 w-auto lg:block"
-                      src={mapsonLogo}
-                    ></img>
+                    <img className="hidden h-8 w-auto lg:block" src={mapsonLogo}></img>
                   </Link>
                 </div>
 
@@ -76,6 +77,7 @@ export const MainNavbar = () => {
                   /* <!-- Profile dropdown --> */
                   user ? (
                     <>
+                      {/* Add Map Button & Menu */}
                       <Menu placement="bottom-start">
                         <MenuHandler>
                           <button className="mr-2">
@@ -105,21 +107,11 @@ export const MainNavbar = () => {
                           </button>
                         </MenuHandler>
                         <MenuList className="bg-gray text-white p-0 font-sans text-base">
-                          <MenuItem
-                            onClick={() =>
-                              store.dispatch.mapStore.setAddDialog(true)
-                            }
-                          >
+                          <MenuItem onClick={() => openAddDialog()}>
                             Import from Shapefile/GeoJSON
                           </MenuItem>
                           <hr className="align-middle" />
-                          <MenuItem
-                            onClick={() => {
-                              handleCreateMap()
-                            }}
-                          >
-                            Create new Map
-                          </MenuItem>
+                          <MenuItem onClick={() => handleCreateMap()}>Create new Map</MenuItem>
                         </MenuList>
                       </Menu>
                       <AccountCircle />
@@ -127,21 +119,13 @@ export const MainNavbar = () => {
                   ) : (
                     <>
                       {location.pathname !== '/login' && (
-                        <Link
-                          to="/login"
-                          id="login-button"
-                          className="acct-btn mr-2"
-                        >
+                        <Link to="/login" id="login-button" className="acct-btn mr-2">
                           {' '}
                           Login{' '}
                         </Link>
                       )}
                       {location.pathname !== '/register' && (
-                        <Link
-                          to="/register"
-                          id="register-button"
-                          className="acct-btn"
-                        >
+                        <Link to="/register" id="register-button" className="acct-btn">
                           {' '}
                           Register{' '}
                         </Link>
@@ -155,5 +139,5 @@ export const MainNavbar = () => {
         </nav>
       )}
     </>
-  )
-}
+  );
+};

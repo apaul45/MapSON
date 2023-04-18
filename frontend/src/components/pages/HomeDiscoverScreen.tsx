@@ -1,34 +1,19 @@
-import { useLocation, useNavigate } from 'react-router-dom'
-import { useState } from 'react'
-import { useSelector } from 'react-redux'
-import { AddMapDialog } from '../dialogs/AddMapDialog'
-import { RootState, store } from '../../models'
-import { Menu, MenuHandler, MenuItem, MenuList } from '@material-tailwind/react'
-import { MapCard } from '../map'
+import { useLocation } from 'react-router-dom';
+import { useState } from 'react';
+import { useSelector } from 'react-redux';
+import { AddMapDialog } from '../dialogs/AddMapDialog';
+import { RootState } from '../../models';
+import { Menu, MenuHandler, MenuItem, MenuList } from '@material-tailwind/react';
+import { MapCard } from '../map';
 
 export const HomeDiscoverScreen = () => {
-  const mapStore = store.dispatch.mapStore
-  const location = useLocation()
-  const navigate = useNavigate()
+  const location = useLocation();
 
-  const sortOptions = ['Upvotes', 'Downloads', 'Oldest-Newest', 'Newest-Oldest']
-  const [sortBy, setSortBy] = useState<string>('upvote')
+  const sortOptions = ['Upvotes', 'Downloads', 'Oldest-Newest', 'Newest-Oldest'];
+  const [sortBy, setSortBy] = useState<string>('upvote');
 
-  const openAddDialog = () => mapStore.setAddDialog(true)
-
-  let maps = useSelector((state: RootState) => state.mapStore.userMaps)
-
-  const username = useSelector(
-    (state: RootState) => state.user.currentUser?.username
-  )
-
-  const handleCreateMap = async () => {
-    const id = await mapStore.createNewMap({
-      mapName: 'My Map',
-    })
-
-    navigate(`/project/${id}`)
-  }
+  const userMaps = useSelector((state: RootState) => state.user.currentUser?.maps);
+  const username = useSelector((state: RootState) => state.user.currentUser?.username);
 
   return (
     <>
@@ -38,25 +23,15 @@ export const HomeDiscoverScreen = () => {
             <MenuHandler>
               <button className="text-base bg-sort rounded px-1">
                 Sort by: {sortBy}
-                <svg
-                  className="w-4 h-4 inline pb-1"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="current"
-                  viewBox="0 0 320 512"
-                >
+                <svg className="w-4 h-4 inline pb-1" xmlns="http://www.w3.org/2000/svg" fill="current" viewBox="0 0 320 512">
                   <path d="M41 288h238c21.4 0 32.1 25.9 17 41L177 448c-9.4 9.4-24.6 9.4-33.9 0L24 329c-15.1-15.1-4.4-41 17-41z" />
                 </svg>
               </button>
             </MenuHandler>
             <MenuList className="bg-gray text-white p-0 font-sans text-base">
-              <MenuItem className="text-lg text-sort-by pointer-events-none">
-                Sort By...
-              </MenuItem>
+              <MenuItem className="text-lg text-sort-by pointer-events-none">Sort By...</MenuItem>
               {sortOptions.map((option) => (
-                <MenuItem
-                  id={`menu-${option}`}
-                  onClick={() => setSortBy(option)}
-                >
+                <MenuItem id={`menu-${option}`} onClick={() => setSortBy(option)}>
                   {option}
                 </MenuItem>
               ))}
@@ -64,87 +39,36 @@ export const HomeDiscoverScreen = () => {
           </Menu>
         </div>
         <div className="grid grid-cols-5 gap-3 relative ">
-          {location.pathname.includes('home') && (
-            <>
-              <div
-                id="add-project"
-                className="max-w-sm rounded overflow-hidden border-white border-2 grid place-content-center hover:cursor-pointer"
-                onClick={openAddDialog}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="current"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="w-20 h-20 text-white mx-auto"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M12 4.5v15m7.5-7.5h-15"
+          {
+            //Render user's maps in home page
+            location.pathname.includes('home') &&
+              userMaps?.map((map) => (
+                <div key={''}>
+                  <MapCard
+                    map={map}
+                    name={map.name}
+                    username={username}
+                    upvoteCount={map.upvotes.length}
+                    downvoteCount={map.downvotes.length}
+                    downloadCount={map.downloads}
+                    description={map.description}
+                    date={map.updatedAt}
                   />
-                </svg>
-                <div className="text-3xl text-white">Import a Map</div>
-                <div className="text-white text-sm">
-                  From ESRI shapefile or GeoJSON
                 </div>
-              </div>
-
-              <div
-                key={''}
-                id="new-project"
-                className="max-w-sm rounded overflow-hidden border-white border-2 grid place-content-center border-dashed hover:cursor-pointer"
-                onClick={() => {
-                  handleCreateMap()
-                }}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="current"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="w-20 h-20 text-white mx-auto"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M12 4.5v15m7.5-7.5h-15"
-                  />
-                </svg>
-                <div className="text-3xl text-white">
-                  Create New Map from Scratch
+              ))
+          }
+          {
+            //Render non user, published maps in discover
+            location.pathname.includes('discover') &&
+              [...Array(5).keys()].map(() => (
+                <div>
+                  <MapCard />
                 </div>
-              </div>
-            </>
-          )}
-
-          {location.pathname.includes('home') &&
-            maps?.map((map) => (
-              <div key={''}>
-                <MapCard
-                  map={map}
-                  name={map.name}
-                  username={username}
-                  upvoteCount={map.upvotes.length}
-                  downvoteCount={map.downvotes.length}
-                  downloadCount={map.downloads}
-                  description={map.description}
-                  date={map.updatedAt}
-                />
-              </div>
-            ))}
-
-          {location.pathname.includes('discover') &&
-            [...Array(5).keys()].map(() => (
-              <div>
-                <MapCard />
-              </div>
-            ))}
+              ))
+          }
         </div>
       </div>
       <AddMapDialog />
     </>
-  )
-}
+  );
+};

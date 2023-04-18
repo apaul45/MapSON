@@ -1,17 +1,16 @@
-import { createModel } from '@rematch/core'
-import { RootModel } from '.'
-import { Store, Map } from '../types'
-import api from '../api'
-import { AxiosError } from 'axios'
+import { createModel } from '@rematch/core';
+import { RootModel } from '.';
+import { Store, Map } from '../types';
+import api from '../api';
+import { AxiosError } from 'axios';
 
 const initialState: Store = {
   currentMap: null,
   maps: [],
-  userMaps: [],
   deleteDialog: false,
   shareDialog: false,
   addDialog: false,
-}
+};
 
 export const mapStore = createModel<RootModel>()({
   state: initialState as Store,
@@ -19,27 +18,16 @@ export const mapStore = createModel<RootModel>()({
   //Pure reducer functions
   reducers: {
     setCurrentMap: (state, payload: Map) => {
-      return { ...state, currentMap: payload }
-    },
-    setMaps: (state, payload: Map[]) => {
-      return
-    },
-    setUserMaps: (state, payload: Map[]) => {
-      return { ...state, userMaps: payload }
-    },
-    updateUserMaps: (state, payload: Map) => {
-      const newList = [payload, ...state.userMaps]
-      console.log(newList)
-      return { ...state, userMaps: newList }
+      return { ...state, currentMap: payload };
     },
     setShareDialog: (state, payload: boolean) => {
-      return { ...state, shareDialog: payload }
+      return { ...state, shareDialog: payload };
     },
     setDeleteDialog: (state, payload: boolean) => {
-      return { ...state, deleteDialog: payload }
+      return { ...state, deleteDialog: payload };
     },
     setAddDialog: (state, payload: boolean) => {
-      return { ...state, addDialog: payload }
+      return { ...state, addDialog: payload };
     },
   },
 
@@ -47,35 +35,35 @@ export const mapStore = createModel<RootModel>()({
 
   effects: (dispatch) => ({
     async loadUserMaps(payload, state) {
-      return
+      return;
     },
     async loadAllMaps(payload, state) {
-      return
+      return;
     },
     async updateCurrentMap(payload, state) {
-      return
+      return;
     },
-    async createNewMap(payload, state) {
+    async createNewMap(payload, state): Promise<any> {
       try {
-        const res = await api.createMap(payload)
-        dispatch.mapStore.setCurrentMap(res.data.map)
-        dispatch.mapStore.updateUserMaps(res.data.map)
-        return res.data.map._id
+        const res = await api.createMap(payload);
+        dispatch.mapStore.setCurrentMap(res.data.map);
+        dispatch.user.setUserMaps(res.data.map);
+        return res.data.map._id;
       } catch (error: unknown) {
-        const err = error as AxiosError
+        const err = error as AxiosError;
         // @ts-ignore
-        dispatch.error.setError(err.response?.data.errorMessage)
+        dispatch.error.setError(err.response?.data.errorMessage);
       }
     },
     async deleteMap(payload, state) {
-      return
+      return;
     },
 
     sortMaps(payload, state) {
-      return
+      return;
     },
     filterMaps(payload, state) {
-      return
+      return;
     },
   }),
-})
+});
