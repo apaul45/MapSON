@@ -25,6 +25,13 @@ export const MainNavbar = () => {
     if (id) navigate(`/project/${id}`);
   };
 
+  const handleCreateMap = async () => {
+    const id = await mapStore.createNewMap({
+      mapName: 'My Map',
+    })
+    navigate(`/project/${id}`)
+  }
+
   //Render the main navbar everywhere except any project related screens
   return (
     <>
