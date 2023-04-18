@@ -9,8 +9,8 @@ import { RootState } from '../../models';
 import { useSelector } from 'react-redux';
 import CommentsSidePanel from '../CommentsSidePanel';
 import ProjectSidePanel from '../ProjectSidePanel';
-import { SelectedFeature } from '../Map/MapComponent';
 import { MapComponent } from '../map';
+import { SelectedFeature } from '../map/MapComponent';
 
 const defaultMap: Map = {
   _id: 'DEFAULT_MAP',
