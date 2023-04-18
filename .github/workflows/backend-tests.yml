@@ -19,6 +19,12 @@ jobs:
         with:
           node-version: 15
 
+      #Setup local mongodb server instead of using cluster
+      - name: Start MongoDB
+        uses: supercharge/mongodb-github-action@1.8.0
+        with:
+          mongodb-version: 6.0
+
       - name: Install backend dependencies
         working-directory: ./backend
         run: npm install
@@ -28,7 +34,8 @@ jobs:
         run: npm test
         env:
           port: 4000
-          DB: ${{ secrets.DB }}
+          #Use local mongodb server rather than
+          DB: mongodb://localhost:27017
           SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
           API_KEY: ${{ secrets.API_KEY }}
           DEV: true
