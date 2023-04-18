@@ -2,8 +2,6 @@ name: Cypress Tests
 
 on:
   push:
-    branches:
-      - main
     paths:
       - 'frontend/**'
 
