@@ -88,6 +88,7 @@ export const MainNavbar = () => {
                               viewBox="0 0 24 24"
                               strokeWidth={1.5}
                               stroke="currentColor"
+                              id="plus-sign"
                             >
                               <path
                                 strokeLinecap="round"
