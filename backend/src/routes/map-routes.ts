@@ -5,6 +5,9 @@ import User from '../models/user-model';
 import Map, { IMap } from '../models/map-model';
 import Feature from '../models/feature-model';
 import { FeatureCollection, Feature as FeatureType } from 'geojson';
+import Pbf from 'pbf';
+// @ts-ignore
+import * as gb from 'geobuf';
 
 // const populatedFields = [
 //     'owner',
@@ -30,6 +33,11 @@ mapRouter.post('/map', auth, async (req: Request, res: Response) => {
   }
 
   let fg: FeatureCollection | null = null;
+
+  let geojson = req.body.geojson;
+  if (geojson instanceof Uint8Array) {
+    geojson = gb.decode(geojson, new Pbf());
+  }
 
   if (req.body.geojson?.features instanceof Array) {
     fg = req.body.geojson as FeatureCollection;

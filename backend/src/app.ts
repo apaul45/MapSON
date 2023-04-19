@@ -21,13 +21,13 @@ app.use(
       'https://mapson.vercel.app',
       'https://mapson-apaul45.vercel.app',
       'http://localhost:5173',
-      /https:\/\/mapson(.*)\.vercel\.app/
+      /https:\/\/mapson(.*)\.vercel\.app/,
     ],
   })
 );
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '100mb' }));
+app.use(express.urlencoded({ extended: true, limit: '100mb' }));
 
 app.use(
   session({

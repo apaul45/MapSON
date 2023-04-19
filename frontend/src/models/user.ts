@@ -37,10 +37,12 @@ export const user = createModel<RootModel>()({
       try {
         const response = await api.login(payload);
         dispatch.user.setCurrentUser(response.data);
+        return true;
       } catch (error: unknown) {
         const err = error as AxiosError;
         // @ts-ignore
         dispatch.error.setError(err.response?.data.errorMessage);
+        return false;
       }
     },
     async recoverPassword(payload: User, state) {
