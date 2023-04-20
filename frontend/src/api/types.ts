@@ -9,9 +9,7 @@ interface Response {
 // AUTH
 export interface RegisterResponse extends Response {}
 
-export interface LoginResponse extends Response {
-  user: User;
-}
+export interface LoginResponse extends Response, User {}
 
 export interface LogoutResponse extends Response {}
 
