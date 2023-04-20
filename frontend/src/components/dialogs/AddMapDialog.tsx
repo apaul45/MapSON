@@ -24,6 +24,8 @@ export const AddMapDialog = () => {
   const closeDialog = () => {
     store.dispatch.mapStore.setAddDialog(false);
     setFileType('');
+    setGeojson(undefined);
+    setUploadPrompt('Drag files into box \n or click to browse');
   };
 
   const handleRadio = (type: string) => {
@@ -61,7 +63,7 @@ export const AddMapDialog = () => {
       setUploadPrompt(names);
       await processFile(files);
     } else {
-      error.setError('Please upload valid files');
+      error.setError('Please upload a zip file, geojson, or shp+dbf files');
       return;
     }
   };
@@ -116,6 +118,11 @@ export const AddMapDialog = () => {
 
     if (Array.isArray(geojson) && geojson.length > 1) {
       error.setError('Please upload a single layer shapefile zip');
+      setUploadPrompt('Drag files into box \n or click to browse');
+      return;
+    }
+    if (JSON.stringify(geojson).length > 17000000) {
+      error.setError('(converted) GeoJSON too large for database query');
       setUploadPrompt('Drag files into box \n or click to browse');
       return;
     }
@@ -194,7 +201,7 @@ export const AddMapDialog = () => {
                 <div className="flex items-center mb-4 space-x-5">
                   <div>
                     <input
-                      id="Shapefile"
+                      id="shapefile"
                       type="radio"
                       value="shapefile"
                       name="import"
