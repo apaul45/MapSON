@@ -34,10 +34,10 @@ mapRouter.post('/map', auth, async (req: Request, res: Response) => {
 
   let fg: FeatureCollection | null = null;
 
-  let geojson = req.body.geojson;
-  if (geojson instanceof Uint8Array) {
-    geojson = gb.decode(geojson, new Pbf());
-  }
+  // let geojson = req.body.geojson;
+  // if (geojson instanceof Uint8Array) {
+  //   geojson = gb.decode(geojson, new Pbf());
+  // }
 
   if (req.body.geojson?.features instanceof Array) {
     fg = req.body.geojson as FeatureCollection;
