@@ -66,7 +66,7 @@ describe('Navigation Bar Tests', () => {
 
       cy.get('[type="radio"]').check('shapefile');
 
-      cy.get('#Shapefile').should('be.checked');
+      cy.get('#shapefile').should('be.checked');
 
       cy.get('#geojson').should('not.be.checked');
       cy.get('#close-dialog').should('be.visible').click();
@@ -92,17 +92,35 @@ describe('Navigation Bar Tests', () => {
       cy.get('#close-dialog').should('be.visible').click();
     });
 
-    it('should import a file then go to project page', () => {
+    it('should import a geojson file then go to project page', () => {
       cy.get('#add-dialog').should('be.visible');
       cy.get('[type="radio"]').check('geojson');
 
       cy.get('input[type=file]').selectFile('cypress/fixtures/mock.geo.json', {
         force: true,
       });
-      cy.get('#map-name').type('test');
+      cy.get('#map-name').type('geojson');
 
       cy.contains('Submit').should('exist').click();
       cy.location('pathname').should((path) => expect(path).to.include('/project'));
+      cy.contains('#error-dialog').should('not.exist');
+    });
+    it('should import a shapefile zip file then go to project page', () => {
+      cy.get('#add-dialog').should('be.visible');
+      cy.get('[type="radio"]').check('shapefile');
+
+      cy.get('input[type=file]').selectFile(
+        { contents: 'cypress/fixtures/AFG_adm2.zip', mimeType: 'application/x-zip-compressed' },
+        {
+          force: true,
+        }
+      );
+      cy.wait(1000);
+      cy.get('#map-name').type('AFG');
+
+      cy.contains('Submit').should('exist').click();
+      cy.location('pathname').should((path) => expect(path).to.include('/project'));
+      cy.contains('#error-dialog').should('not.exist');
     });
   });
 });

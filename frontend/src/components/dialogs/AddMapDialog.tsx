@@ -1,151 +1,159 @@
-import { useSelector } from 'react-redux'
-import { RootState, store } from '../../models'
-import { useNavigate } from 'react-router-dom'
-import { useState } from 'react'
-import shp, { FeatureCollectionWithFilename } from 'shpjs'
-import { GeoJsonProperties, Geometry, FeatureCollection } from 'geojson'
+import { useSelector } from 'react-redux';
+import { RootState, store } from '../../models';
+import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import shp, { FeatureCollectionWithFilename } from 'shpjs';
+import { GeoJsonProperties, Geometry, FeatureCollection } from 'geojson';
+import Pbf from 'pbf';
+// @ts-ignore
+import * as gb from 'geobuf';
 
 export const AddMapDialog = () => {
-  const [uploadPrompt, setUploadPrompt] = useState(
-    'Drag files into box \n or click to browse'
-  )
-  const [fileType, setFileType] = useState('')
-  const [mapName, setMapName] = useState('')
+  const [uploadPrompt, setUploadPrompt] = useState('Drag files into box \n or click to browse');
+  const [fileType, setFileType] = useState('');
+  const [mapName, setMapName] = useState('');
   const [geojson, setGeojson] = useState<
     | FeatureCollectionWithFilename
-    | (
-        | FeatureCollection<Geometry, GeoJsonProperties>
-        | FeatureCollectionWithFilename[]
-      )[]
+    | (FeatureCollection<Geometry, GeoJsonProperties> | FeatureCollectionWithFilename[])[]
     | undefined
-  >()
-  const { error, mapStore } = store.dispatch
-  const isOpen = useSelector((state: RootState) => state.mapStore.addDialog)
-  const navigate = useNavigate()
+  >();
+  const { error, mapStore } = store.dispatch;
+  const isOpen = useSelector((state: RootState) => state.mapStore.addDialog);
+  const navigate = useNavigate();
 
   const closeDialog = () => {
-    store.dispatch.mapStore.setAddDialog(false)
-    setFileType('')
-  }
+    store.dispatch.mapStore.setAddDialog(false);
+    setFileType('');
+    setGeojson(undefined);
+    setUploadPrompt('Drag files into box \n or click to browse');
+  };
 
   const handleRadio = (type: string) => {
-    setFileType(type)
-    setUploadPrompt('Drag files into box \n or click to browse')
-    setGeojson(undefined)
-  }
+    setFileType(type);
+    setUploadPrompt('Drag files into box \n or click to browse');
+    setGeojson(undefined);
+  };
 
   const submitUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.preventDefault()
+    e.preventDefault();
+    console.log(e.target.files);
 
     if (fileType === '') {
-      error.setError('Please choose a file format before uploading a file')
-      return
+      error.setError('Please choose a file format before uploading a file');
+      return;
     }
 
     if (!e.target?.files) {
-      error.setError('Please upload valid files')
-      return
+      error.setError('Please upload valid files');
+      return;
     }
 
     if (
-      (fileType === 'GeoJSON' &&
-        e.target.files[0].type === 'application/json') ||
-      (fileType === 'Shapefile' &&
-        e.target.files[0].type === 'application/x-zip-compressed')
+      (fileType === 'GeoJSON' && e.target.files[0].type === 'application/json') ||
+      (fileType === 'Shapefile' && e.target.files[0].type === 'application/x-zip-compressed')
     ) {
-      setUploadPrompt(e.target.files[0].name)
-      await processFile([...e.target.files])
+      setUploadPrompt(e.target.files[0].name);
+      await processFile([...e.target.files]);
     } else if (fileType === 'Shapefile' && e.target.files.length > 1) {
-      const files = [...e.target.files]
-      let names = ''
+      const files = [...e.target.files];
+      let names = '';
       files.forEach((file) => {
-        names += file.name + '\n'
-      })
-      setUploadPrompt(names)
-      await processFile(files)
+        names += file.name + '\n';
+      });
+      setUploadPrompt(names);
+      await processFile(files);
     } else {
-      error.setError('Please upload valid files')
-      return
+      error.setError('Please upload a zip file, geojson, or shp+dbf files');
+      return;
     }
-  }
+  };
 
   const processFile = async (files: File[]) => {
-    let geojson
+    let geojson;
     if (fileType === 'GeoJSON') {
-      const reader = new FileReader()
+      const reader = new FileReader();
       reader.onload = async (e) => {
         if (!e.target) {
-          return
+          return;
         }
 
-        const text = e.target.result as string
-        console.log(text)
-        setGeojson(JSON.parse(text))
-      }
-      reader.readAsText(files[0])
-      return
+        const text = e.target.result as string;
+        console.log(text);
+        setGeojson(JSON.parse(text));
+      };
+      reader.readAsText(files[0]);
+      return;
     } else if (fileType === 'Shapefile' && files.length > 1) {
-      const shps = files.filter((file) => file.name.includes('.shp'))
-      const dbfs = files.filter((file) => file.name.includes('.dbf'))
-      const cpgs = files.filter((file) => file.name.includes('.cpg'))
+      const shps = files.filter((file) => file.name.includes('.shp'));
+      const dbfs = files.filter((file) => file.name.includes('.dbf'));
 
       const toGeoJSON = async (file: File) => {
-        const name = file.name.slice(0, -4)
+        const name = file.name.slice(0, -4);
 
-        let dbfFile = dbfs.find((file) => file.name.slice(0, -4) === name)
+        let dbfFile = dbfs.find((file) => file.name.slice(0, -4) === name);
 
-        let geojson
+        let geojson;
 
         if (dbfFile) {
-          let cpgFile = cpgs.find((file) => file.name.slice(0, -4) === name) // not sure if needed
-
-          let shpf = shp.parseShp(await file!.arrayBuffer())
+          let shpf = shp.parseShp(await file!.arrayBuffer());
 
           let dbf =
             dbfFile &&
-            shp.parseDbf(
-              await dbfFile!.arrayBuffer(),
-              // @ts-ignore
-              await cpgFile?.arrayBuffer()
-            )
+            // @ts-ignore
+            shp.parseDbf(await dbfFile!.arrayBuffer());
 
-          geojson = shp.combine([shpf, dbf])
+          geojson = shp.combine([shpf, dbf]);
         } else {
-          geojson = await shp(await file.arrayBuffer())
+          geojson = await shp(await file.arrayBuffer());
         }
 
-        return geojson
-      }
+        return geojson;
+      };
 
-      geojson = await Promise.all(shps.map(toGeoJSON))
+      geojson = await Promise.all(shps.map(toGeoJSON));
     } else if (fileType === 'Shapefile') {
-      geojson = await shp(await files[0].arrayBuffer())
+      geojson = await shp(await files[0].arrayBuffer());
     }
-    console.log(geojson)
-    setGeojson(geojson)
-  }
+    console.log(geojson);
 
-  const handleSubmit = async (
-    e: React.MouseEvent<HTMLButtonElement, MouseEvent>
-  ) => {
-    e.preventDefault()
+    if (Array.isArray(geojson) && geojson.length > 1) {
+      error.setError('Please upload a single layer shapefile zip');
+      setUploadPrompt('Drag files into box \n or click to browse');
+      return;
+    }
+    if (JSON.stringify(geojson).length > 17000000) {
+      error.setError('(converted) GeoJSON too large for database query');
+      setUploadPrompt('Drag files into box \n or click to browse');
+      return;
+    }
+    if (Array.isArray(geojson)) {
+      setGeojson(geojson[0]);
+      return;
+    }
+    setGeojson(geojson);
+  };
+
+  const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    e.preventDefault();
     if (mapName === '') {
-      error.setError('Please enter a map name')
-      return
+      error.setError('Please enter a map name');
+      return;
     }
 
     if (geojson === undefined) {
-      error.setError('Please upload a file')
-      return
+      error.setError('Please upload a file');
+      return;
     }
 
+    // const encodedGeo = gb.encode(geojson, new Pbf())
+    // console.log(encodedGeo)
     const id = await mapStore.createNewMap({
       mapName: mapName,
       geojson: geojson,
-    })
-
-    navigate(`/project/${id}`)
-  }
+    });
+    closeDialog();
+    navigate(`/project/${id}`);
+  };
 
   return (
     <>
@@ -175,11 +183,7 @@ export const AddMapDialog = () => {
                     stroke="currentColor"
                     className="w-6 h-6 text-white"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M6 18L18 6M6 6l12 12"
-                    />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
 
@@ -197,13 +201,13 @@ export const AddMapDialog = () => {
                 <div className="flex items-center mb-4 space-x-5">
                   <div>
                     <input
-                      id="Shapefile"
+                      id="shapefile"
                       type="radio"
                       value="shapefile"
                       name="import"
                       className="text-blue"
                       onClick={() => {
-                        handleRadio('Shapefile')
+                        handleRadio('Shapefile');
                       }}
                     />
                     <label htmlFor="Shapefile" className="text-white">
@@ -218,7 +222,7 @@ export const AddMapDialog = () => {
                       name="import"
                       className="text-blue"
                       onClick={() => {
-                        handleRadio('GeoJSON')
+                        handleRadio('GeoJSON');
                       }}
                     />
                     <label htmlFor="geojson" className="text-white">
@@ -233,9 +237,7 @@ export const AddMapDialog = () => {
                     className="flex flex-col items-center justify-center w-full h-64 border-2 border-white border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600"
                   >
                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      <p className="text-drag-text whitespace-pre-wrap">
-                        {uploadPrompt}
-                      </p>
+                      <p className="text-drag-text whitespace-pre-wrap">{uploadPrompt}</p>
                     </div>
                     <input
                       id="dropzone-file"
@@ -243,7 +245,7 @@ export const AddMapDialog = () => {
                       multiple
                       className="hidden"
                       onChange={(e) => {
-                        submitUpload(e)
+                        submitUpload(e);
                       }}
                     />
                   </label>
@@ -252,7 +254,7 @@ export const AddMapDialog = () => {
                 <button
                   className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded my-5"
                   onClick={(e) => {
-                    handleSubmit(e)
+                    handleSubmit(e);
                   }}
                 >
                   Submit
@@ -263,5 +265,5 @@ export const AddMapDialog = () => {
         </div>
       )}
     </>
-  )
-}
+  );
+};

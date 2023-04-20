@@ -1,28 +1,29 @@
-import { Link, useNavigate } from 'react-router-dom'
-import { store } from '../../models'
-import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom';
+import { store } from '../../models';
+import { useState } from 'react';
 
 export const LoginScreen = () => {
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const navigate = useNavigate()
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const navigate = useNavigate();
 
-  const { error, user } = store.dispatch
+  const { error, user } = store.dispatch;
 
   const handleSubmit = async () => {
     if (!username || !password) {
-      error.setError('Please enter your username and password.')
-      return
+      error.setError('Please enter your username and password.');
+      return;
     }
 
     const payload = {
       emailOrUsername: username,
       password: password,
-    }
+    };
 
-    await user.login(payload)
-    navigate('/home')
-  }
+    if (await user.login(payload)) {
+      navigate('/home');
+    }
+  };
 
   return (
     <div className="lr-bg">
@@ -59,5 +60,5 @@ export const LoginScreen = () => {
         </button>
       </div>
     </div>
-  )
-}
+  );
+};
