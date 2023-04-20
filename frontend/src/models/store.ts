@@ -1,7 +1,7 @@
 import { createModel } from '@rematch/core';
 import { RootModel } from '.';
 import { Store, Map } from '../types';
-import api from '../api';
+import { auth, map } from '../api';
 import { AxiosError } from 'axios';
 
 const initialState: Store = {
@@ -45,7 +45,7 @@ export const mapStore = createModel<RootModel>()({
     },
     async createNewMap(payload, state): Promise<any> {
       try {
-        const res = await api.createMap(payload);
+        const res = await map.createMap(payload);
         dispatch.mapStore.setCurrentMap(res.data.map);
         dispatch.user.setUserMaps(res.data.map);
         return res.data.map._id;

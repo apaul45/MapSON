@@ -1,7 +1,7 @@
 import { createModel } from '@rematch/core';
 import { Map, User, UserModel } from '../types';
 import { RootModel } from '.';
-import api from '../api';
+import { auth } from '../api';
 import { AxiosError } from 'axios';
 
 export const user = createModel<RootModel>()({
@@ -25,7 +25,7 @@ export const user = createModel<RootModel>()({
   effects: (dispatch) => ({
     async register(payload: User, state) {
       try {
-        await api.register(payload);
+        await auth.register(payload);
         dispatch.user.setCurrentUser(payload);
       } catch (error: unknown) {
         const err = error as AxiosError;
@@ -35,7 +35,7 @@ export const user = createModel<RootModel>()({
     },
     async login(payload, state) {
       try {
-        const response = await api.login(payload);
+        const response = await auth.login(payload);
         dispatch.user.setCurrentUser(response.data);
         return true;
       } catch (error: unknown) {
@@ -50,7 +50,7 @@ export const user = createModel<RootModel>()({
     },
     async logout() {
       try {
-        await api.logout();
+        await auth.logout();
         dispatch.user.setCurrentUser(null);
       } catch (error: unknown) {
         const err = error as AxiosError;
