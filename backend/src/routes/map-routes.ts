@@ -6,8 +6,9 @@ import Map, { IMap } from '../models/map-model';
 import Feature from '../models/feature-model';
 import { FeatureCollection, Feature as FeatureType } from 'geojson';
 import Pbf from 'pbf';
-// @ts-ignore
 import * as gb from 'geobuf';
+
+import { isValidObjectId } from 'mongoose';
 
 // const populatedFields = [
 //     'owner',
@@ -76,6 +77,13 @@ mapRouter.delete('/map/:id', auth, async (req: Request, res: Response) => {
   const email = req.session.email;
   const { id } = req.params;
 
+  if (!isValidObjectId(id)) {
+    return res.status(400).json({
+      error: true,
+      errorMessage: 'Invalid map id',
+    });
+  }
+
   //if user doesnt exist
   const user = await User.findOne({
     email: email,
@@ -125,7 +133,7 @@ mapRouter.get('/map/:id', async (req: Request, res: Response) => {
   let { id } = req.params;
 
   //if id doesnt exist
-  if (!id) {
+  if (!id || !isValidObjectId(id)) {
     return res.status(400).json({
       error: true,
       errorMessage: 'Invalid map ID',
@@ -187,6 +195,13 @@ mapRouter.put('/map/:id', auth, async (req: Request, res: Response) => {
   const { id } = req.params;
   const changes: FeatureChanges = req.body.changes;
 
+  if (!isValidObjectId(id)) {
+    return res.status(400).json({
+      error: true,
+      errorMessage: 'Invalid map id',
+    });
+  }
+
   if (!changes) {
     return res.status(400).json({
       error: true,
@@ -208,6 +223,13 @@ mapRouter.put('/map/:id', auth, async (req: Request, res: Response) => {
 
 mapRouter.post('/map/:id/feature', auth, async (req, res) => {
   const { id } = req.params;
+
+  if (!isValidObjectId(id)) {
+    return res.status(400).json({
+      error: true,
+      errorMessage: 'Invalid map id',
+    });
+  }
 
   if (!req.body) {
     return res.status(400).json({
@@ -245,8 +267,21 @@ mapRouter.post('/map/:id/feature', auth, async (req, res) => {
 
 //no auth
 mapRouter.get('/map/:mapid/feature/:featureid', async (req, res) => {
-  const { featureid } = req.params;
+  const { mapid, featureid } = req.params;
 
+  if (!isValidObjectId(mapid)) {
+    return res.status(400).json({
+      error: true,
+      errorMessage: 'Invalid map id',
+    });
+  }
+
+  if (!isValidObjectId(featureid)) {
+    return res.status(400).json({
+      error: true,
+      errorMessage: 'Invalid feature id',
+    });
+  }
   const feature = await Feature.findById(featureid);
 
   if (!feature) {
@@ -260,7 +295,21 @@ mapRouter.get('/map/:mapid/feature/:featureid', async (req, res) => {
 });
 
 mapRouter.put('/map/:mapid/feature/:featureid', auth, async (req, res) => {
-  const { featureid } = req.params;
+  const { mapid, featureid } = req.params;
+
+  if (!isValidObjectId(mapid)) {
+    return res.status(400).json({
+      error: true,
+      errorMessage: 'Invalid map id',
+    });
+  }
+
+  if (!isValidObjectId(featureid)) {
+    return res.status(400).json({
+      error: true,
+      errorMessage: 'Invalid feature id',
+    });
+  }
 
   const body: FeatureType = req.body;
 
@@ -286,6 +335,20 @@ mapRouter.put('/map/:mapid/feature/:featureid', auth, async (req, res) => {
 
 mapRouter.delete('/map/:mapid/feature/:featureid', auth, async (req, res) => {
   const { mapid, featureid } = req.params;
+
+  if (!isValidObjectId(mapid)) {
+    return res.status(400).json({
+      error: true,
+      errorMessage: 'Invalid map id',
+    });
+  }
+
+  if (!isValidObjectId(featureid)) {
+    return res.status(400).json({
+      error: true,
+      errorMessage: 'Invalid feature id',
+    });
+  }
 
   const map = await Map.findById({ _id: mapid });
 
