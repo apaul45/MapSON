@@ -48,8 +48,6 @@ interface IMapComponent extends Map {
 const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapComponent) => {
   const { mapStore } = store.dispatch;
 
-  const fg = useRef<LGeoJsonExt>(null);
-
   //second one is the most recently selected
   const selectedFeatures = useRef<SelectedFeature[]>([]);
 
@@ -189,7 +187,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
         renderer={new L.Canvas({ tolerance: 3 })}
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-        <FeatureGroup ref={fg}>
+        <FeatureGroup>
           <MapControls
             onCreate={async (e) => {
               const layer = e.layer as L.GeoJSON;
@@ -238,7 +236,6 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
             /* @ts-ignore */
             // Fine to ignore since we are guaranteeing the extensions to L.GeoJSON
             onEachFeature={onEachFeature}
-            ref={fg}
           />
         </FeatureGroup>
       </MapContainer>
