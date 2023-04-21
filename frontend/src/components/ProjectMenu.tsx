@@ -1,52 +1,45 @@
-import { MenuList, MenuItem, Menu, MenuHandler } from '@material-tailwind/react'
-import { useSelector } from 'react-redux'
-import { RootState, store } from '../models'
-import { Link } from 'react-router-dom'
-import { saveAs } from 'file-saver'
-import axios from 'axios'
+import { MenuList, MenuItem, Menu, MenuHandler } from '@material-tailwind/react';
+import { useSelector } from 'react-redux';
+import { RootState, store } from '../models';
+import { Link } from 'react-router-dom';
+import { saveAs } from 'file-saver';
+import axios from 'axios';
 
 const ProjectMenu = () => {
-  const user = useSelector((state: RootState) => state.user.currentUser)
-  const map = useSelector((state: RootState) => state.mapStore.currentMap)
-  const openDeleteDialog = () => store.dispatch.mapStore.setDeleteDialog(true)
-  const { error } = store.dispatch
+  const user = useSelector((state: RootState) => state.user.currentUser);
+  const map = useSelector((state: RootState) => state.mapStore.currentMap);
+  const openDeleteDialog = () => store.dispatch.mapStore.setDeleteDialog(true);
+  const { error } = store.dispatch;
 
   const exportGeojson = () => {
     if (!map?.features) {
-      error.setError('Please fill the map with polygons')
-      return
+      error.setError('Please fill the map with polygons');
+      return;
     }
-    const blob = new Blob([JSON.stringify(map?.features)])
-    saveAs(blob, map?.name + '.geo.json')
-  }
+    const blob = new Blob([JSON.stringify(map?.features)]);
+    saveAs(blob, map?.name + '.geo.json');
+  };
 
   const exportShapefile = async () => {
     if (!map?.features) {
-      error.setError('Please fill the map with polygons')
-      return
+      error.setError('Please fill the map with polygons');
+      return;
     }
 
-    const params = new URLSearchParams()
-    params.append('json', JSON.stringify(map?.features))
+    const params = new URLSearchParams();
+    params.append('json', JSON.stringify(map?.features));
 
-    const res = await axios.post(
-      'https://ogre.adc4gis.com/convertJson',
-      params,
-      { withCredentials: false, responseType: 'blob' }
-    )
-    const blob = new Blob([res.data])
-    saveAs(blob, map?.name + '.zip')
-  }
+    const res = await axios.post('https://ogre.adc4gis.com/convertJson', params, {
+      withCredentials: false,
+      responseType: 'blob',
+    });
+    const blob = new Blob([res.data]);
+    saveAs(blob, map?.name + '.zip');
+  };
 
   return (
-    <MenuList
-      id="project-menu"
-      className="bg-gray text-white p-0 font-sans text-base"
-    >
-      <MenuItem className="text-sort-by mb-0.5 text-lg pointer-events-none">
-        {' '}
-        File{' '}
-      </MenuItem>
+    <MenuList id="project-menu" className="bg-gray text-white p-0 font-sans text-base">
+      <MenuItem className="text-sort-by mb-0.5 text-lg pointer-events-none"> File </MenuItem>
 
       <MenuItem className="hover:bg-sort-hover">Save</MenuItem>
       <MenuItem className="hover:bg-sort-hover">Import</MenuItem>
@@ -60,7 +53,7 @@ const ProjectMenu = () => {
           <MenuItem
             className="hover:bg-sort-hover"
             onClick={() => {
-              exportShapefile()
+              exportShapefile();
             }}
           >
             Shapefile
@@ -68,7 +61,7 @@ const ProjectMenu = () => {
           <MenuItem
             className="hover:bg-sort-hover"
             onClick={() => {
-              exportGeojson()
+              exportGeojson();
             }}
           >
             GeoJSON
@@ -80,10 +73,7 @@ const ProjectMenu = () => {
 
       <hr className="my-2 border-blue-gray-50 outline-none" />
 
-      <MenuItem className="text-sort-by text-lg pt-0 pointer-events-none">
-        {' '}
-        Edit{' '}
-      </MenuItem>
+      <MenuItem className="text-sort-by text-lg pt-0 pointer-events-none"> Edit </MenuItem>
       <MenuItem className="hover:bg-sort-hover">Undo</MenuItem>
       <MenuItem className="hover:bg-sort-hover">Redo</MenuItem>
 
@@ -91,21 +81,15 @@ const ProjectMenu = () => {
 
       <MenuItem className="hover:bg-sort-hover">Share</MenuItem>
 
-      <Link
-        to={user ? '/home' : '/discover'}
-        className="hover:bg-sort-hover hover:outline-none"
-      >
-        <MenuItem>Exit project</MenuItem>
+      <Link to={user ? '/home' : '/discover'} className="hover:bg-sort-hover hover:outline-none">
+        <MenuItem id="menu-option-exit">Exit project</MenuItem>
       </Link>
 
-      <MenuItem
-        className="hover:bg-sort-hover text-red-400"
-        onClick={() => openDeleteDialog()}
-      >
+      <MenuItem className="hover:bg-sort-hover text-red-400" onClick={() => openDeleteDialog()}>
         Delete map
       </MenuItem>
     </MenuList>
-  )
-}
+  );
+};
 
-export default ProjectMenu
+export default ProjectMenu;

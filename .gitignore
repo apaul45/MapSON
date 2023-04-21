@@ -31,3 +31,8 @@ backend/.env
 *.sw?
 .vscode
 .vercel
+
+frontend/cypress/downloads
+frontend/cypress/screenshots
+frontend/cypress/videos
+

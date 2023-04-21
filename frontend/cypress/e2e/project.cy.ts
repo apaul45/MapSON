@@ -28,9 +28,9 @@ describe('Project Screen Tests', () => {
   it('should exit the project', () => {
     cy.get('#menu-button').click();
 
-    cy.contains('Exit project').click();
+    cy.get('#menu-option-exit').click();
 
-    cy.location('pathname').should((path) => expect(path).to.include('/discover'));
+    cy.location('pathname').should((path) => expect(path).to.include('/home'));
   });
 });
 
