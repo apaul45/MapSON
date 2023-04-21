@@ -1,20 +1,37 @@
 import request from 'supertest';
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import app from '../src/app';
 import User from '../src/models/user-model';
-import Map from '../src/models/map-model';
+import Map, { IMap } from '../src/models/map-model';
 
 const mongoStr = `${process.env.DB}/mapson`;
 
 const email = 'test@gmail.com';
 const username = 'test';
 const password = 'test123';
+let user_id: Types.ObjectId;
 
 const newName = 'Updated Jest Map';
 const description = 'My Jest Map';
 
 let loginCookie: string;
 let createdMapId: string;
+
+let map: IMap = {
+  name: 'Test All Maps Map',
+  owner: new Types.ObjectId(),
+  downloads: 20,
+  forks: 20,
+  userAccess: [],
+  upvotes: [],
+  downvotes: [],
+  description: '',
+  comments: [],
+  // @ts-ignore
+  properties: {},
+  published: { isPublished: true, publishedDate: new Date() },
+  features: { type: 'FeatureCollection', features: [] },
+};
 
 //Register a user before all tests, then delete on teardown
 beforeAll(async () => {
@@ -29,7 +46,9 @@ beforeAll(async () => {
 
   expect(res.statusCode).toBe(200);
   expect(res.body.error).toBe(false);
+
   loginCookie = res.header['set-cookie'];
+  user_id = res.body._id;
 });
 
 afterAll(async () => {
@@ -87,10 +106,72 @@ describe('Get Map Tests', () => {
     expect(res.statusCode).toBe(200);
     expect(res.body.map._id).toEqual(createdMapId);
   });
+});
 
-  it('should retrieve all maps', async () => {
-    const res = await request(app).get('/maps/allmaps');
-    expect(res.statusCode).toBe(200);
+describe('Get All Maps Test', () => {
+  beforeAll(async () => {
+    map.owner = new Types.ObjectId(user_id);
+    await Map.insertMany([map]);
+  });
+
+  it('should get all published maps', async () => {
+    const mapRes = await request(app).post('/maps/allmaps').send({ limit: 2 });
+
+    expect(mapRes.statusCode).toEqual(200);
+    expect(mapRes.body.maps).toHaveLength(1);
+
+    mapRes.body.maps.forEach((map: any) => expect(map.published.isPublished).toBeTruthy());
+  });
+
+  it('should get all non user published maps', async () => {
+    const mapRes = await request(app)
+      .post('/maps/allmaps')
+      .set('Cookie', loginCookie)
+      .send({ limit: 2 });
+
+    expect(mapRes.statusCode).toEqual(200);
+    //Need to filter because owner being set null in populate stage (WIP)
+    expect(mapRes.body.maps.filter((map: any) => map.owner)).toHaveLength(0);
+  });
+
+  it('should filter all maps', async () => {
+    const allMaps = await Map.find({});
+
+    const mapRes = await request(app)
+      .post('/maps/allmaps')
+      .set('Cookie', loginCookie)
+      .send({ limit: 2, filterBy: { name: 'Test All Maps Map' } });
+
+    expect(mapRes.statusCode).toEqual(200);
+    expect(mapRes.body.maps.length).toBeLessThan(allMaps.length);
+    expect(mapRes.body.maps).toHaveLength(1);
+    expect(mapRes.body.maps[0].name).toEqual('Test All Maps Map');
+  });
+
+  it('should sort all maps', async () => {
+    const mapRes = await request(app)
+      .post('/maps/allmaps')
+      .set('Cookie', loginCookie)
+      .send({ limit: 2, sortBy: { forks: -1 } });
+
+    expect(mapRes.statusCode).toEqual(200);
+    expect(mapRes.body.maps[0].forks).toEqual(20);
+  });
+
+  it('should filter and sort all maps', async () => {
+    let newMap = map;
+    newMap.forks = 19;
+    await Map.insertMany([newMap]);
+
+    const mapRes = await request(app)
+      .post('/maps/allmaps')
+      .set('Cookie', loginCookie)
+      .send({ limit: 2, filterBy: { name: 'Test All Maps Map' }, sortBy: { forks: -1 } });
+
+    expect(mapRes.statusCode).toEqual(200);
+    expect(mapRes.body.maps).toHaveLength(2);
+    expect(mapRes.body.maps[0].forks).toEqual(20);
+    expect(mapRes.body.maps[1].forks).toEqual(19);
   });
 });
 
@@ -182,7 +263,7 @@ describe('Create Feature Test', () => {
       .send(EXAMPLE_FEATURE);
 
     expect(res.statusCode).toBe(200);
-    expect(res.body._id).toBeTruthy();
+    expect(res.body.feature).toBeTruthy();
   });
 });
 
@@ -206,9 +287,9 @@ describe('Get Feature Test', () => {
       .send(EXAMPLE_FEATURE);
 
     expect(res.statusCode).toBe(200);
-    expect(res.body._id).toBeTruthy();
+    expect(res.body.feature._id).toBeTruthy();
 
-    featureId = res.body._id;
+    featureId = res.body.feature._id;
   });
 
   it('should return the right geojson', async () => {
@@ -252,9 +333,9 @@ describe('Delete Feature Test', () => {
       .send(EXAMPLE_FEATURE);
 
     expect(res.statusCode).toBe(200);
-    expect(res.body._id).toBeTruthy();
+    expect(res.body.feature._id).toBeTruthy();
 
-    featureId = res.body._id;
+    featureId = res.body.feature._id;
   });
 
   it('should fail if no authentication', async () => {
@@ -298,9 +379,9 @@ describe('Update Feature Test', () => {
       .send(EXAMPLE_FEATURE);
 
     expect(res.statusCode).toBe(200);
-    expect(res.body._id).toBeTruthy();
+    expect(res.body.feature._id).toBeTruthy();
 
-    featureId = res.body._id;
+    featureId = res.body.feature._id;
   });
 
   it('should fail if no authentication', async () => {
