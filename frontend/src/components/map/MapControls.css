@@ -17,14 +17,14 @@
   border: 1.5px solid green !important;
 }
 
-.merge-icon {
+.leaflet-pm-icon-merge {
   background: url('/img/controls/merge.svg');
 }
 
-.split-icon {
+.leaflet-pm-icon-split {
   background: url('/img/controls/split.svg');
 }
 
-.simplify-icon {
+.leaflet-pm-icon-simplify {
   background: url('/img/controls/simplify.svg');
 }

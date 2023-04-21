@@ -23,12 +23,15 @@ export interface CommonGeoJSONData {
 }
 export type GeometryExt = CommonGeoJSONData & Geometry;
 export type FeatureExt = CommonGeoJSONData & Feature<GeometryExt>;
-export type Features = Array<FeatureExt>;
+export type Features = {
+  type: 'FeatureCollection';
+  features: Array<FeatureExt>;
+};
 
 export type LGeoJsonExt = L.GeoJSON & CommonGeoJSONData & LayerExt;
 
 export interface LayerExt {
-  clearCustomEventHandlers: Function | undefined;
+  _isConfigured: boolean;
 }
 
 export interface Map {

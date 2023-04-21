@@ -61,5 +61,8 @@ export const user = createModel<RootModel>()({
     async updateUser(payload: User, state) {
       return;
     },
+    removeUserMap(payload: string, state) {
+      this.setUserMaps(state.user.currentUser?.maps?.filter((m: Map) => m._id !== payload));
+    },
   }),
 });

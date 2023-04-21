@@ -25,14 +25,19 @@
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
 //
-// declare global {
-//   namespace Cypress {
-//     interface Chainable {
-//       login(email: string, password: string): Chainable<void>
-//       drag(subject: string, options?: Partial<TypeOptions>): Chainable<Element>
-//       dismiss(subject: string, options?: Partial<TypeOptions>): Chainable<Element>
-//       visit(originalFn: CommandOriginalFn, url: string, options: Partial<VisitOptions>): Chainable<Element>
-//     }
-//   }
-// }
-export {}
+declare global {
+  namespace Cypress {
+    interface Chainable {
+      toolbarButton(name: string): Chainable<JQuery<Node>>;
+      hasVertexMarkers(count: number): Chainable<JQuery<HTMLElement>>;
+    }
+  }
+}
+
+Cypress.Commands.add('toolbarButton', (name) => cy.get(`.leaflet-pm-icon-${name}`));
+
+Cypress.Commands.add('hasVertexMarkers', (count) =>
+  cy.get('.marker-icon:not(.marker-icon-middle)').should('have.length', count)
+);
+
+export {};

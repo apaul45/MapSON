@@ -1,8 +1,11 @@
 import { createModel } from '@rematch/core';
 import { RootModel } from '.';
 import { Store, Map } from '../types';
-import { auth, map } from '../api';
+import { map } from '../api';
 import { AxiosError } from 'axios';
+import { Feature } from '@turf/turf';
+import { Geometry } from 'geojson';
+import { CreateMapRequest } from '../api/types';
 
 const initialState: Store = {
   currentMap: null,
@@ -29,6 +32,9 @@ export const mapStore = createModel<RootModel>()({
     setAddDialog: (state, payload: boolean) => {
       return { ...state, addDialog: payload };
     },
+    setMaps: (state, payload: Map[]) => {
+      return { ...state, maps: payload };
+    },
   },
 
   //Effects are (possibly async) functions that take in the store's state and payload, and return anything
@@ -37,13 +43,31 @@ export const mapStore = createModel<RootModel>()({
     async loadUserMaps(payload, state) {
       return;
     },
-    async loadAllMaps(payload, state) {
-      return;
+    async loadAllMaps(payload: undefined, state) {
+      try {
+        const maps = await map.getAllMaps();
+        this.setMaps(maps.data.maps);
+      } catch (e: any) {
+        dispatch.error.setError(e);
+      }
     },
-    async updateCurrentMap(payload, state) {
-      return;
+    async updateCurrentMap(payload: Partial<Map>, state) {
+      try {
+        const id = state.mapStore.currentMap?._id;
+        if (!id) {
+          console.error('No map selected');
+          dispatch.error.setError('No map selected');
+          return;
+        }
+
+        await map.updateMap(id, payload);
+
+        this.setCurrentMap({ ...state.mapStore.currentMap, ...payload });
+      } catch (e: any) {
+        dispatch.error.setError(e);
+      }
     },
-    async createNewMap(payload, state): Promise<any> {
+    async createNewMap(payload: CreateMapRequest, state): Promise<any> {
       try {
         const res = await map.createMap(payload);
         dispatch.mapStore.setCurrentMap(res.data.map);
@@ -55,8 +79,19 @@ export const mapStore = createModel<RootModel>()({
         dispatch.error.setError(err.response?.data.errorMessage);
       }
     },
-    async deleteMap(payload, state) {
-      return;
+    async deleteMap(payload: string, state) {
+      try {
+        map.deleteMap(payload);
+
+        this.setMaps(state.mapStore.maps.filter((m: Map) => m._id !== payload));
+        dispatch.user.removeUserMap(payload);
+
+        if (state.mapStore.currentMap?._id === payload) {
+          this.setCurrentMap(null);
+        }
+      } catch (e: any) {
+        dispatch.error.setError(e);
+      }
     },
 
     sortMaps(payload, state) {
@@ -64,6 +99,75 @@ export const mapStore = createModel<RootModel>()({
     },
     filterMaps(payload, state) {
       return;
+    },
+    async loadMap(payload: string, state): Promise<string | undefined> {
+      try {
+        const loaded = await map.getMap(payload);
+        this.setCurrentMap(loaded.data.map);
+        return loaded.data.map._id;
+      } catch (e: any) {
+        dispatch.error.setError(e);
+      }
+    },
+    async createFeature(payload: Feature<Geometry>, state): Promise<string | undefined> {
+      const id = state.mapStore.currentMap?._id;
+      console.log(state.mapStore.currentMap);
+
+      if (!id) {
+        console.error('No map selected');
+        dispatch.error.setError('No map selected');
+        return;
+      }
+
+      try {
+        const feature = await map.createFeature(id, payload);
+        return feature.data._id;
+      } catch (e: any) {
+        dispatch.error.setError(e);
+      }
+    },
+    async updateFeature(payload, state) {
+      const id = state.mapStore.currentMap?._id;
+
+      let { id: featureid, feature } = payload;
+
+      if (!id) {
+        console.error('No map selected');
+        dispatch.error.setError('No map selected');
+        return;
+      }
+
+      if (!featureid || !feature) {
+        console.error('Invalid feature');
+        dispatch.error.setError('Invalid feature');
+        return;
+      }
+
+      try {
+        await map.updateFeature(id, featureid, feature);
+      } catch (e: any) {
+        dispatch.error.setError(e);
+      }
+    },
+    async deleteFeature(payload, state) {
+      const id = state.mapStore.currentMap?._id;
+      if (!id) {
+        console.error('No map selected');
+        dispatch.error.setError('No map selected');
+        return;
+      }
+
+      if (!payload) {
+        console.error('No feature selected');
+        dispatch.error.setError('No feature selected');
+        return;
+      }
+
+      try {
+        await map.deleteFeature(id, payload);
+      } catch (e: any) {
+        dispatch.error.setError(e);
+      }
     },
   }),
 });

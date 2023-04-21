@@ -11,6 +11,7 @@ import CommentsSidePanel from '../CommentsSidePanel';
 import ProjectSidePanel from '../ProjectSidePanel';
 import { MapComponent } from '../map';
 import { SelectedFeature } from '../map/MapComponent';
+import { store } from '../../models';
 
 const defaultMap: Map = {
   _id: 'DEFAULT_MAP',
@@ -22,27 +23,36 @@ const defaultMap: Map = {
   downloads: 0,
   published: { isPublished: false },
   comments: [],
-  features: [],
+  features: { type: 'FeatureCollection', features: [] },
 };
 
 export const ProjectScreen = () => {
   const navigate = useNavigate();
 
   const user = useSelector((state: RootState) => state.user.currentUser);
+  const map = useSelector((state: RootState) => state.mapStore.currentMap);
+
+  const { mapStore } = store.dispatch;
 
   const { id } = useParams();
 
   useEffect(() => {
-    //load data from db
-    setMap(defaultMap);
+    setError(false);
+    if (!id) {
+      setError(true);
+      return;
+    }
+
+    mapStore.loadMap(id);
   }, [id]);
 
-  const [map, setMap] = useState<Map>(defaultMap);
   const [isMapDeleted, setMapDeleted] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [selectedFeature, setSelectedFeature] = useState<SelectedFeature>(null);
   // true for comments, false for property editor
   const [sidePanelToggle, setSidePanelToggle] = useState(false);
+
+  const [error, setError] = useState(false);
 
   const closeDeletedDialog = () => {
     setMapDeleted(false);
@@ -53,8 +63,17 @@ export const ProjectScreen = () => {
     setShareOpen(false);
   };
 
-  // const canEdit = (user && user.maps?.some((v) => v._id === map._id)) ?? false;
-  const canEdit = true; // allow editing for build 2
+  const setMapName = (name: string) => mapStore.updateCurrentMap({ name });
+
+  const canEdit = (map && user && user.maps?.some((v) => v._id === map._id)) ?? false;
+
+  if (error) {
+    return <div>Error loading map</div>;
+  }
+
+  if (!map) {
+    return <div>Loading map...</div>;
+  }
 
   return (
     <div className="bg-black w-screen h-[calc(100vh-64px)]">
@@ -62,7 +81,7 @@ export const ProjectScreen = () => {
         shareOpen={shareOpen}
         setShareOpen={setShareOpen}
         mapName={map.name}
-        setMapName={(name: string) => setMap({ ...map, name: name })}
+        setMapName={setMapName}
         setSidePanelToggle={setSidePanelToggle}
         sidePanelToggle={sidePanelToggle}
       />
@@ -74,7 +93,9 @@ export const ProjectScreen = () => {
           key={'MAP'}
           {...map}
         />
-        {!sidePanelToggle && <ProjectSidePanel selectedFeature={selectedFeature} />}
+        {!sidePanelToggle && (
+          <ProjectSidePanel selectedFeature={selectedFeature} canEdit={canEdit} />
+        )}
         {sidePanelToggle && <CommentsSidePanel />}
       </div>
 

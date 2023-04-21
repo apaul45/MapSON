@@ -1,18 +1,11 @@
-import { Fragment } from 'react'
-import { useSelector } from 'react-redux'
-import { RootState, store } from '../../models'
-import {
-  Dialog,
-  DialogBody,
-  DialogFooter,
-  DialogHeader,
-} from '@material-tailwind/react'
+import { Fragment } from 'react';
+import { useSelector } from 'react-redux';
+import { RootState, store } from '../../models';
+import { Dialog, DialogBody, DialogFooter, DialogHeader } from '@material-tailwind/react';
 
 export const ErrorDialog = () => {
-  const errorMessage = useSelector(
-    (state: RootState) => state.error.errorMessage
-  )
-  const closeDialog = () => store.dispatch.error.setError(null)
+  const errorMessage = useSelector((state: RootState) => state.error.errorMessage);
+  const closeDialog = () => store.dispatch.error.setError(null);
 
   return (
     <Fragment>
@@ -30,9 +23,9 @@ export const ErrorDialog = () => {
           ></i>
         </DialogBody>
 
-        <DialogHeader className="text-white justify-center">
-          {errorMessage}
-        </DialogHeader>
+        {errorMessage && (
+          <DialogHeader className="text-white justify-center">{errorMessage}</DialogHeader>
+        )}
 
         <DialogFooter className="justify-center">
           <button
@@ -44,5 +37,5 @@ export const ErrorDialog = () => {
         </DialogFooter>
       </Dialog>
     </Fragment>
-  )
-}
+  );
+};
