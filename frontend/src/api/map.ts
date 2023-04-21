@@ -3,6 +3,7 @@ import { api } from './axios';
 import { Map } from '../types';
 import {
   CreateFeatureResponse,
+  CreateMapRequest,
   CreateMapResponse,
   DeleteFeatureResponse,
   DeleteMapResponse,
@@ -13,12 +14,12 @@ import {
   UpdateMapResponse,
 } from './types';
 
-export const createMap = (payload: Partial<Map>) =>
+export const createMap = (payload: CreateMapRequest) =>
   api.post<CreateMapResponse>('/maps/map', payload);
 export const deleteMap = (id: string) => api.delete<DeleteMapResponse>(`/maps/map/${id}`);
 export const getMap = (id: string) => api.get<GetMapResponse>(`/maps/map/${id}`);
-export const updateMap = (id: string, payload: Map) =>
-  api.put<UpdateMapResponse>(`/maps/map/${id}`, payload);
+export const updateMap = (id: string, payload: Partial<Map>) =>
+  api.put<UpdateMapResponse>(`/maps/map/${id}`, { changes: payload });
 
 export const createFeature = (id: string, payload: Feature) =>
   api.post<CreateFeatureResponse>(`/maps/map/${id}/feature`, payload);
@@ -31,4 +32,14 @@ export const deleteFeature = (id: string, featureid: string) =>
 
 export const getAllMaps = () => api.get<GetAllMapsResponse>('/maps/allmaps');
 
-export default { createMap };
+export default {
+  createMap,
+  deleteMap,
+  getMap,
+  updateMap,
+  createFeature,
+  getFeature,
+  updateFeature,
+  deleteFeature,
+  getAllMaps,
+};

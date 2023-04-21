@@ -1,104 +1,90 @@
-import { useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
-import { store } from '../../models'
+import { useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { store } from '../../models';
 
 export default function MapCard(props: any) {
-  const [expand, setExpand] = useState<boolean>(false)
-  const [upvoteClass, setUpvoteClass] = useState<string>('')
-  const [downvoteClass, setdownvoteClass] = useState<string>('')
+  const [expand, setExpand] = useState<boolean>(false);
+  const [upvoteClass, setUpvoteClass] = useState<string>('');
+  const [downvoteClass, setdownvoteClass] = useState<string>('');
   // const [upvoteCount, setUpvoteCount] = useState<number>(10)
   // const [downvoteCount, setDownvoteCount] = useState<number>(10)
   // const [downloadCount, setDownloadCount] = useState<number>(10)
-  const {
-    map,
-    name,
-    username,
-    upvoteCount,
-    downvoteCount,
-    downloadCount,
-    description,
-    date,
-  } = props
+  const { map, name, username, upvoteCount, downvoteCount, downloadCount, description, date } =
+    props;
 
   const dateFormat = new Date(date).toLocaleDateString('en-us', {
     year: 'numeric',
     day: 'numeric',
     month: 'long',
-  })
+  });
 
   //const description: string = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam odio nulla, tincidunt sit amet ultricies placerat, mollis a sem. Phasellus eget dui in ante porta vehicula ac in ante. Praesent bibendum volutpat risus, id efficitur turpis porta vel. Praesent tempus posuere tortor non faucibus. Sed imperdiet ex cursus felis condimentum bibendum. Sed scelerisque, velit eget bibendum ultrices, tortor quam aliquet risus, id hendrerit arcu metus et ante. '
 
-  // const mapStore = store.dispatch.mapStore
+  const location = useLocation();
+  console.log(location.pathname);
 
-  // const handleSetCurrentMap = () => {
-  //   store.setCurrentMap(map)
-  // }
-
-  const location = useLocation()
-  console.log(location.pathname)
-
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const deleteCard = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-    console.log('delete card')
-    e.stopPropagation()
-    store.dispatch.mapStore.setDeleteDialog(true)
-  }
+    console.log('delete card');
+    e.stopPropagation();
+    store.dispatch.mapStore.setDeleteDialog(true);
+  };
 
   const upvoteMap = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-    console.log('upvote map')
-    e.stopPropagation()
+    console.log('upvote map');
+    e.stopPropagation();
     if (downvoteClass === 'text-downvote') {
-      setdownvoteClass('')
+      setdownvoteClass('');
       //setDownvoteCount(downvoteCount - 1)
     }
     if (upvoteClass.length === 0) {
-      setUpvoteClass('text-upvote')
+      setUpvoteClass('text-upvote');
       //setUpvoteCount(upvoteCount + 1)
     } else {
-      setUpvoteClass('')
+      setUpvoteClass('');
       //setUpvoteCount(upvoteCount - 1)
     }
-  }
+  };
 
   const downvoteMap = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-    console.log('downvote map')
-    e.stopPropagation()
+    console.log('downvote map');
+    e.stopPropagation();
     if (upvoteClass === 'text-upvote') {
-      setUpvoteClass('')
+      setUpvoteClass('');
       //setUpvoteCount(upvoteCount - 1)
     }
     if (downvoteClass.length === 0) {
-      setdownvoteClass('text-downvote')
+      setdownvoteClass('text-downvote');
       //setDownvoteCount(downvoteCount + 1)
     } else {
-      setdownvoteClass('')
+      setdownvoteClass('');
       //setDownvoteCount(downvoteCount - 1)
     }
-  }
+  };
 
   const downloadMap = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-    console.log('download map')
-    e.stopPropagation()
+    console.log('download map');
+    e.stopPropagation();
     //setDownloadCount(downloadCount + 1)
-  }
+  };
 
   const goToProject = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    navigate('/project/default')
-  }
+    navigate(`/project/${map._id}`);
+  };
 
   return (
     <div className="max-w-sm rounded overflow-hidden shadow-lg relative bg-white">
       <div
-        className="relative hover:cursor-pointer"
+        className="relative hover:cursor-pointer mapcard"
         onClick={(e) => {
-          goToProject(e)
+          goToProject(e);
         }}
       >
         {location.pathname.includes('home') ? (
           <button
             onClick={(e) => {
-              deleteCard(e)
+              deleteCard(e);
               //handleSetCurrentMap();
             }}
             className="absolute top-0 right-0 "
@@ -126,17 +112,12 @@ export default function MapCard(props: any) {
 
       <div className="py-3 px-3">
         <div className="font-bold text-xl text-left">{name}</div>
-        {expand ? (
-          <p className="text-gray-700 text-base text-left">{description}</p>
-        ) : (
-          ''
-        )}
+        {expand ? <p className="text-gray-700 text-base text-left">{description}</p> : ''}
       </div>
 
       <div className="px-3 text-left">
         <div className="text-gray-700 text-base">
-          <span className="">By</span>{' '}
-          <span className="underline text-blue">{username}</span>
+          <span className="">By</span> <span className="underline text-blue">{username}</span>
         </div>
         <div className="text-gray-700 text-base">{dateFormat}</div>
       </div>
@@ -146,7 +127,7 @@ export default function MapCard(props: any) {
             id="upvote-button"
             className={upvoteClass}
             onClick={(e) => {
-              upvoteMap(e)
+              upvoteMap(e);
             }}
           >
             <svg
@@ -174,7 +155,7 @@ export default function MapCard(props: any) {
             id="downvote-button"
             className={downvoteClass}
             onClick={(e) => {
-              downvoteMap(e)
+              downvoteMap(e);
             }}
           >
             <svg
@@ -202,7 +183,7 @@ export default function MapCard(props: any) {
             id="download-button"
             className=""
             onClick={(e) => {
-              downloadMap(e)
+              downloadMap(e);
             }}
           >
             <svg
@@ -229,8 +210,8 @@ export default function MapCard(props: any) {
           id="expand-collapse-button"
           className="ml-auto px-2"
           onClick={(e) => {
-            e.stopPropagation()
-            setExpand(!expand)
+            e.stopPropagation();
+            setExpand(!expand);
           }}
         >
           {!expand ? (
@@ -242,11 +223,7 @@ export default function MapCard(props: any) {
               stroke="currentColor"
               className="w-6 h-6"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M19.5 8.25l-7.5 7.5-7.5-7.5"
-              />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
             </svg>
           ) : (
             <svg
@@ -257,15 +234,11 @@ export default function MapCard(props: any) {
               stroke="currentColor"
               className="w-6 h-6"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M4.5 15.75l7.5-7.5 7.5 7.5"
-              />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
             </svg>
           )}
         </button>
       </div>
     </div>
-  )
+  );
 }

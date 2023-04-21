@@ -1,3 +1,4 @@
+import { FeatureCollection } from 'geojson';
 import { FeatureExt, Map, User } from '../types';
 
 //GENERAL
@@ -22,7 +23,9 @@ export interface GetMapResponse extends Response {
   map: Map;
 }
 
-export interface GetAllMapsResponse extends Response {}
+export interface GetAllMapsResponse extends Response {
+  maps: Map[];
+}
 
 export interface DeleteMapResponse extends Response {}
 
@@ -41,3 +44,8 @@ export interface GetFeatureResponse extends Response {
 export interface UpdateFeatureResponse extends Response {}
 
 export interface DeleteFeatureResponse extends Response {}
+
+export interface CreateMapRequest {
+  geojson?: FeatureCollection;
+  mapName: string;
+}

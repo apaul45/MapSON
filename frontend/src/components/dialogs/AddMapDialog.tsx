@@ -13,9 +13,7 @@ export const AddMapDialog = () => {
   const [fileType, setFileType] = useState('');
   const [mapName, setMapName] = useState('');
   const [geojson, setGeojson] = useState<
-    | FeatureCollectionWithFilename
-    | (FeatureCollection<Geometry, GeoJsonProperties> | FeatureCollectionWithFilename[])[]
-    | undefined
+    FeatureCollectionWithFilename | FeatureCollection<Geometry, GeoJsonProperties> | undefined
   >();
   const { error, mapStore } = store.dispatch;
   const isOpen = useSelector((state: RootState) => state.mapStore.addDialog);
@@ -127,6 +125,7 @@ export const AddMapDialog = () => {
       return;
     }
     if (Array.isArray(geojson)) {
+      //@ts-ignore
       setGeojson(geojson[0]);
       return;
     }

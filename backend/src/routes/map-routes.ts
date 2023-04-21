@@ -140,8 +140,7 @@ mapRouter.get('/map/:id', async (req: Request, res: Response) => {
     });
   }
 
-  // TODO: Need to add geojson schema later so feature field also has to be populated
-  const map = await Map.find({ _id: id }).populate('owner').populate('features');
+  const map = await Map.find({ _id: id }).populate('owner').populate('features.features');
 
   //if map doesnt exist
   if (!map) {

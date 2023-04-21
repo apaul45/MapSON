@@ -1,19 +1,15 @@
-import { useState } from 'react'
-import { Button } from '@material-tailwind/react'
+import { useState } from 'react';
+import { Button } from '@material-tailwind/react';
 
 interface IProperty {
-  k?: string
-  v?: string
-  onUpdate: (
-    newKey: string,
-    newValue?: string,
-    oldKey?: string,
-    deleteKey?: boolean
-  ) => void
+  k?: string;
+  v?: string;
+  onUpdate: (newKey: string, newValue?: string, oldKey?: string, deleteKey?: boolean) => void;
+  viewOnly: boolean;
 }
-const Property = ({ k, v, onUpdate }: IProperty) => {
-  const [key, setKey] = useState(k)
-  const [value, setValue] = useState(v)
+const Property = ({ k, v, onUpdate, viewOnly }: IProperty) => {
+  const [key, setKey] = useState(k);
+  const [value, setValue] = useState(v);
 
   return (
     <div className="flex flex-row">
@@ -23,6 +19,7 @@ const Property = ({ k, v, onUpdate }: IProperty) => {
         value={key}
         onChange={(e) => setKey(e.target.value)}
         placeholder="key"
+        disabled={viewOnly}
       ></input>
 
       <input
@@ -31,47 +28,51 @@ const Property = ({ k, v, onUpdate }: IProperty) => {
         value={value}
         onChange={(e) => setValue(e.target.value)}
         placeholder="value"
+        disabled={viewOnly}
       ></input>
     </div>
-  )
-}
+  );
+};
 
 interface IPropertyEditor {
-  onSave?: (properties: Record<string, string>) => void
-  properties: Record<string, string>
+  onSave?: (properties: Record<string, string>) => void;
+  properties: Record<string, string>;
+  viewOnly: boolean;
 }
 
-const PropertyEditor = ({ onSave, properties }: IPropertyEditor) => {
-  const [props, setProps] = useState(properties)
+const PropertyEditor = ({ onSave, properties, viewOnly }: IPropertyEditor) => {
+  const [props, setProps] = useState(properties);
 
   return (
     <div className="bg-gray m-2">
       <ul className="text-black">
         {Object.entries(props).map(([k, v]) => (
           <li key={k}>
-            <Property k={k} v={v} onUpdate={() => {}} />
+            <Property k={k} v={v} onUpdate={() => {}} viewOnly={viewOnly} />
           </li>
         ))}
       </ul>
 
-      <div>
-        <Button className="m-2" onClick={() => onSave?.(props)}>
-          Save
-        </Button>
-        <Button
-          className="m-2"
-          variant="text"
-          onClick={() => {
-            setProps((prev) => {
-              return { ...prev, '': '' }
-            })
-          }}
-        >
-          Add Item
-        </Button>
-      </div>
+      {!viewOnly && (
+        <div>
+          <Button className="m-2" onClick={() => onSave?.(props)}>
+            Save
+          </Button>
+          <Button
+            className="m-2"
+            variant="text"
+            onClick={() => {
+              setProps((prev) => {
+                return { ...prev, '': '' };
+              });
+            }}
+          >
+            Add Item
+          </Button>
+        </div>
+      )}
     </div>
-  )
-}
+  );
+};
 
-export default PropertyEditor
+export default PropertyEditor;

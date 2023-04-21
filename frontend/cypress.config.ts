@@ -1,7 +1,7 @@
-import { defineConfig } from 'cypress'
-import dotenv from 'dotenv'
+import { defineConfig } from 'cypress';
+import dotenv from 'dotenv';
 
-dotenv.config()
+dotenv.config();
 
 export default defineConfig({
   e2e: {
@@ -9,8 +9,9 @@ export default defineConfig({
       config.env = {
         ...process.env,
         ...config.env,
-      }
-      return config
+      };
+      return config;
     },
+    testIsolation: false,
   },
-})
+});

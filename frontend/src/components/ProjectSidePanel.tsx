@@ -1,27 +1,19 @@
-import PropertyEditor from './PropertyEditor'
-import {
-  Tabs,
-  Tab,
-  TabsBody,
-  TabsHeader,
-  TabPanel,
-} from '@material-tailwind/react'
-import { SelectedFeature } from './map/MapComponent'
+import PropertyEditor from './PropertyEditor';
+import { Tabs, Tab, TabsBody, TabsHeader, TabPanel } from '@material-tailwind/react';
+import { SelectedFeature } from './map/MapComponent';
 
 const EXAMPLE_PROPERTIES = Object.fromEntries(
   Array.from(Array(10).keys()).map((v) => [`Key${v}`, `Value${v}`])
-)
+);
 
 interface IProjectSidePanel {
-  selectedFeature: SelectedFeature
+  selectedFeature: SelectedFeature;
+  canEdit: boolean;
 }
 
-const ProjectSidePanel = ({ selectedFeature }: IProjectSidePanel) => {
+const ProjectSidePanel = ({ selectedFeature, canEdit }: IProjectSidePanel) => {
   return (
-    <div
-      className="bg-gray z-0 text-white h-[calc(100vh-64px)]"
-      style={{ minWidth: '20vw' }}
-    >
+    <div className="bg-gray z-0 text-white h-[calc(100vh-64px)]" style={{ minWidth: '20vw' }}>
       <Tabs value="Feature">
         <TabsHeader
           className="bg-gray"
@@ -45,8 +37,9 @@ const ProjectSidePanel = ({ selectedFeature }: IProjectSidePanel) => {
                   properties={EXAMPLE_PROPERTIES}
                   onSave={(props) => {
                     //TODO
-                    console.log(props)
+                    console.log(props);
                   }}
+                  viewOnly={!canEdit}
                 />
               </div>
             ) : (
@@ -59,14 +52,15 @@ const ProjectSidePanel = ({ selectedFeature }: IProjectSidePanel) => {
               properties={EXAMPLE_PROPERTIES}
               onSave={(props) => {
                 //TODO
-                console.log(props)
+                console.log(props);
               }}
+              viewOnly={!canEdit}
             />
           </TabPanel>
         </TabsBody>
       </Tabs>
     </div>
-  )
-}
+  );
+};
 
-export default ProjectSidePanel
+export default ProjectSidePanel;
