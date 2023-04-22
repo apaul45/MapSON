@@ -78,11 +78,11 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
       }
     }
 
-    // let featureIndex = mapRef.current?.features.features.findIndex((feature) => feature._id === id);
-    // if (featureIndex! >= 0) {
-    //   // @ts-ignore
-    //   layer.feature = mapRef.current?.features.features[featureIndex!];
-    // }
+    let featureIndex = mapRef.current?.features.features.findIndex((feature) => feature._id === id);
+    if (featureIndex! >= 0) {
+      // @ts-ignore
+      layer.feature = mapRef.current?.features.features[featureIndex!];
+    }
 
     selectedFeatures.current.push({ layer, id });
     setSelectedFeature({ layer, id });
@@ -183,14 +183,14 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
 
     layer._isConfigured = true;
   };
-  let bounds = undefined;
-  if (geoJSON.features.length > 0) {
-    const extent = bbox(geoJSON);
-    bounds = [
-      [extent[1], extent[0]],
-      [extent[3], extent[2]],
-    ];
-  }
+  // let bounds = undefined;
+  // if (geoJSON.features.length > 0) {
+  //   const extent = bbox(geoJSON);
+  //   bounds = [
+  //     [extent[1], extent[0]],
+  //     [extent[3], extent[2]],
+  //   ];
+  // }
 
   return (
     <div className="w-screen h-[calc(100vh-64px)]">
@@ -198,7 +198,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
         style={{ width: '100%', minHeight: '100%', height: '100%', zIndex: 0 }}
         zoom={4}
         markerZoomAnimation={false}
-        center={bounds === undefined ? position : undefined}
+        center={position}
         doubleClickZoom={false}
         ref={(ref) =>
           window.addEventListener('resize', () => {
@@ -209,7 +209,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
         //TODO: dynamically check if we need to use L.SVG vs L.Canvas depending on browser
         renderer={new L.Canvas({ tolerance: 3 })}
         //@ts-ignore
-        bounds={bounds}
+        //bounds={bounds}
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         <FeatureGroup>
