@@ -27,6 +27,8 @@ let map: IMap = {
   downvotes: [],
   description: '',
   comments: [],
+  // @ts-ignore
+  properties: {},
   published: { isPublished: true, publishedDate: new Date() },
   features: { type: 'FeatureCollection', features: [] },
 };
