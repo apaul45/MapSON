@@ -2,8 +2,6 @@ name: Jest and Supertest Tests
 
 on:
   push:
-    branches:
-      - main
     paths:
       - 'backend/**'
 

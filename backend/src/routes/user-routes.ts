@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import dotenv from 'dotenv';
 import axios from 'axios';
 import Map from '../models/map-model';
+import { Types } from 'mongoose';
 
 dotenv.config();
 
@@ -12,6 +13,7 @@ const router = Router();
 
 declare module 'express-session' {
   interface SessionData {
+    _id: Types.ObjectId;
     username: string; // suppose to be email/username
     email: string;
   }
@@ -55,7 +57,7 @@ router.post('/register', async (req: Request, res: Response) => {
   const salt = await bcrypt.genSalt(saltRounds);
   const passwordHash = await bcrypt.hash(password, salt);
 
-  await User.create({
+  const user = await User.create({
     username: username,
     email: email,
     passwordHash: passwordHash,
@@ -65,6 +67,7 @@ router.post('/register', async (req: Request, res: Response) => {
 
   req.session.username = username;
   req.session.email = email;
+  req.session._id = user._id;
   res.status(200).json({ error: false });
 });
 
@@ -97,6 +100,7 @@ router.post('/login', async (req: Request, res: Response) => {
 
   req.session.email = user.email;
   req.session.username = user.username;
+  req.session._id = user._id;
 
   res.status(200).json(user.toJSON());
 });
@@ -133,7 +137,9 @@ router.post('/recover', async (req: Request, res: Response) => {
   }
 
   const recoverKey = uuidv4();
-  const recoverLink = `https://mapson.vercel.app/reset-password?email=${encodeURIComponent(email)}&key=${encodeURIComponent(recoverKey)}`;
+  const recoverLink = `https://mapson.vercel.app/reset-password?email=${encodeURIComponent(
+    email
+  )}&key=${encodeURIComponent(recoverKey)}`;
 
   user.recoveryKey = recoverKey;
   await user.save();
