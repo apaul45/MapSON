@@ -46,6 +46,7 @@ export interface Map {
   comments: Comment[];
   features: Features;
   description?: string;
+  properties: Record<string, any>;
   updatedAt?: string;
 }
 

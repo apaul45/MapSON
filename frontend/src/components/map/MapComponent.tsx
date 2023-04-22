@@ -1,8 +1,10 @@
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { GeoJSON, MapContainer, FeatureGroup, TileLayer } from 'react-leaflet';
 
 import * as L from 'leaflet';
+// @ts-ignore
+import * as bbox from 'geojson-bbox';
 
 import MapControls from './MapControls';
 import { FeatureExt, LGeoJsonExt, Map } from '../../types';
@@ -10,7 +12,8 @@ import { FeatureExt, LGeoJsonExt, Map } from '../../types';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw/dist/leaflet.draw.css';
 
-import { store } from '../../models';
+import { RootState, store } from '../../models';
+import { useSelector } from 'react-redux';
 
 export type SelectedFeature = { layer: LGeoJsonExt; id: any } | null;
 
@@ -47,8 +50,12 @@ interface IMapComponent extends Map {
 
 const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapComponent) => {
   const { mapStore } = store.dispatch;
+  const map = useSelector((state: RootState) => state.mapStore.currentMap);
+  const mapRef = useRef(map);
 
-  const fg = useRef<LGeoJsonExt>(null);
+  useEffect(() => {
+    mapRef.current = map;
+  }, [map]);
 
   //second one is the most recently selected
   const selectedFeatures = useRef<SelectedFeature[]>([]);
@@ -69,6 +76,12 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
       if (popped && popped.id !== id) {
         res = popped;
       }
+    }
+
+    let featureIndex = mapRef.current?.features.features.findIndex((feature) => feature._id === id);
+    if (featureIndex! >= 0) {
+      // @ts-ignore
+      layer.feature = mapRef.current?.features.features[featureIndex!];
     }
 
     selectedFeatures.current.push({ layer, id });
@@ -170,14 +183,22 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
 
     layer._isConfigured = true;
   };
+  let bounds = undefined;
+  if (geoJSON.features.length > 0) {
+    const extent = bbox(geoJSON);
+    bounds = [
+      [extent[1], extent[0]],
+      [extent[3], extent[2]],
+    ];
+  }
 
   return (
     <div className="w-screen h-[calc(100vh-64px)]">
       <MapContainer
         style={{ width: '100%', minHeight: '100%', height: '100%', zIndex: 0 }}
-        center={position}
         zoom={4}
         markerZoomAnimation={false}
+        center={bounds === undefined ? position : undefined}
         doubleClickZoom={false}
         ref={(ref) =>
           window.addEventListener('resize', () => {
@@ -187,9 +208,11 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
         id="map-container"
         //TODO: dynamically check if we need to use L.SVG vs L.Canvas depending on browser
         renderer={new L.Canvas({ tolerance: 3 })}
+        //@ts-ignore
+        bounds={bounds}
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-        <FeatureGroup ref={fg}>
+        <FeatureGroup>
           <MapControls
             onCreate={async (e) => {
               const layer = e.layer as L.GeoJSON;
@@ -238,7 +261,6 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
             /* @ts-ignore */
             // Fine to ignore since we are guaranteeing the extensions to L.GeoJSON
             onEachFeature={onEachFeature}
-            ref={fg}
           />
         </FeatureGroup>
       </MapContainer>
