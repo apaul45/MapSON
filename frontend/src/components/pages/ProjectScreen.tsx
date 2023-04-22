@@ -13,6 +13,19 @@ import { MapComponent } from '../map';
 import { SelectedFeature } from '../map/MapComponent';
 import { store } from '../../models';
 
+const defaultMap: Map = {
+  _id: 'DEFAULT_MAP',
+  name: 'My Map',
+  username: '',
+  upvotes: [],
+  downvotes: [],
+  forks: 0,
+  downloads: 0,
+  published: { isPublished: false },
+  comments: [],
+  features: { type: 'FeatureCollection', features: [] },
+};
+
 export const ProjectScreen = () => {
   const navigate = useNavigate();
 

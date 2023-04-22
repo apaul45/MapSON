@@ -60,8 +60,6 @@ mapRouter.post('/map', auth, async (req: Request, res: Response) => {
     published: null,
     description: '',
     comments: [],
-    // @ts-ignore
-    properties: {},
     features: fg ?? { type: 'FeatureCollection', features: [] },
   };
 
@@ -291,7 +289,7 @@ mapRouter.post('/map/:id/feature', auth, async (req, res) => {
   map.features.features.push(feature);
   await map.save();
 
-  return res.status(200).json({ error: false, feature: feature });
+  return res.status(200).json({ error: false, _id: feature._id });
 });
 
 //no auth
