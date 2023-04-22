@@ -79,7 +79,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
     }
 
     let featureIndex = mapRef.current?.features.features.findIndex((feature) => feature._id === id);
-    if (featureIndex && featureIndex >= 0) {
+    if (featureIndex !== undefined && featureIndex >= 0) {
       if (!('feature' in layer)) {
         // @ts-ignore
         layer.feature = mapRef.current?.features.features[featureIndex];
