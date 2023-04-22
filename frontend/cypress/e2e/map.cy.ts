@@ -175,6 +175,7 @@ describe('Map Properties Tests', () => {
     cy.contains(/^Map$/).should('exist').click();
 
     addProp(type);
+    cy.wait(1000);
     modProp(type);
     cy.get(`input[value=mapson_${type}_test_key_2]`).should('be.visible');
     cy.get(`input[value=mapson_${type}_test_value_2]`).should('be.visible');
