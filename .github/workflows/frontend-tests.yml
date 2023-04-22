@@ -1,9 +1,6 @@
 name: Cypress Tests
 
-on:
-  push:
-    paths:
-      - 'frontend/**'
+on: [push]
 
 jobs:
   cypress-run:
