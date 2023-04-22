@@ -4,7 +4,7 @@ import { GeoJSON, MapContainer, FeatureGroup, TileLayer } from 'react-leaflet';
 
 import * as L from 'leaflet';
 // @ts-ignore
-import * as bbox from 'geojson-bbox';
+import bbox from 'geojson-bbox';
 
 import MapControls from './MapControls';
 import { FeatureExt, LGeoJsonExt, Map } from '../../types';
