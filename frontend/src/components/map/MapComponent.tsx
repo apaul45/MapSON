@@ -41,6 +41,8 @@ const SELECTED_AND_HOVERED = {
   color: 'black',
 };
 
+const position: L.LatLngTuple = [37.335556, -122.009167];
+
 interface IMapComponent extends Map {
   canEdit: boolean;
   setSelectedFeature: Function;
@@ -177,12 +179,14 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
 
     layer._isConfigured = true;
   };
-
-  const extent = bbox(geoJSON);
-  const bounds = [
-    [extent[1], extent[0]],
-    [extent[3], extent[2]],
-  ];
+  let bounds = undefined;
+  if (geoJSON.features.length > 0) {
+    const extent = bbox(geoJSON);
+    bounds = [
+      [extent[1], extent[0]],
+      [extent[3], extent[2]],
+    ];
+  }
 
   return (
     <div className="w-screen h-[calc(100vh-64px)]">
@@ -190,6 +194,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
         style={{ width: '100%', minHeight: '100%', height: '100%', zIndex: 0 }}
         zoom={4}
         markerZoomAnimation={false}
+        center={bounds === undefined ? position : undefined}
         doubleClickZoom={false}
         ref={(ref) =>
           window.addEventListener('resize', () => {
