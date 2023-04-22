@@ -154,7 +154,7 @@ mapRouter.get('/map/:id', async (req: Request, res: Response) => {
 });
 
 // Route for getting all maps to show in discover screen
-mapRouter.get('/allmaps', async (req: Request, res: Response) => {
+mapRouter.post('/allmaps', async (req: Request, res: Response) => {
   const { limit, filterBy, sortBy } = req.body;
 
   let matchBy: any = [{ 'published.isPublished': true }];
