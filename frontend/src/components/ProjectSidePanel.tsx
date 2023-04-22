@@ -1,8 +1,9 @@
 import PropertyEditor from './PropertyEditor';
 import { Tabs, Tab, TabsBody, TabsHeader, TabPanel } from '@material-tailwind/react';
 import { SelectedFeature } from './map/MapComponent';
-import { store } from '../models';
+import { RootState, store } from '../models';
 import { useRef } from 'react';
+import { useSelector } from 'react-redux';
 
 const EXAMPLE_PROPERTIES = Object.fromEntries(
   Array.from(Array(10).keys()).map((v) => [`Key${v}`, `Value${v}`])
@@ -14,22 +15,27 @@ interface IProjectSidePanel {
 }
 
 const ProjectSidePanel = ({ selectedFeature, canEdit }: IProjectSidePanel) => {
-  const customPropRef = useRef({});
+  const customRegionPropRef = useRef({});
   // @ts-ignore
   const properties: Record<string, any> = selectedFeature?.layer.feature?.properties;
   const { mapStore } = store.dispatch;
+  const map = useSelector((state: RootState) => state.mapStore.currentMap);
+
+  const customMapProps = map?.properties;
 
   if (selectedFeature) {
-    customPropRef.current = Object.fromEntries(
+    customRegionPropRef.current = Object.fromEntries(
       Object.entries(properties)
         .filter(([k, v]) => k.startsWith('mapson_'))
         .map(([k, v]) => [k.substring(7), v])
     );
   }
 
-  const saveProperties = async (props: Record<string, any>) => {
+  const saveRegionProperties = async (props: Record<string, any>) => {
     let newProperties: Record<string, any> = Object.fromEntries(
-      Object.entries(props).map(([k, v]) => ['mapson_' + k, v])
+      Object.entries(props)
+        .filter(([k, v]) => k.length > 0)
+        .map(([k, v]) => ['mapson_' + k, v])
     );
 
     let ogProps = Object.fromEntries(
@@ -40,6 +46,13 @@ const ProjectSidePanel = ({ selectedFeature, canEdit }: IProjectSidePanel) => {
     // @ts-ignore
     feature!.properties = { ...ogProps, ...newProperties };
     await mapStore.updateFeature({ id: selectedFeature!.id, feature });
+  };
+
+  const saveMapProperties = async (props: Record<string, any>) => {
+    let prop = {
+      properties: Object.fromEntries(Object.entries(props).filter(([k, v]) => k.length > 0)),
+    };
+    await mapStore.updateCurrentMap(prop);
   };
 
   return (
@@ -65,9 +78,9 @@ const ProjectSidePanel = ({ selectedFeature, canEdit }: IProjectSidePanel) => {
                 <b>Feature Properties: </b>
                 <PropertyEditor
                   // @ts-ignore
-                  properties={customPropRef.current}
+                  properties={customRegionPropRef.current}
                   onSave={(props) => {
-                    saveProperties(props);
+                    saveRegionProperties(props);
                   }}
                   viewOnly={!canEdit}
                 />
@@ -79,10 +92,9 @@ const ProjectSidePanel = ({ selectedFeature, canEdit }: IProjectSidePanel) => {
           <TabPanel value="Map">
             <b>Map Properties: </b>
             <PropertyEditor
-              properties={EXAMPLE_PROPERTIES}
+              properties={customMapProps!}
               onSave={(props) => {
-                //TODO
-                console.log(props);
+                saveMapProperties(props);
               }}
               viewOnly={!canEdit}
             />

@@ -60,6 +60,8 @@ mapRouter.post('/map', auth, async (req: Request, res: Response) => {
     published: null,
     description: '',
     comments: [],
+    // @ts-ignore
+    properties: {},
     features: fg ?? { type: 'FeatureCollection', features: [] },
   };
 
