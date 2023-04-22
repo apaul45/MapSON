@@ -56,9 +56,10 @@ interface IPropertyEditor {
   onSave?: (properties: Record<string, any>) => void;
   properties: Record<string, any>;
   viewOnly: boolean;
+  type: string;
 }
 
-const PropertyEditor = ({ onSave, properties, viewOnly }: IPropertyEditor) => {
+const PropertyEditor = ({ onSave, properties, viewOnly, type }: IPropertyEditor) => {
   const [props, setProps] = useState(properties);
   useEffect(() => {
     setProps(properties);
@@ -76,10 +77,11 @@ const PropertyEditor = ({ onSave, properties, viewOnly }: IPropertyEditor) => {
 
       {!viewOnly && (
         <div>
-          <Button className="m-2" onClick={() => onSave?.(props)}>
+          <Button id={type + '-save-button'} className="m-2" onClick={() => onSave?.(props)}>
             Save
           </Button>
           <Button
+            id={type + '-add-button'}
             className="m-2"
             variant="text"
             onClick={() => {

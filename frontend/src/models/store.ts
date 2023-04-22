@@ -121,7 +121,12 @@ export const mapStore = createModel<RootModel>()({
 
       try {
         const feature = await map.createFeature(id, payload);
-        return feature.data._id;
+
+        let oldMap = state.mapStore.currentMap;
+        oldMap?.features.features.push(feature.data.feature);
+        this.setCurrentMap(oldMap);
+
+        return feature.data.feature._id;
       } catch (e: any) {
         dispatch.error.setError(e);
       }

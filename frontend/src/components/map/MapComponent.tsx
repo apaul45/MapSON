@@ -77,9 +77,13 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
         res = popped;
       }
     }
+
     let featureIndex = mapRef.current?.features.features.findIndex((feature) => feature._id === id);
-    // @ts-ignore
-    layer.feature = mapRef.current?.features.features[featureIndex!];
+    if (featureIndex! >= 0) {
+      // @ts-ignore
+      layer.feature = mapRef.current?.features.features[featureIndex!];
+    }
+
     selectedFeatures.current.push({ layer, id });
     setSelectedFeature({ layer, id });
 

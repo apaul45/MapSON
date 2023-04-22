@@ -38,9 +38,12 @@ const ProjectSidePanel = ({ selectedFeature, canEdit }: IProjectSidePanel) => {
         .map(([k, v]) => ['mapson_' + k, v])
     );
 
-    let ogProps = Object.fromEntries(
-      Object.entries(properties).filter(([k, v]) => !k.startsWith('mapson_'))
-    );
+    let ogProps = {};
+    if (properties) {
+      ogProps = Object.fromEntries(
+        Object.entries(properties).filter(([k, v]) => !k.startsWith('mapson_'))
+      );
+    }
 
     let feature = selectedFeature?.layer.toGeoJSON();
     // @ts-ignore
@@ -83,6 +86,7 @@ const ProjectSidePanel = ({ selectedFeature, canEdit }: IProjectSidePanel) => {
                     saveRegionProperties(props);
                   }}
                   viewOnly={!canEdit}
+                  type="feature"
                 />
               </div>
             ) : (
@@ -97,6 +101,7 @@ const ProjectSidePanel = ({ selectedFeature, canEdit }: IProjectSidePanel) => {
                 saveMapProperties(props);
               }}
               viewOnly={!canEdit}
+              type="map"
             />
           </TabPanel>
         </TabsBody>

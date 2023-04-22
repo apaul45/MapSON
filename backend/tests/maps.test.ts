@@ -182,7 +182,7 @@ describe('Create Feature Test', () => {
       .send(EXAMPLE_FEATURE);
 
     expect(res.statusCode).toBe(200);
-    expect(res.body._id).toBeTruthy();
+    expect(res.body.feature).toBeTruthy();
   });
 });
 
@@ -206,9 +206,9 @@ describe('Get Feature Test', () => {
       .send(EXAMPLE_FEATURE);
 
     expect(res.statusCode).toBe(200);
-    expect(res.body._id).toBeTruthy();
+    expect(res.body.feature._id).toBeTruthy();
 
-    featureId = res.body._id;
+    featureId = res.body.feature._id;
   });
 
   it('should return the right geojson', async () => {
@@ -252,9 +252,9 @@ describe('Delete Feature Test', () => {
       .send(EXAMPLE_FEATURE);
 
     expect(res.statusCode).toBe(200);
-    expect(res.body._id).toBeTruthy();
+    expect(res.body.feature._id).toBeTruthy();
 
-    featureId = res.body._id;
+    featureId = res.body.feature._id;
   });
 
   it('should fail if no authentication', async () => {
@@ -298,9 +298,9 @@ describe('Update Feature Test', () => {
       .send(EXAMPLE_FEATURE);
 
     expect(res.statusCode).toBe(200);
-    expect(res.body._id).toBeTruthy();
+    expect(res.body.feature._id).toBeTruthy();
 
-    featureId = res.body._id;
+    featureId = res.body.feature._id;
   });
 
   it('should fail if no authentication', async () => {
