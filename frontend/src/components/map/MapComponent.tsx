@@ -3,6 +3,8 @@ import { useEffect, useRef } from 'react';
 import { GeoJSON, MapContainer, FeatureGroup, TileLayer } from 'react-leaflet';
 
 import * as L from 'leaflet';
+// @ts-ignore
+import * as bbox from 'geojson-bbox';
 
 import MapControls from './MapControls';
 import { FeatureExt, LGeoJsonExt, Map } from '../../types';
@@ -38,8 +40,6 @@ const SELECTED_AND_HOVERED = {
   fillOpacity: 0.5,
   color: 'black',
 };
-
-const position: L.LatLngTuple = [37.335556, -122.009167];
 
 interface IMapComponent extends Map {
   canEdit: boolean;
@@ -178,11 +178,16 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
     layer._isConfigured = true;
   };
 
+  const extent = bbox(geoJSON);
+  const bounds = [
+    [extent[1], extent[0]],
+    [extent[3], extent[2]],
+  ];
+
   return (
     <div className="w-screen h-[calc(100vh-64px)]">
       <MapContainer
         style={{ width: '100%', minHeight: '100%', height: '100%', zIndex: 0 }}
-        center={position}
         zoom={4}
         markerZoomAnimation={false}
         doubleClickZoom={false}
@@ -194,6 +199,8 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
         id="map-container"
         //TODO: dynamically check if we need to use L.SVG vs L.Canvas depending on browser
         renderer={new L.Canvas({ tolerance: 3 })}
+        //@ts-ignore
+        bounds={bounds}
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         <FeatureGroup>
