@@ -143,6 +143,15 @@ export const mapStore = createModel<RootModel>()({
         return;
       }
 
+      let oldMap = state.mapStore.currentMap;
+      if (oldMap !== null) {
+        let featureIndex = oldMap?.features.features.findIndex(
+          (feature) => feature._id === featureid
+        );
+        oldMap.features.features[featureIndex] = feature;
+      }
+      this.setCurrentMap(oldMap);
+
       try {
         await map.updateFeature(id, featureid, feature);
       } catch (e: any) {

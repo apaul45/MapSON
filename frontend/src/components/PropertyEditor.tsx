@@ -1,6 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@material-tailwind/react';
-import { update } from 'cypress/types/lodash';
 
 interface IProperty {
   k?: string;
@@ -61,6 +60,9 @@ interface IPropertyEditor {
 
 const PropertyEditor = ({ onSave, properties, viewOnly }: IPropertyEditor) => {
   const [props, setProps] = useState(properties);
+  useEffect(() => {
+    setProps(properties);
+  }, [properties]);
 
   return (
     <div className="bg-gray m-2">

@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { GeoJSON, MapContainer, FeatureGroup, TileLayer } from 'react-leaflet';
 
@@ -10,7 +10,8 @@ import { FeatureExt, LGeoJsonExt, Map } from '../../types';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw/dist/leaflet.draw.css';
 
-import { store } from '../../models';
+import { RootState, store } from '../../models';
+import { useSelector } from 'react-redux';
 
 export type SelectedFeature = { layer: LGeoJsonExt; id: any } | null;
 
@@ -47,6 +48,12 @@ interface IMapComponent extends Map {
 
 const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapComponent) => {
   const { mapStore } = store.dispatch;
+  const map = useSelector((state: RootState) => state.mapStore.currentMap);
+  const mapRef = useRef(map);
+
+  useEffect(() => {
+    mapRef.current = map;
+  }, [map]);
 
   //second one is the most recently selected
   const selectedFeatures = useRef<SelectedFeature[]>([]);
@@ -68,7 +75,9 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
         res = popped;
       }
     }
-
+    let featureIndex = mapRef.current?.features.features.findIndex((feature) => feature._id === id);
+    // @ts-ignore
+    layer.feature = mapRef.current?.features.features[featureIndex!];
     selectedFeatures.current.push({ layer, id });
     setSelectedFeature({ layer, id });
 

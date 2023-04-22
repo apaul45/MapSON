@@ -1,8 +1,8 @@
 import PropertyEditor from './PropertyEditor';
 import { Tabs, Tab, TabsBody, TabsHeader, TabPanel } from '@material-tailwind/react';
 import { SelectedFeature } from './map/MapComponent';
-import { useSelector } from 'react-redux';
-import { RootState, store } from '../models';
+import { store } from '../models';
+import { useRef } from 'react';
 
 const EXAMPLE_PROPERTIES = Object.fromEntries(
   Array.from(Array(10).keys()).map((v) => [`Key${v}`, `Value${v}`])
@@ -14,30 +14,31 @@ interface IProjectSidePanel {
 }
 
 const ProjectSidePanel = ({ selectedFeature, canEdit }: IProjectSidePanel) => {
-  let customProperties: Record<string, any> = {};
+  const customPropRef = useRef({});
   // @ts-ignore
   const properties: Record<string, any> = selectedFeature?.layer.feature?.properties;
   const { mapStore } = store.dispatch;
 
-  if (properties) {
-    Object.keys(properties).forEach((prop) => {
-      if (prop.startsWith('mapson_')) {
-        customProperties![prop.substring(7)] = properties[prop];
-        delete properties[prop];
-      }
-    });
+  if (selectedFeature) {
+    customPropRef.current = Object.fromEntries(
+      Object.entries(properties)
+        .filter(([k, v]) => k.startsWith('mapson_'))
+        .map(([k, v]) => [k.substring(7), v])
+    );
   }
 
   const saveProperties = async (props: Record<string, any>) => {
-    let newProperties: Record<string, any> = {};
-    Object.keys(props).forEach((prop) => {
-      newProperties['mapson_' + prop] = props[prop];
-    });
-    console.log(selectedFeature);
+    let newProperties: Record<string, any> = Object.fromEntries(
+      Object.entries(props).map(([k, v]) => ['mapson_' + k, v])
+    );
+
+    let ogProps = Object.fromEntries(
+      Object.entries(properties).filter(([k, v]) => !k.startsWith('mapson_'))
+    );
+
     let feature = selectedFeature?.layer.toGeoJSON();
     // @ts-ignore
-    feature.properties = { ...feature.properties, ...newProperties };
-    console.log(selectedFeature!.id);
+    feature!.properties = { ...ogProps, ...newProperties };
     await mapStore.updateFeature({ id: selectedFeature!.id, feature });
   };
 
@@ -64,7 +65,7 @@ const ProjectSidePanel = ({ selectedFeature, canEdit }: IProjectSidePanel) => {
                 <b>Feature Properties: </b>
                 <PropertyEditor
                   // @ts-ignore
-                  properties={customProperties}
+                  properties={customPropRef.current}
                   onSave={(props) => {
                     saveProperties(props);
                   }}
