@@ -23,7 +23,7 @@ const ProjectSidePanel = ({ selectedFeature, canEdit }: IProjectSidePanel) => {
 
   const customMapProps = map?.properties;
 
-  if (selectedFeature) {
+  if (selectedFeature && properties) {
     customRegionPropRef.current = Object.fromEntries(
       Object.entries(properties)
         .filter(([k, v]) => k.startsWith('mapson_'))
