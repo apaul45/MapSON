@@ -10,7 +10,7 @@ const DeleteMapDialog = () => {
 
   const handleDelete = async () => {
     console.log("Deleteing " + mapMarkedForDeletion)
-    store.dispatch.mapStore.deleteMap(mapMarkedForDeletion);
+    await store.dispatch.mapStore.deleteMap(mapMarkedForDeletion);
     closeDialog();
   }
 

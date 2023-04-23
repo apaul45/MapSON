@@ -85,7 +85,7 @@ export const mapStore = createModel<RootModel>()({
     },
     async deleteMap(payload: string, state) {
       try {
-        map.deleteMap(payload);
+        await map.deleteMap(payload);
 
         this.setMaps(state.mapStore.maps.filter((m: Map) => m._id !== payload));
         dispatch.user.removeUserMap(payload);

@@ -56,6 +56,7 @@ export interface Store {
   deleteDialog: boolean;
   shareDialog: boolean;
   addDialog: boolean;
+  mapMarkedForDeletion: null;
 }
 
 export interface UserModel {
