@@ -34,10 +34,15 @@ export interface LayerExt {
   _isConfigured: boolean;
 }
 
+export interface Owner {
+  _id: string;
+  username: string;
+}
+
 export interface Map {
   _id: string;
   name: string;
-  username: string;
+  owner: string | Owner;
   upvotes: User[];
   downvotes: User[];
   forks: number;

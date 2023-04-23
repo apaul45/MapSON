@@ -1,5 +1,5 @@
-import './App.css'
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import './App.css';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import {
   MainNavbar,
   HomeDiscoverScreen,
@@ -10,9 +10,20 @@ import {
   RecoveryScreen,
   DeleteMapDialog,
   ErrorDialog,
-} from './components'
+} from './components';
+import { useEffect } from 'react';
+import { auth } from './api';
+import { store } from './models';
 
 function App() {
+  useEffect(() => {
+    const checkLoggedIn = async () => {
+      await store.dispatch.user.check();
+    };
+
+    checkLoggedIn();
+  }, []);
+
   return (
     <BrowserRouter>
       <MainNavbar />
@@ -28,7 +39,7 @@ function App() {
       <DeleteMapDialog />
       <ErrorDialog />
     </BrowserRouter>
-  )
+  );
 }
 
-export default App
+export default App;

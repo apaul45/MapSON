@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import mapsonLogo from '/img/MapSON-logo-outlined copy.png';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { RootState, store } from '../models';
 import AccountCircle from './AccountCircle';
 import { useSelector } from 'react-redux';
-import { Menu, MenuHandler, MenuItem, MenuList } from '@material-tailwind/react';
+import { Button, Input, Menu, MenuHandler, MenuItem, MenuList } from '@material-tailwind/react';
 
 export const MainNavbar = () => {
   const location = useLocation();
@@ -59,11 +59,18 @@ export const MainNavbar = () => {
                       // Render search textfield for discover page only
                       location.pathname === '/discover' && (
                         <div id="search-field" className="w-72">
-                          <div className="relative h-10 w-full min-w-[200px]">
-                            <input
-                              className="text-black peer h-full w-full rounded-[7px] border border-blue-gray-200 border-t-transparent bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 placeholder-shown:border-t-blue-gray-200 focus:border-2 focus:border-pink-500 focus:border-t-transparent focus:outline-0 disabled:border-0 disabled:bg-blue-gray-50"
-                              placeholder="Search..."
+                          <div className="relative flex w-full max-w-[24rem]">
+                            <Input
+                              type="email"
+                              label="Email Address"
+                              className="pr-20"
+                              containerProps={{
+                                className: 'min-w-0',
+                              }}
                             />
+                            <Button size="sm" className="!absolute right-1 top-1 rounded">
+                              Submit
+                            </Button>
                           </div>
                         </div>
                       )

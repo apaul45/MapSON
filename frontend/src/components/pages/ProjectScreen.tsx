@@ -16,7 +16,7 @@ import { store } from '../../models';
 const defaultMap: Map = {
   _id: 'DEFAULT_MAP',
   name: 'My Map',
-  username: '',
+  owner: '',
   upvotes: [],
   downvotes: [],
   forks: 0,
