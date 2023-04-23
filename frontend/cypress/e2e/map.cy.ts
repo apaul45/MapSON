@@ -121,6 +121,67 @@ describe('Polyline tests', () => {
   });
 });
 
+describe('Region Properties Tests', () => {
+  const type = 'feature';
+  it('should attach a property to a region', () => {
+    drawPolygon();
+
+    cy.get(mapSelector).click(300, 300);
+
+    cy.contains('Feature Properties:').should('exist');
+
+    addProp(type);
+
+    cy.get(mapSelector).click(300, 300);
+    cy.get(mapSelector).click(300, 300);
+
+    cy.get(`input[value=mapson_${type}_test_key]`).should('be.visible');
+    cy.get(`input[value=mapson_${type}_test_value]`).should('be.visible');
+  });
+
+  it('should modify a property of a region', () => {
+    drawPolygon();
+
+    cy.get(mapSelector).click(300, 300);
+
+    cy.contains('Feature Properties:').should('exist');
+
+    addProp(type);
+
+    cy.get(mapSelector).click(300, 300);
+    cy.get(mapSelector).click(300, 300);
+
+    modProp(type);
+
+    cy.get(mapSelector).click(300, 300);
+    cy.get(mapSelector).click(300, 300);
+
+    cy.get(`input[value=mapson_${type}_test_key_2]`).should('be.visible');
+    cy.get(`input[value=mapson_${type}_test_value_2]`).should('be.visible');
+  });
+});
+
+describe('Map Properties Tests', () => {
+  const type = 'map';
+  it('should attach property to a map', () => {
+    cy.contains(/^Map$/).should('exist').click();
+
+    addProp(type);
+    cy.get(`input[value=mapson_${type}_test_key]`).should('be.visible');
+    cy.get(`input[value=mapson_${type}_test_value]`).should('be.visible');
+  });
+
+  it('should modify a property of a map', () => {
+    cy.contains(/^Map$/).should('exist').click();
+
+    addProp(type);
+    cy.wait(1000);
+    modProp(type);
+    cy.get(`input[value=mapson_${type}_test_key_2]`).should('be.visible');
+    cy.get(`input[value=mapson_${type}_test_value_2]`).should('be.visible');
+  });
+});
+
 const drawPolygon = () => {
   cy.toolbarButton('polygon').click();
 
@@ -156,4 +217,33 @@ const deletePolyline = () => {
   cy.get(mapSelector).click(100, 150);
 
   cy.toolbarButton('delete').click();
+};
+
+const addProp = (type: string) => {
+  cy.get('#' + type + '-add-button')
+    .should('exist')
+    .click();
+  cy.get("input[placeholder='key']")
+    .should('exist')
+    .type('mapson_' + type + '_test_key');
+  cy.get("input[placeholder='value']")
+    .should('exist')
+    .type('mapson_' + type + '_test_value');
+  cy.get('#' + type + '-save-button')
+    .should('exist')
+    .click();
+};
+
+const modProp = (type: string) => {
+  cy.get(`input[value=mapson_${type}_test_key]`)
+    .should('exist')
+    .clear()
+    .type('mapson_' + type + '_test_key_2');
+  cy.get(`input[value=mapson_${type}_test_value]`)
+    .should('exist')
+    .clear()
+    .type('mapson_' + type + '_test_value_2');
+  cy.get('#' + type + '-save-button')
+    .should('exist')
+    .click();
 };
