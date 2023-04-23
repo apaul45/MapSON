@@ -22,7 +22,8 @@ export const RegisterScreen = () => {
       email: email,
       username: username,
       password: password,
-    }
+      maps: [],
+    };
 
     await user.register(payload)
     navigate('/home')
