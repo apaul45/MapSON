@@ -8,10 +8,10 @@ const DeleteMapDialog = () => {
   const closeDialog = () => store.dispatch.mapStore.setDeleteDialog(false)
   const mapMarkedForDeletion = useSelector((state: RootState) => state.mapStore.mapMarkedForDeletion)
 
-  const handleDelete = () => {
-    console.log(mapMarkedForDeletion + "marked for deletion")
+  const handleDelete = async () => {
+    console.log("Deleteing " + mapMarkedForDeletion)
     store.dispatch.mapStore.deleteMap(mapMarkedForDeletion);
-    closeDialog()
+    closeDialog();
   }
 
   return (
