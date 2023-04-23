@@ -6,6 +6,13 @@ import { useSelector } from 'react-redux'
 const DeleteMapDialog = () => {
   const isOpen = useSelector((state: RootState) => state.mapStore.deleteDialog)
   const closeDialog = () => store.dispatch.mapStore.setDeleteDialog(false)
+  const mapMarkedForDeletion = useSelector((state: RootState) => state.mapStore.mapMarkedForDeletion)
+
+  const handleDelete = () => {
+    console.log(mapMarkedForDeletion + "marked for deletion")
+    store.dispatch.mapStore.deleteMap(mapMarkedForDeletion);
+    closeDialog()
+  }
 
   return (
     <Fragment>
@@ -23,7 +30,7 @@ const DeleteMapDialog = () => {
             Cancel
           </button>
           <button
-            onClick={() => closeDialog()}
+            onClick={() => handleDelete()}
             className="bg-blue delete-dialog"
           >
             Confirm

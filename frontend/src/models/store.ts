@@ -13,6 +13,7 @@ const initialState: Store = {
   deleteDialog: false,
   shareDialog: false,
   addDialog: false,
+  mapMarkedForDeletion: null,
 };
 
 export const mapStore = createModel<RootModel>()({
@@ -31,6 +32,9 @@ export const mapStore = createModel<RootModel>()({
     },
     setAddDialog: (state, payload: boolean) => {
       return { ...state, addDialog: payload };
+    },
+    setMarkedMap: (state, payload: string) => {
+      return { ...state, mapMarkedForDeletion: payload };
     },
     setMaps: (state, payload: Map[]) => {
       return { ...state, maps: payload };

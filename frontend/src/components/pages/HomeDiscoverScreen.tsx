@@ -62,7 +62,7 @@ export const HomeDiscoverScreen = () => {
               userMaps?.map((map) => (
                 <div key={`UserMapcard:${map._id}`} id={`UserMapcard:${map._id}`}>
                   <MapCard
-                    map={map}
+                    mapid={map._id}
                     name={map.name}
                     username={username}
                     upvoteCount={map.upvotes.length}
@@ -80,7 +80,7 @@ export const HomeDiscoverScreen = () => {
               allMaps.map((map) => (
                 <div key={`Mapcard:${map._id}`}>
                   <MapCard
-                    map={map}
+                    mapid={map._id}
                     name={map.name}
                     username={username}
                     upvoteCount={map.upvotes.length}

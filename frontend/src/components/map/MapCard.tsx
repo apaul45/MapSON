@@ -9,7 +9,7 @@ export default function MapCard(props: any) {
   // const [upvoteCount, setUpvoteCount] = useState<number>(10)
   // const [downvoteCount, setDownvoteCount] = useState<number>(10)
   // const [downloadCount, setDownloadCount] = useState<number>(10)
-  const { map, name, username, upvoteCount, downvoteCount, downloadCount, description, date } =
+  const { mapid, name, username, upvoteCount, downvoteCount, downloadCount, description, date } =
     props;
 
   const dateFormat = new Date(date).toLocaleDateString('en-us', {
@@ -29,6 +29,7 @@ export default function MapCard(props: any) {
     console.log('delete card');
     e.stopPropagation();
     store.dispatch.mapStore.setDeleteDialog(true);
+    store.dispatch.mapStore.setMarkedMap(mapid);
   };
 
   const upvoteMap = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
