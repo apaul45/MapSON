@@ -21,7 +21,7 @@ const ProjectSidePanel = ({ selectedFeature, canEdit }: IProjectSidePanel) => {
   const { mapStore } = store.dispatch;
   const map = useSelector((state: RootState) => state.mapStore.currentMap);
 
-  const customMapProps = map?.properties;
+  const customMapProps = map?.properties !== undefined ? map?.properties : {};
 
   if (selectedFeature && properties) {
     customRegionPropRef.current = Object.fromEntries(
