@@ -17,12 +17,19 @@ export interface Comment {
   comment: string;
 }
 
+export interface MongoData {
+  _id: string;
+  __v: string;
+  updatedAt: string;
+  createdAt: string;
+}
+
 // add mongodb _id type to geometries and features from `geojson` types
 export interface CommonGeoJSONData {
   _id: string;
 }
-export type GeometryExt = CommonGeoJSONData & Geometry;
-export type FeatureExt = CommonGeoJSONData & Feature<GeometryExt>;
+export type GeometryExt = CommonGeoJSONData & Geometry & MongoData;
+export type FeatureExt = CommonGeoJSONData & Feature<GeometryExt> & MongoData;
 export type Features = {
   type: 'FeatureCollection';
   features: Array<FeatureExt>;
@@ -32,6 +39,7 @@ export type LGeoJsonExt = L.GeoJSON & CommonGeoJSONData & LayerExt;
 
 export interface LayerExt {
   _isConfigured: boolean;
+  feature: FeatureExt;
 }
 
 export interface Map {

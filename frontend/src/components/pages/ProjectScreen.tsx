@@ -31,11 +31,15 @@ export const ProjectScreen = () => {
     }
 
     mapStore.loadMap(id);
+
+    return () => {
+      mapStore.clearMap(undefined);
+    };
   }, [id]);
 
   const [isMapDeleted, setMapDeleted] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
-  const [selectedFeature, setSelectedFeature] = useState<SelectedFeature>(null);
+  const [selectedFeature, setSelectedFeature] = useState<SelectedFeature | null>(null);
   // true for comments, false for property editor
   const [sidePanelToggle, setSidePanelToggle] = useState(false);
 

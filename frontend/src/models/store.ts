@@ -1,6 +1,6 @@
 import { createModel } from '@rematch/core';
 import { RootModel } from '.';
-import { Store, Map } from '../types';
+import { Store, Map, FeatureExt } from '../types';
 import { map } from '../api';
 import { AxiosError } from 'axios';
 import { Feature } from '@turf/turf';
@@ -48,7 +48,7 @@ export const mapStore = createModel<RootModel>()({
         const maps = await map.getAllMaps();
         this.setMaps(maps.data.maps);
       } catch (e: any) {
-        dispatch.error.setError(e);
+        dispatch.error.setError(e.errorMessage ?? 'Unexpected error');
       }
     },
     async updateCurrentMap(payload: Partial<Map>, state) {
@@ -64,7 +64,7 @@ export const mapStore = createModel<RootModel>()({
 
         this.setCurrentMap({ ...state.mapStore.currentMap, ...payload });
       } catch (e: any) {
-        dispatch.error.setError(e);
+        dispatch.error.setError(e.errorMessage ?? 'Unexpected error');
       }
     },
     async createNewMap(payload: CreateMapRequest, state): Promise<any> {
@@ -90,7 +90,7 @@ export const mapStore = createModel<RootModel>()({
           this.setCurrentMap(null);
         }
       } catch (e: any) {
-        dispatch.error.setError(e);
+        dispatch.error.setError(e.errorMessage ?? 'Unexpected error');
       }
     },
 
@@ -106,12 +106,11 @@ export const mapStore = createModel<RootModel>()({
         this.setCurrentMap(loaded.data.map);
         return loaded.data.map._id;
       } catch (e: any) {
-        dispatch.error.setError(e);
+        dispatch.error.setError(e.errorMessage ?? 'Unexpected error');
       }
     },
     async createFeature(payload: Feature<Geometry>, state): Promise<string | undefined> {
       const id = state.mapStore.currentMap?._id;
-      console.log(state.mapStore.currentMap);
 
       if (!id) {
         console.error('No map selected');
@@ -128,10 +127,10 @@ export const mapStore = createModel<RootModel>()({
 
         return feature.data.feature._id;
       } catch (e: any) {
-        dispatch.error.setError(e);
+        dispatch.error.setError(e.errorMessage ?? 'Unexpected error');
       }
     },
-    async updateFeature(payload, state) {
+    async updateFeature(payload: { id: string; feature: Partial<FeatureExt> }, state) {
       const id = state.mapStore.currentMap?._id;
 
       let { id: featureid, feature } = payload;
@@ -153,14 +152,17 @@ export const mapStore = createModel<RootModel>()({
         let featureIndex = oldMap?.features.features.findIndex(
           (feature) => feature._id === featureid
         );
-        oldMap.features.features[featureIndex] = feature;
+        oldMap.features.features[featureIndex] = {
+          ...oldMap.features.features[featureIndex],
+          ...feature,
+        };
       }
       this.setCurrentMap(oldMap);
 
       try {
         await map.updateFeature(id, featureid, feature);
       } catch (e: any) {
-        dispatch.error.setError(e);
+        dispatch.error.setError(e.errorMessage ?? 'Unexpected error');
       }
     },
     async deleteFeature(payload, state) {
@@ -180,8 +182,27 @@ export const mapStore = createModel<RootModel>()({
       try {
         await map.deleteFeature(id, payload);
       } catch (e: any) {
-        dispatch.error.setError(e);
+        dispatch.error.setError(e.errorMessage ?? 'Unexpected error');
       }
+    },
+    clearMap(payload, state) {
+      dispatch.mapStore.setCurrentMap(null!);
+    },
+    updateFeatureCollection(
+      transform: (map: Map['features']['features']) => Map['features']['features'],
+      state
+    ) {
+      if (!state.mapStore.currentMap?.features) {
+        return;
+      }
+
+      dispatch.mapStore.setCurrentMap({
+        ...state.mapStore.currentMap,
+        features: {
+          ...state.mapStore.currentMap.features,
+          features: transform(state.mapStore.currentMap.features.features),
+        },
+      });
     },
   }),
 });
