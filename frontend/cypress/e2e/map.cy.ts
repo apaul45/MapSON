@@ -182,6 +182,97 @@ describe('Map Properties Tests', () => {
   });
 });
 
+describe('Merge tests', () => {
+  beforeEach(() => {
+    login();
+    cy.get('.mapcard').last().click();
+  });
+
+  it('should merge two adjacent polygons', () => {
+    cy.on('window:confirm', (text) => {
+      expect(text).to.equal('Merge the two selected regions?');
+      return true;
+    });
+
+    drawPolygon();
+    drawPolygon2();
+
+    cy.get(mapSelector).click(150, 150);
+    cy.get(mapSelector).click(350, 350);
+
+    cy.toolbarButton('merge').click();
+
+    cy.get('a.action-undefined').filter(':visible').click();
+
+    //triggers window:confirm
+
+    deletePolygon();
+  });
+
+  it('should prompt user if merge is to result in a non-contiguous polygon', () => {
+    cy.once('window:confirm', (text) => {
+      expect(text).to.equal('Merge the two selected regions?');
+
+      cy.once('window:confirm', (text) => {
+        expect(text).to.equal(
+          'This merge results in a non-contiguous polygon. Do you still want to continue?'
+        );
+        return true;
+      });
+
+      return true;
+    });
+
+    drawPolygon2();
+    drawPolygon3();
+
+    cy.get(mapSelector).click(250, 250);
+    cy.get(mapSelector).click(400, 400);
+
+    cy.toolbarButton('merge').click();
+
+    cy.get('a.action-undefined').filter(':visible').click();
+
+    //triggers both confirms
+
+    deletePolygon2();
+  });
+});
+
+const drawPolygon3 = () => {
+  cy.toolbarButton('polygon').click();
+
+  cy.get(mapSelector)
+    .click(350, 350)
+    .click(350, 450)
+    .click(450, 450)
+    .click(450, 350)
+    .click(350, 350);
+
+  cy.get('a.action-cancel').filter(':visible').click();
+};
+
+const drawPolygon2 = () => {
+  cy.toolbarButton('polygon').click();
+
+  cy.get(mapSelector)
+    .click(100, 100)
+    .click(300, 100)
+    .click(300, 300)
+    .click(100, 300)
+    .click(100, 100);
+
+  cy.get('a.action-cancel').filter(':visible').click();
+};
+
+const deletePolygon2 = () => {
+  cy.toolbarButton('delete').click();
+
+  cy.get(mapSelector).click(150, 150);
+
+  cy.toolbarButton('delete').click();
+};
+
 const drawPolygon = () => {
   cy.toolbarButton('polygon').click();
 

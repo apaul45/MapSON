@@ -1,5 +1,5 @@
 import { Menu, MenuHandler, MenuList, MenuItem } from '@material-tailwind/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { store, RootState } from '../../models';
 import { AddMapDialog } from '../dialogs';
