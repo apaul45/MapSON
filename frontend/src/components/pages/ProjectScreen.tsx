@@ -12,7 +12,6 @@ import ProjectSidePanel from '../ProjectSidePanel';
 import { MapComponent } from '../map';
 import { SelectedFeature } from '../map/MapComponent';
 import { store } from '../../models';
-import { ErrorBoundary } from 'react-error-boundary';
 
 export const ProjectScreen = () => {
   const navigate = useNavigate();
@@ -80,14 +79,12 @@ export const ProjectScreen = () => {
       />
 
       <div className="flex flex-row">
-        <ErrorBoundary fallback={<div>Unexpected error...</div>}>
-          <MapComponent
-            canEdit={canEdit}
-            setSelectedFeature={setSelectedFeature}
-            key={'MAP'}
-            {...map}
-          />
-        </ErrorBoundary>
+        <MapComponent
+          canEdit={canEdit}
+          setSelectedFeature={setSelectedFeature}
+          key={'MAP'}
+          {...map}
+        />
         {!sidePanelToggle && (
           <ProjectSidePanel selectedFeature={selectedFeature} canEdit={canEdit} />
         )}
