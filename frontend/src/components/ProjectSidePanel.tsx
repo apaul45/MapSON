@@ -7,7 +7,7 @@ const EXAMPLE_PROPERTIES = Object.fromEntries(
 );
 
 interface IProjectSidePanel {
-  selectedFeature: SelectedFeature;
+  selectedFeature: SelectedFeature | null;
   canEdit: boolean;
 }
 

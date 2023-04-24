@@ -2,19 +2,31 @@ import { PM } from 'leaflet';
 import { GeomanControls } from 'react-leaflet-geoman-v2';
 import './MapControls.css';
 import { useMap } from 'react-leaflet';
+import { SelectedFeature } from './MapComponent';
+import { Feature, MultiPolygon, Polygon } from 'geojson';
+import * as turf from '@turf/turf';
 import { useEffect } from 'react';
 
 interface IMapControls {
-  onCreate?: PM.CreateEventHandler;
-  onEdit?: PM.EditEventHandler;
-  onRemove?: PM.RemoveEventHandler;
+  onCreate: PM.CreateEventHandler;
+  onEdit: PM.EditEventHandler;
+  onRemove: PM.RemoveEventHandler;
+  onMerge: (e: { newLayer: L.GeoJSON; newFeature: Feature; oldLayers: SelectedFeature[] }) => void;
   canEdit: boolean;
+  getSelectedFeatures: () => SelectedFeature[];
+  addGeoJSONLayer: (feature: Feature) => L.GeoJSON;
 }
 
-const MapControls = ({ onCreate, onEdit, onRemove, canEdit }: IMapControls) => {
+const MapControls = ({
+  onCreate,
+  onEdit,
+  onRemove,
+  canEdit,
+  getSelectedFeatures,
+  addGeoJSONLayer,
+  onMerge,
+}: IMapControls) => {
   const map = useMap();
-
-  const defaultHandler = (e: any) => console.log(e);
 
   const customControls: PM.CustomControlOptions[] = [
     {
@@ -23,6 +35,61 @@ const MapControls = ({ onCreate, onEdit, onRemove, canEdit }: IMapControls) => {
       title: 'Merge regions',
       disabled: false,
       className: 'leaflet-pm-icon-merge',
+      actions: [
+        {
+          text: 'Merge selected regions',
+          onClick: () => {
+            const features = getSelectedFeatures();
+
+            if (features.length < 2) {
+              alert('Please select two regions to merge');
+              return;
+            }
+
+            const shouldMerge = confirm('Merge the two selected regions?');
+
+            if (!shouldMerge) {
+              console.log('User declined merge');
+              return;
+            }
+
+            const canMerge = features.every(
+              ({ layer }) => !layer._pmTempLayer && (!layer.pm || !layer.pm.dragging())
+            );
+
+            if (!canMerge) {
+              console.error('CANT MERGE REGIONS');
+              return;
+            }
+
+            //convert to geojson
+
+            const geojsonFeatures = features.map(
+              (v) => v.layer.toGeoJSON(15) as unknown as Feature<Polygon | MultiPolygon>
+            );
+
+            const validFeatures = geojsonFeatures.every(
+              (f) =>
+                f.type === 'Feature' &&
+                (f.geometry.type === 'Polygon' || f.geometry.type === 'MultiPolygon')
+            );
+
+            if (!validFeatures) {
+              console.debug(geojsonFeatures);
+              console.error('INVALID FEATURE SELECTED');
+              return;
+            }
+
+            const union = geojsonFeatures.reduce((prev, curr) => turf.union(prev, curr)!);
+
+            features.forEach(({ layer }) => layer.remove());
+
+            const newLayer = addGeoJSONLayer(union);
+
+            map.fire('pm:merge', { newLayer, newFeature: union, oldLayers: features });
+          },
+        },
+      ],
     },
     {
       name: 'Split',
@@ -39,6 +106,14 @@ const MapControls = ({ onCreate, onEdit, onRemove, canEdit }: IMapControls) => {
       className: 'leaflet-pm-icon-simplify',
     },
   ];
+
+  useEffect(() => {
+    map.on('pm:merge', onMerge);
+
+    return () => {
+      map.off('pm:merge', onMerge);
+    };
+  }, [onMerge]);
 
   return (
     <GeomanControls
@@ -66,9 +141,9 @@ const MapControls = ({ onCreate, onEdit, onRemove, canEdit }: IMapControls) => {
         editControls: canEdit,
         customControls: canEdit,
       }}
-      onCreate={onCreate ?? defaultHandler}
-      onEdit={onEdit ?? defaultHandler}
-      onLayerRemove={onRemove ?? defaultHandler}
+      onCreate={onCreate}
+      onEdit={onEdit}
+      onLayerRemove={onRemove}
       globalOptions={{
         continueDrawing: true,
         editable: false,
@@ -80,7 +155,6 @@ const MapControls = ({ onCreate, onEdit, onRemove, canEdit }: IMapControls) => {
         fillColor: 'green',
       }}
       eventDebugFn={(e) => console.log(e)}
-      {...customControls}
     />
   );
 };

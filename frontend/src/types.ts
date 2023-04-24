@@ -32,6 +32,7 @@ export type LGeoJsonExt = L.GeoJSON & CommonGeoJSONData & LayerExt;
 
 export interface LayerExt {
   _isConfigured: boolean;
+  feature: FeatureExt;
 }
 
 export interface Map {

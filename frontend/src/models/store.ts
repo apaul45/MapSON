@@ -169,5 +169,18 @@ export const mapStore = createModel<RootModel>()({
         dispatch.error.setError(e);
       }
     },
+    clearMap(payload, state) {
+      dispatch.mapStore.setCurrentMap(null!);
+    },
+    updateFeatureCollection(transform: (map: Map['features']) => Map['features'], state) {
+      if (!state.mapStore.currentMap?.features) {
+        return;
+      }
+
+      dispatch.mapStore.setCurrentMap({
+        ...state.mapStore.currentMap,
+        features: transform(state.mapStore.currentMap.features),
+      });
+    },
   }),
 });

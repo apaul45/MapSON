@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
 import { GeoJSON, MapContainer, FeatureGroup, TileLayer } from 'react-leaflet';
 
@@ -11,8 +11,11 @@ import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw/dist/leaflet.draw.css';
 
 import { store } from '../../models';
+import { Feature, MultiPolygon, Polygon } from 'geojson';
 
-export type SelectedFeature = { layer: LGeoJsonExt; id: any } | null;
+import * as turf from '@turf/turf';
+
+export type SelectedFeature = { layer: LGeoJsonExt; id: any };
 
 const HOVERED = {
   fillColor: 'green',
@@ -48,42 +51,33 @@ interface IMapComponent extends Map {
 const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapComponent) => {
   const { mapStore } = store.dispatch;
 
-  const fg = useRef<LGeoJsonExt>(null);
-
   //second one is the most recently selected
   const selectedFeatures = useRef<SelectedFeature[]>([]);
 
-  const editLayer = useRef<SelectedFeature>(null);
+  const editLayer = useRef<SelectedFeature | null>(null);
+
+  const mapRef = useRef<L.GeoJSON>(null!);
 
   const isSelected = (id: any) => {
-    return selectedFeatures.current[0]?.id === id || selectedFeatures.current[1]?.id === id;
+    return selectedFeatures.current.some((f) => f.id === id);
   };
 
-  const selectFeature = (id: any, layer: LGeoJsonExt): SelectedFeature => {
-    let res = null;
-
-    if (selectedFeatures.current.length >= 2) {
-      //pop front
-      const popped = selectedFeatures.current.shift();
-
-      if (popped && popped.id !== id) {
-        res = popped;
-      }
-    }
-
+  const selectFeature = (id: any, layer: LGeoJsonExt): SelectedFeature | undefined => {
     selectedFeatures.current.push({ layer, id });
     setSelectedFeature({ layer, id });
 
-    return res;
+    if (selectedFeatures.current.length > 2) {
+      //pop front
+      const res = selectedFeatures.current.shift();
+      if (res && res.id) {
+        return res;
+      }
+    }
   };
 
   const unselectFeature = (id: any) => {
-    if (selectedFeatures.current[0]?.id === id) {
-      selectedFeatures.current.shift();
-    } else if (selectedFeatures.current[1]?.id === id) {
-      selectedFeatures.current = [selectedFeatures.current[0]];
-    }
-
+    let idx = selectedFeatures.current.findIndex((v) => v.id === id);
+    selectedFeatures.current.splice(idx, 1);
     setSelectedFeature(selectedFeatures.current.at(-1) ?? null);
   };
 
@@ -93,83 +87,107 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
     return layer._id;
   };
 
-  const onEachFeature = (feature: FeatureExt, layer: LGeoJsonExt) => {
-    if (layer._isConfigured) {
-      return;
-    }
-
-    layer._id = feature._id;
-
-    if (feature?.properties?.name) {
-      layer.bindPopup(feature.properties.name);
-    } else {
-      layer.bindPopup(feature._id);
-    }
-
-    layer.pm.disable();
-
-    const mouseover: L.LeafletMouseEventHandlerFn = (e) => {
-      const id = getLayerID(layer)!;
-
-      if (isSelected(id)) {
-        e.target.setStyle(SELECTED_AND_HOVERED);
-      } else {
-        e.target.setStyle(HOVERED);
-      }
-
-      layer.openPopup();
-    };
-
-    const mouseout: L.LeafletMouseEventHandlerFn = (e) => {
-      const id = getLayerID(layer)!;
-
-      if (isSelected(id)) {
-        e.target.setStyle(SELECTED);
-      } else {
-        e.target.setStyle(IDLE);
-      }
-
-      layer.closePopup();
-    };
-
-    const click: L.LeafletMouseEventHandlerFn = (e) => {
-      const id = getLayerID(layer)!;
-
-      if (isSelected(id)) {
-        unselectFeature(id);
-        e.target.setStyle(IDLE);
-      } else {
-        selectFeature(id, e.target)?.layer.setStyle(IDLE);
-        e.target.setStyle(SELECTED);
-      }
-    };
-
-    const dblclick: L.LeafletMouseEventHandlerFn = (e) => {
-      const id = getLayerID(layer)!;
-
-      const eq = editLayer.current?.id === id;
-
-      editLayer.current?.layer.pm.disable();
-      editLayer.current = null;
-
-      if (!eq) {
-        editLayer.current = { layer, id };
-        layer.pm.enable();
-      }
-    };
-
-    layer.on('mouseover', mouseover);
-
-    layer.on('mouseout', mouseout);
-
-    layer.on('click', click);
-
-    if (canEdit) {
-      layer.on('dblclick', dblclick);
-    }
-
-    layer._isConfigured = true;
+  const getSelectedFeatures = () => {
+    return selectedFeatures.current;
   };
+
+  const resetSelectedFeature = () => {
+    selectedFeatures.current = [];
+    setSelectedFeature(null);
+  };
+
+  const onEachFeature = useCallback(
+    (feature: FeatureExt, layer: LGeoJsonExt) => {
+      if (layer._isConfigured) {
+        return;
+      }
+
+      layer._id = feature._id;
+
+      if (feature?.properties?.name) {
+        layer.bindPopup(feature.properties.name);
+      } else {
+        layer.bindPopup(feature._id);
+      }
+
+      layer.pm.disable();
+
+      const mouseover: L.LeafletMouseEventHandlerFn = (e) => {
+        const id = getLayerID(layer)!;
+
+        if (isSelected(id)) {
+          e.target.setStyle(SELECTED_AND_HOVERED);
+        } else {
+          e.target.setStyle(HOVERED);
+        }
+
+        layer.openPopup();
+      };
+
+      const mouseout: L.LeafletMouseEventHandlerFn = (e) => {
+        const id = getLayerID(layer)!;
+
+        if (isSelected(id)) {
+          e.target.setStyle(SELECTED);
+        } else {
+          e.target.setStyle(IDLE);
+        }
+
+        layer.closePopup();
+      };
+
+      const click: L.LeafletMouseEventHandlerFn = (e) => {
+        const id = getLayerID(layer)!;
+
+        if (isSelected(id)) {
+          unselectFeature(id);
+          e.target.setStyle(IDLE);
+        } else {
+          selectFeature(id, e.target)?.layer.setStyle(IDLE);
+          e.target.setStyle(SELECTED);
+        }
+      };
+
+      const dblclick: L.LeafletMouseEventHandlerFn = (e) => {
+        const id = getLayerID(layer)!;
+
+        const eq = editLayer.current?.id === id;
+
+        editLayer.current?.layer.pm.disable();
+        editLayer.current = null;
+
+        if (!eq) {
+          editLayer.current = { layer, id };
+          layer.pm.enable();
+        }
+      };
+
+      layer.on('mouseover', mouseover);
+
+      layer.on('mouseout', mouseout);
+
+      layer.on('click', click);
+
+      if (canEdit) {
+        layer.on('dblclick', dblclick);
+      }
+
+      layer._isConfigured = true;
+    },
+    [canEdit]
+  );
+
+  useEffect(() => {
+    let m = mapRef.current ?? null;
+
+    return () => {
+      //disable all editing on exit to prevent crashing
+      m?.eachLayer((l) => {
+        const layer = l as LGeoJsonExt;
+        layer.pm.disable();
+      });
+    };
+  }, []);
 
   return (
     <div className="w-screen h-[calc(100vh-64px)]">
@@ -179,27 +197,22 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
         zoom={4}
         markerZoomAnimation={false}
         doubleClickZoom={false}
-        ref={(ref) =>
-          window.addEventListener('resize', () => {
-            ref?.invalidateSize();
-          })
-        }
         id="map-container"
         //TODO: dynamically check if we need to use L.SVG vs L.Canvas depending on browser
         renderer={new L.Canvas({ tolerance: 3 })}
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-        <FeatureGroup ref={fg}>
+        <FeatureGroup>
           <MapControls
             onCreate={async (e) => {
-              const layer = e.layer as L.GeoJSON;
+              console.log('CREATED');
+              const layer = e.layer as LGeoJsonExt;
 
               const feature = layer.toGeoJSON() as FeatureExt;
               const id = await mapStore.createFeature(feature);
 
               if (!id) {
                 console.error('Failed to create feature');
-                layer.remove();
                 return;
               }
 
@@ -208,6 +221,8 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
               onEachFeature(feature, layer as LGeoJsonExt);
             }}
             onEdit={async (e) => {
+              console.log('EDITED');
+
               const layer = e.layer as L.GeoJSON;
 
               const feature = layer.toGeoJSON();
@@ -215,11 +230,47 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
               await mapStore.updateFeature({ id: layer._id, feature });
             }}
             onRemove={async (e) => {
+              console.log('REMOVED');
+
               const layer = e.layer as LGeoJsonExt;
 
               await mapStore.deleteFeature(layer._id);
             }}
+            getSelectedFeatures={getSelectedFeatures}
+            onMerge={async (e) => {
+              console.log('MERGED');
+              const { oldLayers, newLayer, newFeature } = e;
+
+              await Promise.all(
+                oldLayers.map(async (l) => {
+                  await mapStore.deleteFeature(l.layer._id);
+                })
+              );
+
+              const layer = newLayer as LGeoJsonExt;
+              const feature = newFeature as FeatureExt;
+
+              const id = await mapStore.createFeature(feature);
+
+              if (!id) {
+                console.error('Failed to create feature');
+                return;
+              }
+
+              feature._id = id;
+
+              onEachFeature(feature, layer as LGeoJsonExt);
+
+              resetSelectedFeature();
+              selectFeature(id, layer);
+            }}
             canEdit={canEdit}
+            addGeoJSONLayer={(feature) =>
+              mapStore.updateFeatureCollection((map) => {
+                const features = [...map.features, feature];
+                return { ...map, features };
+              })
+            }
           />
           <GeoJSON
             data={geoJSON}
@@ -238,7 +289,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
             /* @ts-ignore */
             // Fine to ignore since we are guaranteeing the extensions to L.GeoJSON
             onEachFeature={onEachFeature}
-            ref={fg}
+            ref={mapRef}
           />
         </FeatureGroup>
       </MapContainer>

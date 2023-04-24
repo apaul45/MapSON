@@ -12,19 +12,7 @@ import ProjectSidePanel from '../ProjectSidePanel';
 import { MapComponent } from '../map';
 import { SelectedFeature } from '../map/MapComponent';
 import { store } from '../../models';
-
-const defaultMap: Map = {
-  _id: 'DEFAULT_MAP',
-  name: 'My Map',
-  username: '',
-  upvotes: [],
-  downvotes: [],
-  forks: 0,
-  downloads: 0,
-  published: { isPublished: false },
-  comments: [],
-  features: { type: 'FeatureCollection', features: [] },
-};
+import { ErrorBoundary } from 'react-error-boundary';
 
 export const ProjectScreen = () => {
   const navigate = useNavigate();
@@ -44,11 +32,16 @@ export const ProjectScreen = () => {
     }
 
     mapStore.loadMap(id);
+
+    return () => {
+      console.log('unmounted');
+      mapStore.clearMap(undefined);
+    };
   }, [id]);
 
   const [isMapDeleted, setMapDeleted] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
-  const [selectedFeature, setSelectedFeature] = useState<SelectedFeature>(null);
+  const [selectedFeature, setSelectedFeature] = useState<SelectedFeature | null>(null);
   // true for comments, false for property editor
   const [sidePanelToggle, setSidePanelToggle] = useState(false);
 
@@ -87,12 +80,14 @@ export const ProjectScreen = () => {
       />
 
       <div className="flex flex-row">
-        <MapComponent
-          canEdit={canEdit}
-          setSelectedFeature={setSelectedFeature}
-          key={'MAP'}
-          {...map}
-        />
+        <ErrorBoundary fallback={<div>Unexpected error...</div>}>
+          <MapComponent
+            canEdit={canEdit}
+            setSelectedFeature={setSelectedFeature}
+            key={'MAP'}
+            {...map}
+          />
+        </ErrorBoundary>
         {!sidePanelToggle && (
           <ProjectSidePanel selectedFeature={selectedFeature} canEdit={canEdit} />
         )}
