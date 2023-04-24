@@ -1,23 +1,5 @@
 import { login, logout } from './account';
 
-// Make register the first test for cicd
-describe('Register Screen Test', () => {
-  beforeEach(() => cy.visit('http://127.0.0.1:5173/login'));
-
-  it('should try registering a user', () => {
-    cy.request({
-      url: 'http://localhost:4000/user/register',
-      method: 'POST',
-      body: {
-        email: 'cypress@cypress.com',
-        username: 'cypress',
-        password: 'password',
-      },
-      failOnStatusCode: false,
-    });
-  });
-});
-
 describe('Login Screen Test', () => {
   beforeEach(() => cy.visit('http://127.0.0.1:5173/login'));
 
