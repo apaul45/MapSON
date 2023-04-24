@@ -8,7 +8,7 @@ import { FeatureCollection, Feature as FeatureType } from 'geojson';
 import Pbf from 'pbf';
 import * as gb from 'geobuf';
 
-import mongoose, { isValidObjectId } from 'mongoose';
+import mongoose, { PipelineStage, Types, isValidObjectId } from 'mongoose';
 
 // const populatedFields = [
 //     'owner',
@@ -60,6 +60,8 @@ mapRouter.post('/map', auth, async (req: Request, res: Response) => {
     published: null,
     description: '',
     comments: [],
+    // @ts-ignore
+    properties: {},
     features: fg ?? { type: 'FeatureCollection', features: [] },
   };
 
@@ -156,9 +158,37 @@ mapRouter.get('/map/:id', async (req: Request, res: Response) => {
   res.status(200).json({ map: map[0] });
 });
 
-// Handles get all the published maps request, no auth for guest
-mapRouter.get('/allmaps', async (req: Request, res: Response) => {
-  const maps = await Map.find({ published: { isPublished: true } }).populate('owner');
+// Route for getting all maps to show in discover screen
+mapRouter.post('/allmaps', async (req: Request, res: Response) => {
+  const { limit, filterBy, sortBy } = req.body;
+
+  let matchBy: any = [{ 'published.isPublished': true }];
+
+  //Discover screen only contains published maps other than the logged in users
+  matchBy = req.session._id
+    ? [...matchBy, { owner: { $ne: new Types.ObjectId(req.session._id) } }]
+    : matchBy;
+
+  matchBy = filterBy ? [...matchBy, filterBy] : matchBy;
+  matchBy = { $and: matchBy };
+
+  // Need to unwind published to check for nested isPublished field
+  let stages: PipelineStage[] = [
+    { $unwind: '$published' },
+    { $unwind: '$published.isPublished' },
+    { $match: matchBy },
+  ];
+  stages = sortBy ? [...stages, { $sort: sortBy }] : stages; // Include sort stage if it exists
+  stages.push({ $limit: limit });
+
+  console.log(stages);
+
+  let maps = await Map.aggregate(stages);
+  maps = await Map.populate(maps, { path: 'owner', select: 'username' });
+
+  // if (req.session.username) {
+  //   maps = maps.filter((map) => map.owner.username !== req.session.username);
+  // }
 
   res.status(200).json({ maps: maps });
 });
@@ -267,7 +297,7 @@ mapRouter.post('/map/:id/feature', auth, async (req, res) => {
     },
   });
 
-  return res.status(200).json({ error: false, _id: feature._id });
+  return res.status(200).json({ error: false, feature: feature });
 });
 
 //no auth

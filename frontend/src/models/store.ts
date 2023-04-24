@@ -120,7 +120,12 @@ export const mapStore = createModel<RootModel>()({
 
       try {
         const feature = await map.createFeature(id, payload);
-        return feature.data._id;
+
+        let oldMap = state.mapStore.currentMap;
+        oldMap?.features.features.push(feature.data.feature);
+        this.setCurrentMap(oldMap);
+
+        return feature.data.feature._id;
       } catch (e: any) {
         dispatch.error.setError(e);
       }
@@ -141,6 +146,15 @@ export const mapStore = createModel<RootModel>()({
         dispatch.error.setError('Invalid feature');
         return;
       }
+
+      let oldMap = state.mapStore.currentMap;
+      if (oldMap !== null) {
+        let featureIndex = oldMap?.features.features.findIndex(
+          (feature) => feature._id === featureid
+        );
+        oldMap.features.features[featureIndex] = feature;
+      }
+      this.setCurrentMap(oldMap);
 
       try {
         await map.updateFeature(id, featureid, feature);
