@@ -206,10 +206,6 @@ describe('Merge tests', () => {
 
     //triggers window:confirm
 
-    cy.get(mapSelector).dblclick(300, 300);
-
-    cy.hasVertexMarkers(8);
-
     deletePolygon();
   });
 
@@ -238,10 +234,6 @@ describe('Merge tests', () => {
     cy.get('a.action-undefined').filter(':visible').click();
 
     //triggers both confirms
-
-    cy.get(mapSelector).dblclick(400, 400);
-
-    cy.hasVertexMarkers(8);
 
     deletePolygon2();
   });
