@@ -11,6 +11,71 @@ beforeEach(() => {
   });
 });
 
+describe('Split tests', () => {
+  beforeEach(() => {
+    login();
+    cy.get('.mapcard').last().click();
+  });
+
+  it('should split region into two', () => {
+    drawPolygon2();
+
+    cy.get(mapSelector).dblclick(200, 200);
+
+    cy.hasVertexMarkers(4);
+
+    cy.get(mapSelector).click(200, 200);
+
+    //draw split line
+    cy.toolbarButton('split').click();
+
+    cy.get(mapSelector).click(50, 200).click(350, 200).click(350, 200);
+
+    cy.get(mapSelector).dblclick(200, 150);
+
+    cy.hasVertexMarkers(4);
+
+    cy.get(mapSelector).dblclick(200, 350);
+
+    cy.hasVertexMarkers(4);
+
+    cy.toolbarButton('delete').click();
+
+    cy.get(mapSelector).click(200, 150);
+    cy.get(mapSelector).click(200, 350);
+
+    cy.toolbarButton('delete').click();
+  });
+
+  it('should be able to merge region back', () => {
+    drawPolygon2();
+
+    cy.get(mapSelector).click(200, 200);
+
+    //draw split line
+    cy.toolbarButton('split').click();
+
+    cy.get(mapSelector).click(50, 200).click(350, 200).click(350, 200);
+
+    //select split features
+    cy.get(mapSelector).click(200, 150);
+    cy.get(mapSelector).click(200, 350);
+
+    cy.once('window:confirm', (text) => {
+      expect(text).to.equal('Merge the two selected regions?');
+      return true;
+    });
+
+    cy.toolbarButton('merge').click();
+
+    cy.get('a.action-undefined').filter(':visible').click();
+
+    cy.get(mapSelector).dblclick(200, 200);
+
+    cy.hasVertexMarkers(6);
+  });
+});
+
 describe('Map interaction tests', () => {
   beforeEach(() => {
     login();

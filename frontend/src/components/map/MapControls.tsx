@@ -15,8 +15,6 @@ import * as turf from '@turf/turf';
 import { useEffect } from 'react';
 import { FeatureExt, LGeoJsonExt } from '../../types';
 import L from 'leaflet';
-//@ts-ignore
-import polygonSplitter from 'polygon-splitter';
 
 declare module 'leaflet' {
   namespace PM {
@@ -130,6 +128,7 @@ const MapControls = ({
     const union = validFeatures.reduce((prev, curr) => turf.union(prev, curr)!);
 
     if (union.geometry.type === 'MultiPolygon') {
+      console.log({ union });
       const allowNonContiguous = confirm(
         'This merge results in a non-contiguous polygon. Do you still want to continue?'
       );
@@ -156,17 +155,18 @@ const MapControls = ({
     const validFeatures = features.filter((l) => {
       const f = l.layer.toGeoJSON(15) as FeatureCollection | Feature;
 
-      const isValidFeature =
-        f.type === 'Feature' &&
-        (f.geometry.type === 'Polygon' || f.geometry.type === 'MultiPolygon');
+      const isValidFeature = f.type === 'Feature' && f.geometry.type === 'Polygon';
 
-      const isValidFeatureCollection = f.type === 'FeatureCollection' && f.features.length === 1;
+      const isValidFeatureCollection =
+        f.type === 'FeatureCollection' &&
+        f.features.length === 1 &&
+        f.features[0].geometry.type === 'Polygon';
 
       return isValidFeature || isValidFeatureCollection;
     });
 
     if (validFeatures.length === 0) {
-      console.error('Only polygons and multipolygons are valid candidates for splitting');
+      console.error('Only polygons are valid candidates for splitting');
       return;
     }
 
@@ -221,6 +221,10 @@ const MapControls = ({
     //   console.debug('Split returned same polygon');
     //   return;
     // }
+
+    if (split.length === 1) {
+      return;
+    }
 
     const newFeatures: L.PM.NewFeature[] = split.map((f) => {
       const l = L.geoJSON(f);
