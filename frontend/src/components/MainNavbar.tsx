@@ -12,6 +12,7 @@ export const MainNavbar = () => {
     location.pathname === path ? 'selected-nav-btn' : 'nav-btn';
 
   const user = useSelector((state: RootState) => state.user.currentUser);
+  const filter = useSelector((state: RootState) => state.mapStore.mapFilter);
   const { mapStore } = store.dispatch;
 
   const navigate = useNavigate();
@@ -59,18 +60,17 @@ export const MainNavbar = () => {
                       // Render search textfield for discover page only
                       location.pathname === '/discover' && (
                         <div id="search-field" className="w-72">
-                          <div className="relative flex w-full max-w-[24rem]">
+                          <div className="relative flex w-full max-w-[24rem] text-white">
                             <Input
-                              type="email"
-                              label="Email Address"
-                              className="pr-20"
-                              containerProps={{
-                                className: 'min-w-0',
-                              }}
+                              label="Search"
+                              className="text-white"
+                              size="lg"
+                              value={filter}
+                              onChange={(e) => mapStore.setMapFilter(e.target.value)}
                             />
-                            <Button size="sm" className="!absolute right-1 top-1 rounded">
+                            {/* <Button size="sm" className="!absolute right-1 top-1 rounded">
                               Submit
-                            </Button>
+                            </Button> */}
                           </div>
                         </div>
                       )

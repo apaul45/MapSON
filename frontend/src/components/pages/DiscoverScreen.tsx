@@ -4,46 +4,57 @@ import { useSelector } from 'react-redux';
 import { store, RootState } from '../../models';
 import { AddMapDialog } from '../dialogs';
 import { MapCard } from '../map';
+import { AllMapsRequest } from '../../api/types';
 
 export const DiscoverScreen = () => {
   useEffect(() => {
-    store.dispatch.mapStore.loadAllMaps(5);
+    store.dispatch.mapStore.loadAllMaps({ limit: 5 });
     window.addEventListener('scroll', handleScroll, true);
   }, []);
 
-  const sortOptions = ['Upvotes', 'Downloads', 'Oldest-Newest', 'Newest-Oldest'];
+  const sortOptions = ['Upvotes', 'Downvotes', 'Downloads', 'Oldest-Newest', 'Newest-Oldest'];
   const [sortBy, setSortBy] = useState<string>('upvote');
-
-  const allMaps = useSelector((state: RootState) => state.mapStore.maps);
 
   const [limit, setLimit] = useState<number>(5);
   const [bottom, setBottom] = useState<boolean>(false);
 
-  const height = useRef<number>(0);
-
-  useEffect(() => {
-    if (bottom) {
-      loadMoreMaps();
-    }
-  }, [bottom]);
+  const mapFilter = useSelector((state: RootState) => state.mapStore.mapFilter);
+  const allMaps = useSelector((state: RootState) =>
+    mapFilter
+      ? //@ts-ignore
+        state.mapStore.maps.filter((map) => map.owner.username === mapFilter)
+      : state.mapStore.maps
+  );
 
   const handleScroll = (e: any) => {
     console.log('in scroll');
 
     const scrollElement = e.target.scrollingElement;
-    const isBottom =
-      scrollElement.scrollHeight - scrollElement.scrollTop === scrollElement.clientHeight;
-
-    height.current = isBottom ? scrollElement.clientHeight : height.current;
-    setBottom(isBottom);
+    setBottom(scrollElement.scrollHeight - scrollElement.scrollTop === scrollElement.clientHeight);
   };
 
-  const loadMoreMaps = () => {
-    store.dispatch.mapStore.loadAllMaps(limit + 5);
-    setLimit(limit + 5);
+  // Needed to load in more maps once end of scroll reached
+  useEffect(() => {
+    if (bottom) {
+      loadMoreMaps(sortBy.toLowerCase());
+    }
+  }, [bottom]);
 
-    console.log(height.current);
+  const loadMoreMaps = (sortOption: string) => {
+    let request: AllMapsRequest = {
+      limit: limit + 5,
+      sortBy: { [sortOption]: -1 },
+    };
+    //request =
+
+    store.dispatch.mapStore.loadAllMaps(request);
+    setLimit(limit + 5);
     window.scrollTo(0, 0);
+  };
+
+  const handleSort = (option: string) => {
+    loadMoreMaps(option.toLowerCase());
+    setSortBy(option);
   };
 
   return (
@@ -72,7 +83,7 @@ export const DiscoverScreen = () => {
               <MenuItem
                 key={`menu-${option}`}
                 id={`menu-${option}`}
-                onClick={() => setSortBy(option)}
+                onClick={() => handleSort(option)}
               >
                 {option}
               </MenuItem>

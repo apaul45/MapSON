@@ -57,6 +57,7 @@ export interface Map {
 export interface Store {
   currentMap: Map | null;
   maps: Map[];
+  mapFilter: string;
   deleteDialog: boolean;
   shareDialog: boolean;
   addDialog: boolean;

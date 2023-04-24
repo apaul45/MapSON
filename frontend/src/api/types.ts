@@ -49,3 +49,9 @@ export interface CreateMapRequest {
   geojson?: FeatureCollection;
   mapName: string;
 }
+
+export interface AllMapsRequest {
+  limit: number;
+  filterBy?: Object;
+  sortBy?: Object;
+}
