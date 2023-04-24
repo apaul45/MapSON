@@ -62,6 +62,7 @@ export const MainNavbar = () => {
                         <div id="search-field" className="w-72">
                           <div className="relative flex w-full max-w-[24rem] text-white">
                             <Input
+                              id="discover-input"
                               label="Search"
                               className="text-white"
                               size="lg"

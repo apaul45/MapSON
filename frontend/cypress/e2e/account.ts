@@ -3,17 +3,6 @@ const username = 'cypressUser';
 const password = 'password';
 
 export const login = () => {
-  cy.request({
-    url: 'http://localhost:4000/user/register',
-    method: 'POST',
-    body: {
-      email: email,
-      username: username,
-      password: password,
-    },
-    failOnStatusCode: false,
-  });
-
   cy.visit('http://127.0.0.1:5173/login');
   cy.get('#username').type(username);
   cy.get('#password').type(password);
