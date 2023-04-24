@@ -47,6 +47,11 @@ export interface Owner {
   username: string;
 }
 
+export interface Owner {
+  _id: string;
+  username: string;
+}
+
 export interface Map {
   _id: string;
   name: string;
