@@ -15,7 +15,7 @@ export const user = createModel<RootModel>()({
     setUserMaps: (state, payload: Map) => {
       const user: User = state.currentUser as unknown as User;
       user.maps = [payload, ...(state.currentUser?.maps as unknown as Map[])];
-
+      console.log(user);
       return { ...state, currentUser: user };
     },
   },
@@ -25,7 +25,7 @@ export const user = createModel<RootModel>()({
   effects: (dispatch) => ({
     async register(payload: User, state) {
       try {
-        await auth.register(payload);
+        const response = await auth.register(payload);
         dispatch.user.setCurrentUser(payload);
       } catch (error: unknown) {
         const err = error as AxiosError;
@@ -56,6 +56,14 @@ export const user = createModel<RootModel>()({
         const err = error as AxiosError;
         // @ts-ignore
         dispatch.error.setError(err.response?.data.errorMessage);
+      }
+    },
+    async check() {
+      try {
+        const res = await auth.check();
+        dispatch.user.setCurrentUser(res.data);
+      } catch {
+        return;
       }
     },
     async updateUser(payload: User, state) {

@@ -2,6 +2,7 @@ import { Feature } from 'geojson';
 import { api } from './axios';
 import { Map } from '../types';
 import {
+  AllMapsRequest,
   CreateFeatureResponse,
   CreateMapRequest,
   CreateMapResponse,
@@ -36,7 +37,9 @@ export const updateFeature = (id: string, featureid: string, payload: Partial<Fe
 export const deleteFeature = (id: string, featureid: string) =>
   api.delete<DeleteFeatureResponse>(`/maps/map/${id}/feature/${featureid}`);
 
-export const getAllMaps = () => api.post<GetAllMapsResponse>('/maps/allmaps', { limit: 5 });
+export const getAllMaps = (payload: AllMapsRequest) =>
+  api.post<GetAllMapsResponse>('/maps/allmaps', payload);
+
 
 export default {
   createMap,

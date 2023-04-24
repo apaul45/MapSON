@@ -1,22 +1,23 @@
-import { HomeDiscoverScreen } from './pages/HomeDiscoverScreen'
-import { LoginScreen } from './pages/LoginScreen'
-import { MainNavbar } from './MainNavbar'
-import MapCard from './map/MapCard'
-import { ProjectNavbar } from './ProjectNavbar'
-import CommentCard from './CommentCard'
+import { HomeScreen } from './pages/HomeScreen';
+import { LoginScreen } from './pages/LoginScreen';
+import { MainNavbar } from './MainNavbar';
+import MapCard from './map/MapCard';
+import { ProjectNavbar } from './ProjectNavbar';
+import CommentCard from './CommentCard';
 import {
   AddMapDialog,
   DeleteMapDialog,
   ErrorDialog,
   ShareMapDialog,
   RequestDialog,
-} from './dialogs'
+} from './dialogs';
 import {
+  DiscoverScreen,
   FrontPageScreen,
   ProjectScreen,
   RecoveryScreen,
   RegisterScreen,
-} from './pages'
+} from './pages';
 
 export {
   AddMapDialog,
@@ -24,7 +25,8 @@ export {
   ErrorDialog,
   ShareMapDialog,
   FrontPageScreen,
-  HomeDiscoverScreen,
+  HomeScreen,
+  DiscoverScreen,
   LoginScreen,
   MainNavbar,
   MapCard,
@@ -34,4 +36,4 @@ export {
   RegisterScreen,
   RequestDialog,
   CommentCard,
-}
+};

@@ -4,7 +4,7 @@ export interface User {
   email?: string;
   username: string;
   password: string;
-  maps?: Map[];
+  maps: Map[];
 }
 
 export interface Published {
@@ -42,10 +42,15 @@ export interface LayerExt {
   feature: FeatureExt;
 }
 
+export interface Owner {
+  _id: string;
+  username: string;
+}
+
 export interface Map {
   _id: string;
   name: string;
-  username: string;
+  owner: string | Owner;
   upvotes: User[];
   downvotes: User[];
   forks: number;
@@ -61,6 +66,7 @@ export interface Map {
 export interface Store {
   currentMap: Map | null;
   maps: Map[];
+  mapFilter: string;
   deleteDialog: boolean;
   shareDialog: boolean;
   addDialog: boolean;
