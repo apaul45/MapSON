@@ -65,17 +65,16 @@ export const mapStore = createModel<RootModel>()({
         }
 
         await map.updateMap(id, payload);
-
         this.setCurrentMap({ ...state.mapStore.currentMap, ...payload });
       } catch (e: any) {
         dispatch.error.setError(e);
       }
     },
-    async createNewMap(payload: CreateMapRequest, state): Promise<any> {
+    async createNewMap(payload: CreateMapRequest, state): Promise<string | undefined> {
       try {
         const res = await map.createMap(payload);
-        dispatch.mapStore.setCurrentMap(res.data.map);
-        dispatch.user.setUserMaps(res.data.map);
+        this.setCurrentMap(res.data.map);
+        dispatch.user.addUserMap(res.data.map);
         return res.data.map._id;
       } catch (error: unknown) {
         const err = error as AxiosError;

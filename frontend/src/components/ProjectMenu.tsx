@@ -8,7 +8,13 @@ import axios from 'axios';
 const ProjectMenu = () => {
   const user = useSelector((state: RootState) => state.user.currentUser);
   const map = useSelector((state: RootState) => state.mapStore.currentMap);
-  const openDeleteDialog = () => store.dispatch.mapStore.setDeleteDialog(true);
+  const openDeleteDialog = () => {
+    if (!map) {
+      return;
+    }
+    store.dispatch.mapStore.setMarkedMap(map._id);
+    store.dispatch.mapStore.setDeleteDialog(true);
+  };
   const { error } = store.dispatch;
 
   const exportGeojson = () => {
