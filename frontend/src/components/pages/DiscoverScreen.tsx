@@ -1,5 +1,5 @@
 import { Menu, MenuHandler, MenuList, MenuItem } from '@material-tailwind/react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { store, RootState } from '../../models';
 import { AddMapDialog } from '../dialogs';
@@ -41,11 +41,16 @@ export const DiscoverScreen = () => {
   }, [bottom]);
 
   const loadMoreMaps = (sortOption: string) => {
+    //Make oldest-newest and newest-oldest options ready to send
+    const option = sortOption.includes('oldest') ? 'published.publishedDate' : sortOption;
+
+    // All options sort descending, except oldest to newest
+    let sortBy = sortOption === 'oldest-newest' ? { [option]: 1 } : { [option]: -1 };
+
     let request: AllMapsRequest = {
       limit: limit + 5,
-      sortBy: { [sortOption]: -1 },
+      sortBy: sortBy,
     };
-    //request =
 
     store.dispatch.mapStore.loadAllMaps(request);
     setLimit(limit + 5);
@@ -103,7 +108,7 @@ export const DiscoverScreen = () => {
               downvoteCount={map.downvotes.length}
               downloadCount={map.downloads}
               description={map.description}
-              date={map.updatedAt}
+              date={map.published.publishedDate}
             />
           </div>
         ))}
