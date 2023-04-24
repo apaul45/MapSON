@@ -1,15 +1,17 @@
-import { FrontPageScreen } from './FrontPageScreen'
-import { HomeDiscoverScreen } from './HomeDiscoverScreen'
-import { LoginScreen } from './LoginScreen'
-import { ProjectScreen } from './ProjectScreen'
-import { RecoveryScreen } from './RecoveryScreen'
-import { RegisterScreen } from './RegisterScreen'
+import { FrontPageScreen } from './FrontPageScreen';
+import { HomeScreen } from './HomeScreen';
+import { LoginScreen } from './LoginScreen';
+import { ProjectScreen } from './ProjectScreen';
+import { RecoveryScreen } from './RecoveryScreen';
+import { RegisterScreen } from './RegisterScreen';
+import { DiscoverScreen } from './DiscoverScreen';
 
 export {
   FrontPageScreen,
-  HomeDiscoverScreen,
+  HomeScreen,
+  DiscoverScreen,
   LoginScreen,
   RecoveryScreen,
   RegisterScreen,
   ProjectScreen,
-}
+};

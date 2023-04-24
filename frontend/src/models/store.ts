@@ -40,12 +40,9 @@ export const mapStore = createModel<RootModel>()({
   //Effects are (possibly async) functions that take in the store's state and payload, and return anything
 
   effects: (dispatch) => ({
-    async loadUserMaps(payload, state) {
-      return;
-    },
-    async loadAllMaps(payload: undefined, state) {
+    async loadAllMaps(payload: number, state) {
       try {
-        const maps = await map.getAllMaps();
+        const maps = await map.getAllMaps(payload);
         this.setMaps(maps.data.maps);
       } catch (e: any) {
         dispatch.error.setError(e);

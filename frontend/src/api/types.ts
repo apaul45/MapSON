@@ -8,7 +8,7 @@ interface Response {
 }
 
 // AUTH
-export interface RegisterResponse extends Response {}
+export interface RegisterResponse extends Response, User {}
 
 export interface LoginResponse extends Response, User {}
 

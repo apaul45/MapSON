@@ -39,7 +39,7 @@ app.use(
       ttl: 60 * 60, // = 1hr
     }),
     cookie: {
-      sameSite: false,
+      sameSite: 'none',
     },
   })
 );
