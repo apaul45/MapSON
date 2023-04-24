@@ -276,6 +276,8 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
               const layer = e.layer as LGeoJsonExt;
 
               await mapStore.deleteFeature(layer._id);
+
+              unselectFeature(layer._id);
             }}
             getSelectedFeatures={getSelectedFeatures}
             onMerge={async (e) => {

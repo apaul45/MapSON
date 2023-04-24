@@ -15,23 +15,26 @@ interface IProjectSidePanel {
 }
 
 const ProjectSidePanel = ({ selectedFeature, canEdit }: IProjectSidePanel) => {
-  const customRegionPropRef = useRef({});
   // @ts-ignore
   const properties: Record<string, any> = selectedFeature?.layer.feature?.properties;
   const { mapStore } = store.dispatch;
   const map = useSelector((state: RootState) => state.mapStore.currentMap);
 
-  const customMapProps = map?.properties !== undefined ? map?.properties : {};
+  const customMapProps = map?.properties ?? {};
 
-  if (selectedFeature && properties) {
-    customRegionPropRef.current = Object.fromEntries(
-      Object.entries(properties)
-        .filter(([k, v]) => k.startsWith('mapson_'))
-        .map(([k, v]) => [k.substring(7), v])
-    );
-  }
+  let customFeatureProps = properties
+    ? Object.fromEntries(
+        Object.entries(properties)
+          .filter(([k, v]) => k.startsWith('mapson_'))
+          .map(([k, v]) => [k.substring(7), v])
+      )
+    : {};
 
   const saveRegionProperties = async (props: Record<string, any>) => {
+    if (!selectedFeature) {
+      return;
+    }
+
     let newProperties: Record<string, any> = Object.fromEntries(
       Object.entries(props)
         .filter(([k, v]) => k.length > 0)
@@ -45,10 +48,12 @@ const ProjectSidePanel = ({ selectedFeature, canEdit }: IProjectSidePanel) => {
       );
     }
 
-    let feature = selectedFeature?.layer.toGeoJSON();
-    // @ts-ignore
-    feature!.properties = { ...ogProps, ...newProperties };
-    await mapStore.updateFeature({ id: selectedFeature!.id, feature });
+    await mapStore.updateFeature({
+      id: selectedFeature!.id,
+      feature: { properties: { ...ogProps, ...newProperties } },
+    });
+
+    selectedFeature.layer.feature.properties = { ...ogProps, ...newProperties };
   };
 
   const saveMapProperties = async (props: Record<string, any>) => {
@@ -81,7 +86,7 @@ const ProjectSidePanel = ({ selectedFeature, canEdit }: IProjectSidePanel) => {
                 <b>Feature Properties: </b>
                 <PropertyEditor
                   // @ts-ignore
-                  properties={customRegionPropRef.current}
+                  properties={customFeatureProps}
                   onSave={(props) => {
                     saveRegionProperties(props);
                   }}
