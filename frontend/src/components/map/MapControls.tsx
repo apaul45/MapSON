@@ -3,18 +3,43 @@ import { GeomanControls } from 'react-leaflet-geoman-v2';
 import './MapControls.css';
 import { useMap } from 'react-leaflet';
 import { SelectedFeature } from './MapComponent';
-import { Feature, MultiPolygon, Polygon } from 'geojson';
+import { Feature, FeatureCollection, MultiPolygon, Polygon } from 'geojson';
 import * as turf from '@turf/turf';
 import { useEffect } from 'react';
+import { FeatureExt } from '../../types';
+import L from 'leaflet';
+
+declare module 'leaflet' {
+  namespace PM {
+    export type MergeEventHandler = (e: {
+      newLayer: L.GeoJSON;
+      newFeature: Feature;
+      oldLayers: SelectedFeature[];
+    }) => void;
+
+    export type SplitEventHandler = (e: any) => void;
+  }
+  interface Evented {
+    // Merge handler
+    on(type: 'pm:merge', fn?: PM.MergeEventHandler): this;
+    once(type: 'pm:merge', fn?: PM.MergeEventHandler): this;
+    off(type: 'pm:merge', fn?: PM.MergeEventHandler): this;
+
+    //Split handler
+    on(type: 'pm:split', fn?: PM.SplitEventHandler): this;
+    off(type: 'pm:split', fn?: PM.SplitEventHandler): this;
+    once(type: 'pm:split', fn?: PM.SplitEventHandler): this;
+  }
+}
 
 interface IMapControls {
   onCreate: PM.CreateEventHandler;
   onEdit: PM.EditEventHandler;
   onRemove: PM.RemoveEventHandler;
-  onMerge: (e: { newLayer: L.GeoJSON; newFeature: Feature; oldLayers: SelectedFeature[] }) => void;
+  onMerge: PM.MergeEventHandler;
+  onSplit: PM.SplitEventHandler;
   canEdit: boolean;
   getSelectedFeatures: () => SelectedFeature[];
-  addGeoJSONLayer: (feature: Feature) => L.GeoJSON;
 }
 
 const MapControls = ({
@@ -23,8 +48,8 @@ const MapControls = ({
   onRemove,
   canEdit,
   getSelectedFeatures,
-  addGeoJSONLayer,
   onMerge,
+  onSplit,
 }: IMapControls) => {
   const map = useMap();
 
@@ -54,6 +79,7 @@ const MapControls = ({
             }
 
             const canMerge = features.every(
+              //@ts-ignore
               ({ layer }) => !layer._pmTempLayer && (!layer.pm || !layer.pm.dragging())
             );
 
@@ -64,27 +90,45 @@ const MapControls = ({
 
             //convert to geojson
 
-            const geojsonFeatures = features.map(
-              (v) => v.layer.toGeoJSON(15) as unknown as Feature<Polygon | MultiPolygon>
-            );
+            const geojsonFeatures = features.map((v) => {
+              let f = v.layer.toGeoJSON() as FeatureExt | FeatureCollection;
 
-            const validFeatures = geojsonFeatures.every(
+              console.log({ f });
+
+              //flatten feature collection with single value
+              if (f.type === 'FeatureCollection' && f.features.length === 1) {
+                f = f.features[0] as FeatureExt;
+              }
+
+              return f;
+            });
+
+            const validFeatures = geojsonFeatures.filter(
               (f) =>
                 f.type === 'Feature' &&
                 (f.geometry.type === 'Polygon' || f.geometry.type === 'MultiPolygon')
-            );
+            ) as Feature<Polygon | MultiPolygon>[];
 
-            if (!validFeatures) {
+            if (validFeatures.length !== geojsonFeatures.length) {
               console.debug(geojsonFeatures);
               console.error('INVALID FEATURE SELECTED');
               return;
             }
 
-            const union = geojsonFeatures.reduce((prev, curr) => turf.union(prev, curr)!);
+            const union = validFeatures.reduce((prev, curr) => turf.union(prev, curr)!);
+
+            if (union.geometry.type === 'MultiPolygon') {
+              const allowNonContiguous = confirm(
+                'This merge results in a non-contiguous polygon. Do you still want to continue?'
+              );
+              if (!allowNonContiguous) {
+                return;
+              }
+            }
 
             features.forEach(({ layer }) => layer.remove());
 
-            const newLayer = addGeoJSONLayer(union);
+            const newLayer = L.geoJSON(union).addTo(map);
 
             map.fire('pm:merge', { newLayer, newFeature: union, oldLayers: features });
           },
@@ -109,11 +153,13 @@ const MapControls = ({
 
   useEffect(() => {
     map.on('pm:merge', onMerge);
+    map.on('pm:split', onSplit);
 
     return () => {
       map.off('pm:merge', onMerge);
+      map.off('pm:split', onSplit);
     };
-  }, [onMerge]);
+  }, [onMerge, onSplit]);
 
   return (
     <GeomanControls
@@ -154,7 +200,7 @@ const MapControls = ({
         weight: 1,
         fillColor: 'green',
       }}
-      eventDebugFn={(e) => console.log(e)}
+      // eventDebugFn={(e) => console.log(e)}
     />
   );
 };

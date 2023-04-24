@@ -8,7 +8,7 @@ import { FeatureCollection, Feature as FeatureType } from 'geojson';
 import Pbf from 'pbf';
 import * as gb from 'geobuf';
 
-import { isValidObjectId } from 'mongoose';
+import mongoose, { isValidObjectId } from 'mongoose';
 
 // const populatedFields = [
 //     'owner',
@@ -115,15 +115,18 @@ mapRouter.delete('/map/:id', auth, async (req: Request, res: Response) => {
     })
   }
 
+  //Also need to modify user's array of maps
+  await user.updateOne({
+    $pull: {
+      maps: map._id,
+    },
+  });
+
   // delete features in map
   await Feature.deleteMany({ _id: { $in: map.features.features } });
 
   // delete map
   await map.deleteOne();
-
-  //Also need to modify user's array of maps
-  user.maps = user?.maps.filter((userMap) => !userMap._id.equals(map._id));
-  await user.save();
 
   res.status(200).json({ error: false });
 });
@@ -258,8 +261,11 @@ mapRouter.post('/map/:id/feature', auth, async (req, res) => {
     });
   }
 
-  map.features.features.push(feature);
-  await map.save();
+  await map.updateOne({
+    $push: {
+      'features.features': feature,
+    },
+  });
 
   return res.status(200).json({ error: false, _id: feature._id });
 });
@@ -367,11 +373,11 @@ mapRouter.delete('/map/:mapid/feature/:featureid', auth, async (req, res) => {
     });
   }
 
-  map.features.features = map.features.features.filter(
-    (v) => (v as unknown as string) != featureid
-  );
-
-  await map.save();
+  await map.updateOne({
+    $pull: {
+      'features.features': featureid,
+    },
+  });
 
   res.status(200).json({ error: false });
 });

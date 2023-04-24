@@ -111,7 +111,6 @@ export const mapStore = createModel<RootModel>()({
     },
     async createFeature(payload: Feature<Geometry>, state): Promise<string | undefined> {
       const id = state.mapStore.currentMap?._id;
-      console.log(state.mapStore.currentMap);
 
       if (!id) {
         console.error('No map selected');
@@ -172,14 +171,20 @@ export const mapStore = createModel<RootModel>()({
     clearMap(payload, state) {
       dispatch.mapStore.setCurrentMap(null!);
     },
-    updateFeatureCollection(transform: (map: Map['features']) => Map['features'], state) {
+    updateFeatureCollection(
+      transform: (map: Map['features']['features']) => Map['features']['features'],
+      state
+    ) {
       if (!state.mapStore.currentMap?.features) {
         return;
       }
 
       dispatch.mapStore.setCurrentMap({
         ...state.mapStore.currentMap,
-        features: transform(state.mapStore.currentMap.features),
+        features: {
+          ...state.mapStore.currentMap.features,
+          features: transform(state.mapStore.currentMap.features.features),
+        },
       });
     },
   }),

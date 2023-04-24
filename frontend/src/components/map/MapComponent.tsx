@@ -56,8 +56,6 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
 
   const editLayer = useRef<SelectedFeature | null>(null);
 
-  const mapRef = useRef<L.GeoJSON>(null!);
-
   const isSelected = (id: any) => {
     return selectedFeatures.current.some((f) => f.id === id);
   };
@@ -76,8 +74,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
   };
 
   const unselectFeature = (id: any) => {
-    let idx = selectedFeatures.current.findIndex((v) => v.id === id);
-    selectedFeatures.current.splice(idx, 1);
+    selectedFeatures.current = selectedFeatures.current.filter((v) => v.id !== id);
     setSelectedFeature(selectedFeatures.current.at(-1) ?? null);
   };
 
@@ -92,8 +89,11 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
   };
 
   const resetSelectedFeature = () => {
-    selectedFeatures.current = [];
-    setSelectedFeature(null);
+    for (const f of selectedFeatures.current) {
+      const { id, layer } = f;
+      unselectFeature(id);
+      layer.setStyle(IDLE);
+    }
   };
 
   const onEachFeature = useCallback(
@@ -104,11 +104,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
 
       layer._id = feature._id;
 
-      if (feature?.properties?.name) {
-        layer.bindPopup(feature.properties.name);
-      } else {
-        layer.bindPopup(feature._id);
-      }
+      feature.properties?.name && layer.bindPopup(feature.properties?.name);
 
       layer.pm.disable();
 
@@ -116,9 +112,9 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
         const id = getLayerID(layer)!;
 
         if (isSelected(id)) {
-          e.target.setStyle(SELECTED_AND_HOVERED);
+          layer.setStyle(SELECTED_AND_HOVERED);
         } else {
-          e.target.setStyle(HOVERED);
+          layer.setStyle(HOVERED);
         }
 
         layer.openPopup();
@@ -128,9 +124,9 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
         const id = getLayerID(layer)!;
 
         if (isSelected(id)) {
-          e.target.setStyle(SELECTED);
+          layer.setStyle(SELECTED);
         } else {
-          e.target.setStyle(IDLE);
+          layer.setStyle(IDLE);
         }
 
         layer.closePopup();
@@ -141,10 +137,10 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
 
         if (isSelected(id)) {
           unselectFeature(id);
-          e.target.setStyle(IDLE);
+          layer.setStyle(IDLE);
         } else {
-          selectFeature(id, e.target)?.layer.setStyle(IDLE);
-          e.target.setStyle(SELECTED);
+          selectFeature(id, layer)?.layer.setStyle(IDLE);
+          layer.setStyle(SELECTED);
         }
       };
 
@@ -162,6 +158,10 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
         }
       };
 
+      layer.getPopup()?.on('mouseover', mouseover);
+      layer.getPopup()?.on('click', click);
+      layer.getPopup()?.on('dblclick', dblclick);
+
       layer.on('mouseover', mouseover);
 
       layer.on('mouseout', mouseout);
@@ -178,14 +178,8 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
   );
 
   useEffect(() => {
-    let m = mapRef.current ?? null;
-
     return () => {
-      //disable all editing on exit to prevent crashing
-      m?.eachLayer((l) => {
-        const layer = l as LGeoJsonExt;
-        layer.pm.disable();
-      });
+      editLayer.current?.layer.pm.disable();
     };
   }, []);
 
@@ -202,7 +196,25 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
         renderer={new L.Canvas({ tolerance: 3 })}
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-        <FeatureGroup>
+
+        <GeoJSON
+          data={geoJSON}
+          style={(f) => {
+            const feat = f as FeatureExt;
+            let base;
+
+            if (isSelected(feat?._id)) {
+              base = SELECTED;
+            } else {
+              base = IDLE;
+            }
+
+            return { ...base, weight: 2 };
+          }}
+          /* @ts-ignore */
+          // Fine to ignore since we are guaranteeing the extensions to L.GeoJSON
+          onEachFeature={onEachFeature}
+        >
           <MapControls
             onCreate={async (e) => {
               console.log('CREATED');
@@ -260,38 +272,12 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
               feature._id = id;
 
               onEachFeature(feature, layer as LGeoJsonExt);
-
               resetSelectedFeature();
-              selectFeature(id, layer);
             }}
+            onSplit={() => {}}
             canEdit={canEdit}
-            addGeoJSONLayer={(feature) =>
-              mapStore.updateFeatureCollection((map) => {
-                const features = [...map.features, feature];
-                return { ...map, features };
-              })
-            }
           />
-          <GeoJSON
-            data={geoJSON}
-            style={(f) => {
-              const feat = f as FeatureExt;
-              let base;
-
-              if (isSelected(feat?._id)) {
-                base = SELECTED;
-              } else {
-                base = IDLE;
-              }
-
-              return { ...base, weight: 2 };
-            }}
-            /* @ts-ignore */
-            // Fine to ignore since we are guaranteeing the extensions to L.GeoJSON
-            onEachFeature={onEachFeature}
-            ref={mapRef}
-          />
-        </FeatureGroup>
+        </GeoJSON>
       </MapContainer>
     </div>
   );

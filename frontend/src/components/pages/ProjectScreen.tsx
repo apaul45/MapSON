@@ -33,7 +33,6 @@ export const ProjectScreen = () => {
     mapStore.loadMap(id);
 
     return () => {
-      console.log('unmounted');
       mapStore.clearMap(undefined);
     };
   }, [id]);
