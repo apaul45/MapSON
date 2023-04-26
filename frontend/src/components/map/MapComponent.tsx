@@ -67,7 +67,9 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
   };
 
   const selectFeature = (id: any, layer: LGeoJsonExt): SelectedFeature | undefined => {
-    let featureIndex = mapRef.current?.features.features.findIndex((feature) => feature._id === id);
+    const featureIndex = mapRef.current?.features.features.findIndex(
+      (feature) => feature._id === id
+    );
     if (featureIndex !== undefined && featureIndex >= 0) {
       if (!('feature' in layer)) {
         // @ts-ignore
@@ -210,6 +212,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
 
   const onCreate: L.PM.CreateEventHandler = async (e) => {
     console.log('CREATED');
+    console.log({ map });
     const layer = e.layer as LGeoJsonExt;
 
     const feature = layer.toGeoJSON(15) as FeatureExt;

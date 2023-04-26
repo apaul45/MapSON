@@ -59,10 +59,17 @@ describe('Split tests', () => {
 
     //select split features
     cy.get(mapSelector).click(200, 150);
-    cy.get(mapSelector).click(200, 350);
+    cy.get(mapSelector).click(200, 250);
 
     cy.once('window:confirm', (text) => {
       expect(text).to.equal('Merge the two selected regions?');
+
+      cy.once('window:confirm', (text2) => {
+        expect(text2).to.equal(
+          'This merge results in a non-contiguous polygon. Do you still want to continue?'
+        );
+      });
+
       return true;
     });
 
