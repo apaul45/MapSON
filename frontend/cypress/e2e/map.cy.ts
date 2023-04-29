@@ -260,13 +260,9 @@ describe('Split tests', () => {
 
     cy.hasVertexMarkers(4);
 
-    doubleClickRegion(200, 150);
-
     doubleClickRegion(200, 250);
 
     cy.hasVertexMarkers(4);
-
-    doubleClickRegion(200, 250);
 
     cy.toolbarButton('delete').click();
 
