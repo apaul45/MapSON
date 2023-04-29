@@ -62,10 +62,9 @@ describe('Project Nav Bar Tests', () => {
 
 describe('Project Invitation Tests', () => {
   beforeEach(() => {
-    login(null, null, null);
     register('10', '20', '30');
+    login(null, null, null);
     createNew();
-    cy.wait(1000);
   });
   afterEach(() => logout());
 
