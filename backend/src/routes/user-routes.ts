@@ -227,6 +227,20 @@ router.post('/update', async (req: Request, res: Response) => {
   });
 });
 
+//
+router.get('/check', async (req: Request, res: Response) => {
+  const user = await User.findById(req.session._id).populate('maps');
+
+  if (!user) {
+    return res.status(400).json({
+      error: true,
+      errorMessage: 'user not found',
+    });
+  }
+
+  res.status(200).json(user.toJSON());
+});
+
 // router.delete('/scrubmaps', async (req, res) => {
 //   const user = await User.findOne({ username: 'cypressUser' });
 

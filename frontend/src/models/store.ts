@@ -5,11 +5,12 @@ import { map } from '../api';
 import { AxiosError } from 'axios';
 import { Feature } from '@turf/turf';
 import { Geometry } from 'geojson';
-import { CreateMapRequest } from '../api/types';
+import { AllMapsRequest, CreateMapRequest } from '../api/types';
 
 const initialState: Store = {
   currentMap: null,
   maps: [],
+  mapFilter: '',
   deleteDialog: false,
   shareDialog: false,
   addDialog: false,
@@ -35,17 +36,17 @@ export const mapStore = createModel<RootModel>()({
     setMaps: (state, payload: Map[]) => {
       return { ...state, maps: payload };
     },
+    setMapFilter: (state, payload: string) => {
+      return { ...state, mapFilter: payload };
+    },
   },
 
   //Effects are (possibly async) functions that take in the store's state and payload, and return anything
 
   effects: (dispatch) => ({
-    async loadUserMaps(payload, state) {
-      return;
-    },
-    async loadAllMaps(payload: undefined, state) {
+    async loadAllMaps(payload: AllMapsRequest, state) {
       try {
-        const maps = await map.getAllMaps();
+        const maps = await map.getAllMaps(payload);
         this.setMaps(maps.data.maps);
       } catch (e: any) {
         dispatch.error.setError(e.errorMessage ?? 'Unexpected error');

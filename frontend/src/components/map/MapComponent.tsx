@@ -15,6 +15,8 @@ import 'leaflet-draw/dist/leaflet.draw.css';
 import { RootState, store } from '../../models';
 import { useSelector } from 'react-redux';
 
+import * as turf from '@turf/turf';
+
 export type SelectedFeature = { layer: LGeoJsonExt; id: any };
 
 const HOVERED = {

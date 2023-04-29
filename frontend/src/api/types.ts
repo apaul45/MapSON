@@ -8,7 +8,7 @@ interface Response {
 }
 
 // AUTH
-export interface RegisterResponse extends Response {}
+export interface RegisterResponse extends Response, User {}
 
 export interface LoginResponse extends Response, User {}
 
@@ -48,4 +48,10 @@ export interface DeleteFeatureResponse extends Response {}
 export interface CreateMapRequest {
   geojson?: FeatureCollection;
   mapName: string;
+}
+
+export interface AllMapsRequest {
+  limit: number;
+  filterBy?: Object;
+  sortBy?: Object;
 }

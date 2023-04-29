@@ -67,7 +67,7 @@ export const ProjectScreen = () => {
   }
 
   return (
-    <div className="bg-black w-screen h-[calc(100vh-64px)]">
+    <div className="bg-black w-screen h-screen">
       <ProjectNavbar
         shareOpen={shareOpen}
         setShareOpen={setShareOpen}

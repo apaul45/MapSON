@@ -20,4 +20,15 @@ describe('Logout Test', () => {
   });
 });
 
+describe('Stay Logged In Test', () => {
+  it('should keep the user logged in', () => {
+    login();
+
+    cy.get('#user-menu-button').should('be.visible');
+
+    cy.reload();
+    cy.get('#user-menu-button').should('be.visible');
+  });
+});
+
 export {};

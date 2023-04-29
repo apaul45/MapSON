@@ -1,32 +1,33 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { store } from '../../models'
-import { User } from '../../types'
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { store } from '../../models';
+import { User } from '../../types';
 
 export const RegisterScreen = () => {
-  const [email, setEmail] = useState('')
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
+  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
-  const { error, user } = store.dispatch
+  const { error, user } = store.dispatch;
 
   const handleSubmit = async () => {
     if (!username || !password || !email) {
-      error.setError('Please enter your username and password.')
-      return
+      error.setError('Please enter your username and password.');
+      return;
     }
 
     const payload: User = {
       email: email,
       username: username,
       password: password,
-    }
+      maps: [],
+    };
 
-    await user.register(payload)
-    navigate('/home')
-  }
+    await user.register(payload);
+    navigate('/home');
+  };
 
   return (
     <div className="lr-bg overflow-hidden">
@@ -71,5 +72,5 @@ export const RegisterScreen = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
