@@ -66,8 +66,16 @@ export const user = createModel<RootModel>()({
         return;
       }
     },
-    async updateUser(payload: User, state) {
-      return;
+    async updateUser(payload, state) {
+      try {
+        await auth.update(payload);
+        return true;
+      } catch (error: unknown) {
+        const err = error as AxiosError;
+        // @ts-ignore
+        dispatch.error.setError(err.response?.data.errorMessage);
+        return false;
+      }
     },
     removeUserMap(payload: string, state) {
       this.setUserMaps(state.user.currentUser?.maps?.filter((m: Map) => m._id !== payload));
