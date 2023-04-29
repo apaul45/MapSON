@@ -68,6 +68,9 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
   };
 
   const selectFeature = (id: any, layer: LGeoJsonExt): SelectedFeature | undefined => {
+    const featureIndex = mapRef.current?.features.features.findIndex(
+      (feature) => feature._id === id
+    );
     let featureIndex = mapRef.current?.features.findIndex((feature) => feature._id === id);
     if (featureIndex !== undefined && featureIndex >= 0) {
       if (!('feature' in layer)) {
@@ -151,6 +154,11 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
       };
 
       const click: L.LeafletMouseEventHandlerFn = (e) => {
+        //ignore if meta is pressed with it
+        if (e.originalEvent.metaKey) {
+          return;
+        }
+
         const id = getLayerID(layer)!;
 
         if (isSelected(id)) {
@@ -163,6 +171,11 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
       };
 
       const dblclick: L.LeafletMouseEventHandlerFn = (e) => {
+        //ignore if meta is pressed with it
+        if (e.originalEvent.metaKey) {
+          return;
+        }
+
         const id = getLayerID(layer)!;
 
         const eq = editLayer.current?.id === id;
@@ -209,6 +222,92 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
     ];
   }
 
+  const onCreate: L.PM.CreateEventHandler = async (e) => {
+    console.log('CREATED');
+    console.log({ map });
+    const layer = e.layer as LGeoJsonExt;
+
+    const feature = layer.toGeoJSON(15) as FeatureExt;
+    const id = await mapStore.createFeature(feature);
+
+    if (!id) {
+      console.error('Failed to create feature');
+      return;
+    }
+
+    feature._id = id;
+
+    onEachFeature(feature, layer as LGeoJsonExt);
+  };
+
+  const onEdit: L.PM.EditEventHandler = async (e) => {
+    console.log('EDITED');
+
+    const layer = e.layer as L.GeoJSON;
+
+    const feature = layer.toGeoJSON(15);
+    //@ts-ignore
+    await mapStore.updateFeature({ id: layer._id, feature });
+  };
+
+  const onRemove: L.PM.RemoveEventHandler = async (e) => {
+    console.log('REMOVED');
+
+    const layer = e.layer as LGeoJsonExt;
+
+    await mapStore.deleteFeature(layer._id);
+
+    unselectFeature(layer._id);
+  };
+
+  const onMerge: L.PM.MergeEventHandler = async (e) => {
+    console.log('MERGED');
+    const { oldLayers, newLayer, newFeature } = e;
+
+    await Promise.all(
+      oldLayers.map(async (l) => {
+        await mapStore.deleteFeature(l.layer._id);
+        unselectFeature(l.id);
+      })
+    );
+
+    const layer = newLayer as LGeoJsonExt;
+    const feature = newFeature as FeatureExt;
+
+    const id = await mapStore.createFeature(feature);
+
+    if (!id) {
+      console.error('Failed to create feature');
+      return;
+    }
+
+    feature._id = id;
+
+    onEachFeature(feature, layer as LGeoJsonExt);
+  };
+
+  const onSplit: L.PM.SplitEventHandler = async (e) => {
+    const { oldLayer, newFeatures, polyline } = e;
+
+    await mapStore.deleteFeature(oldLayer._id);
+
+    await Promise.all(
+      newFeatures.map(async ({ layer, feature }) => {
+        const id = await mapStore.createFeature(feature);
+
+        if (!id) {
+          console.error('Failed to create feature');
+          return;
+        }
+
+        feature._id = id;
+
+        onEachFeature(feature, layer as LGeoJsonExt);
+        unselectFeature(oldLayer._id);
+      })
+    );
+  };
+
   return (
     <div className="w-screen h-[calc(100vh-64px)]">
       <MapContainer
@@ -219,7 +318,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
         doubleClickZoom={false}
         id="map-container"
         //TODO: dynamically check if we need to use L.SVG vs L.Canvas depending on browser
-        renderer={new L.Canvas({ tolerance: 3 })}
+        renderer={new L.SVG({ tolerance: 3 })}
         //@ts-ignore
         bounds={bounds}
       >
@@ -244,67 +343,12 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
           onEachFeature={onEachFeature}
         >
           <MapControls
-            onCreate={async (e) => {
-              console.log('CREATED');
-              const layer = e.layer as LGeoJsonExt;
-
-              const feature = layer.toGeoJSON() as FeatureExt;
-              const id = await mapStore.createFeature(feature);
-
-              if (!id) {
-                console.error('Failed to create feature');
-                return;
-              }
-
-              feature._id = id;
-
-              onEachFeature(feature, layer as LGeoJsonExt);
-            }}
-            onEdit={async (e) => {
-              console.log('EDITED');
-
-              const layer = e.layer as L.GeoJSON;
-
-              const feature = layer.toGeoJSON();
-              //@ts-ignore
-              await mapStore.updateFeature({ id: layer._id, feature });
-            }}
-            onRemove={async (e) => {
-              console.log('REMOVED');
-
-              const layer = e.layer as LGeoJsonExt;
-
-              await mapStore.deleteFeature(layer._id);
-
-              unselectFeature(layer._id);
-            }}
+            onCreate={onCreate}
+            onEdit={onEdit}
+            onRemove={onRemove}
             getSelectedFeatures={getSelectedFeatures}
-            onMerge={async (e) => {
-              console.log('MERGED');
-              const { oldLayers, newLayer, newFeature } = e;
-
-              await Promise.all(
-                oldLayers.map(async (l) => {
-                  await mapStore.deleteFeature(l.layer._id);
-                })
-              );
-
-              const layer = newLayer as LGeoJsonExt;
-              const feature = newFeature as FeatureExt;
-
-              const id = await mapStore.createFeature(feature);
-
-              if (!id) {
-                console.error('Failed to create feature');
-                return;
-              }
-
-              feature._id = id;
-
-              onEachFeature(feature, layer as LGeoJsonExt);
-              resetSelectedFeature();
-            }}
-            onSplit={() => {}}
+            onMerge={onMerge}
+            onSplit={onSplit}
             canEdit={canEdit}
           />
         </GeoJSON>

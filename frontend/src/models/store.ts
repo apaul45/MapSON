@@ -149,15 +149,15 @@ export const mapStore = createModel<RootModel>()({
       }
 
       let oldMap = state.mapStore.currentMap;
-      if (oldMap !== null) {
-        let featureIndex = oldMap?.features.features.findIndex(
-          (feature) => feature._id === featureid
-        );
-        oldMap.features.features[featureIndex] = {
-          ...oldMap.features.features[featureIndex],
-          ...feature,
-        };
-      }
+
+      let featureIndex = oldMap!.features.features.findIndex(
+        (feature) => feature._id === featureid
+      );
+      oldMap!.features.features[featureIndex] = {
+        ...oldMap!.features.features[featureIndex],
+        ...feature,
+      };
+
       this.setCurrentMap(oldMap);
 
       try {
@@ -166,7 +166,7 @@ export const mapStore = createModel<RootModel>()({
         dispatch.error.setError(e.errorMessage ?? 'Unexpected error');
       }
     },
-    async deleteFeature(payload, state) {
+    async deleteFeature(payload: string, state) {
       const id = state.mapStore.currentMap?._id;
       if (!id) {
         console.error('No map selected');
@@ -179,6 +179,14 @@ export const mapStore = createModel<RootModel>()({
         dispatch.error.setError('No feature selected');
         return;
       }
+
+      let oldMap = state.mapStore.currentMap;
+
+      oldMap!.features.features = oldMap!.features.features.filter(
+        (feature) => feature._id !== payload
+      );
+
+      this.setCurrentMap(oldMap);
 
       try {
         await map.deleteFeature(id, payload);

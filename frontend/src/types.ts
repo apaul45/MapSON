@@ -24,10 +24,18 @@ export interface MongoData {
   createdAt: string;
 }
 
+export interface MongoData {
+  _id: string;
+  __v: string;
+  updatedAt: string;
+  createdAt: string;
+}
+
 // add mongodb _id type to geometries and features from `geojson` types
 export interface CommonGeoJSONData {
   _id: string;
 }
+
 export type GeometryExt = CommonGeoJSONData & Geometry & MongoData;
 export type FeatureExt = CommonGeoJSONData & Feature<GeometryExt> & MongoData;
 export type Features = {
