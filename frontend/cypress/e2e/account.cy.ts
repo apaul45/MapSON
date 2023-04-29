@@ -1,4 +1,4 @@
-import { login, logout } from './account';
+import { login, logout } from './utils';
 
 describe('Login Screen Test', () => {
   beforeEach(() => cy.visit('http://127.0.0.1:5173/login'));
@@ -13,7 +13,7 @@ describe('Logout Test', () => {
   beforeEach(() => cy.visit('http://127.0.0.1:5173/login'));
 
   it('should login and logout user', () => {
-    login();
+    login(null, null, null);
     logout();
 
     cy.location('pathname').should((path) => expect(path).to.deep.equal('/'));
@@ -22,7 +22,7 @@ describe('Logout Test', () => {
 
 describe('Stay Logged In Test', () => {
   it('should keep the user logged in', () => {
-    login();
+    login(null, null, null);
 
     cy.get('#user-menu-button').should('be.visible');
 

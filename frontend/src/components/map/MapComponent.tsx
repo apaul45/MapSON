@@ -52,12 +52,11 @@ interface IMapComponent extends Map {
 
 const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapComponent) => {
   const { mapStore } = store.dispatch;
-  const map = useSelector((state: RootState) => state.mapStore.currentMap);
-  const mapRef = useRef(map);
+  const mapRef = useRef(geoJSON);
 
   useEffect(() => {
-    mapRef.current = map;
-  }, [map]);
+    mapRef.current = geoJSON;
+  }, [geoJSON]);
 
   //second one is the most recently selected
   const selectedFeatures = useRef<SelectedFeature[]>([]);
@@ -69,16 +68,14 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
   };
 
   const selectFeature = (id: any, layer: LGeoJsonExt): SelectedFeature | undefined => {
-    const featureIndex = mapRef.current?.features.features.findIndex(
-      (feature) => feature._id === id
-    );
+    const featureIndex = mapRef.current?.features.findIndex((feature) => feature._id === id);
     if (featureIndex !== undefined && featureIndex >= 0) {
       if (!('feature' in layer)) {
         // @ts-ignore
-        layer.feature = mapRef.current?.features.features[featureIndex];
+        layer.feature = mapRef.current?.features[featureIndex];
       } else {
         // @ts-ignore
-        layer.feature.properties = mapRef.current?.features.features[featureIndex].properties;
+        layer.feature.properties = mapRef.current?.features[featureIndex].properties;
       }
     }
 
@@ -224,7 +221,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
 
   const onCreate: L.PM.CreateEventHandler = async (e) => {
     console.log('CREATED');
-    console.log({ map });
+    //console.log({ map });
     const layer = e.layer as LGeoJsonExt;
 
     const feature = layer.toGeoJSON(15) as FeatureExt;

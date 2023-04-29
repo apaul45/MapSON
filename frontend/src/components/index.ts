@@ -4,13 +4,7 @@ import { MainNavbar } from './MainNavbar';
 import MapCard from './map/MapCard';
 import { ProjectNavbar } from './ProjectNavbar';
 import CommentCard from './CommentCard';
-import {
-  AddMapDialog,
-  DeleteMapDialog,
-  ErrorDialog,
-  ShareMapDialog,
-  RequestDialog,
-} from './dialogs';
+import { AddMapDialog, DeleteMapDialog, ErrorDialog, ShareMapDialog } from './dialogs';
 import {
   DiscoverScreen,
   FrontPageScreen,
@@ -34,6 +28,5 @@ export {
   ProjectScreen,
   RecoveryScreen,
   RegisterScreen,
-  RequestDialog,
   CommentCard,
 };
