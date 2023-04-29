@@ -1,6 +1,7 @@
 import { login } from './account';
 
 const mapSelector = '#map-container';
+const DELAY = 500;
 
 beforeEach(() => {
   login();
@@ -37,32 +38,38 @@ describe('Polygon tests', () => {
   it('should draw a polygon with proper hover change states', () => {
     drawPolygon();
 
-    cy.get(mapSelector).dblclick(300, 300);
+    doubleClickRegion(300, 300);
 
     cy.hasVertexMarkers(4);
 
-    cy.get(mapSelector).dblclick(300, 300);
-
-    deletePolygon();
+    doubleClickRegion(300, 300);
 
     // ONLY WORKS WITH SVG RENDERER
-    // cy.get('leaflet-interactive[fill="blue"]').trigger('mouseover').should('have.attr', 'fill').and('equal', 'green')
-    // cy.get(mapSelector).click(300, 300)
-    // cy.get('leaflet-interactive[fill="red"]').trigger('mouseover').should('have.attr', 'fill').and('equal', 'teal')
+    cy.get('.leaflet-interactive[fill="blue"]')
+      .trigger('mouseover')
+      .should('have.attr', 'fill')
+      .and('equal', 'green');
+    clickRegion(300, 300);
+    cy.get('.leaflet-interactive[fill="red"]')
+      .trigger('mouseover')
+      .should('have.attr', 'fill')
+      .and('equal', 'teal');
+
+    deletePolygon();
   });
 
   it('should delete a polygon', () => {
     drawPolygon();
 
-    cy.get(mapSelector).dblclick(300, 300);
+    doubleClickRegion(300, 300);
 
     cy.hasVertexMarkers(4);
 
-    cy.get(mapSelector).dblclick(300, 300);
+    doubleClickRegion(300, 300);
 
     deletePolygon();
 
-    cy.get(mapSelector).dblclick(300, 300);
+    doubleClickRegion(300, 300);
 
     cy.hasVertexMarkers(0);
   });
@@ -70,7 +77,7 @@ describe('Polygon tests', () => {
   it('should add and remove a vertex from polygon', () => {
     drawPolygon();
 
-    cy.get(mapSelector).dblclick(300, 300);
+    doubleClickRegion(300, 300);
 
     let vertex = cy.get('.marker-icon-middle').first();
 
@@ -95,7 +102,7 @@ describe('Polyline tests', () => {
   it('should draw a polyline', () => {
     drawPolyline();
 
-    cy.get(mapSelector).dblclick(100, 150);
+    doubleClickRegion(100, 150);
 
     cy.hasVertexMarkers(2);
 
@@ -105,19 +112,19 @@ describe('Polyline tests', () => {
   it('should delete a polyline', () => {
     drawPolyline();
 
-    cy.get(mapSelector).dblclick(100, 150);
+    doubleClickRegion(100, 150);
 
     cy.hasVertexMarkers(2);
 
-    cy.get(mapSelector).dblclick(100, 150);
+    doubleClickRegion(100, 150);
 
     deletePolyline();
 
-    cy.get(mapSelector).dblclick(100, 150);
+    doubleClickRegion(100, 150);
 
     cy.hasVertexMarkers(0);
 
-    cy.get(mapSelector).dblclick(100, 150);
+    doubleClickRegion(100, 150);
   });
 });
 
@@ -126,14 +133,14 @@ describe('Region Properties Tests', () => {
   it('should attach a property to a region', () => {
     drawPolygon();
 
-    cy.get(mapSelector).click(300, 300);
+    clickRegion(300, 300);
 
     cy.contains('Feature Properties:').should('exist');
 
     addProp(type);
 
-    cy.get(mapSelector).click(300, 300);
-    cy.get(mapSelector).click(300, 300);
+    clickRegion(300, 300);
+    clickRegion(300, 300);
 
     cy.get(`input[value=mapson_${type}_test_key]`).should('be.visible');
     cy.get(`input[value=mapson_${type}_test_value]`).should('be.visible');
@@ -142,19 +149,19 @@ describe('Region Properties Tests', () => {
   it('should modify a property of a region', () => {
     drawPolygon();
 
-    cy.get(mapSelector).click(300, 300);
+    clickRegion(300, 300);
 
     cy.contains('Feature Properties:').should('exist');
 
     addProp(type);
 
-    cy.get(mapSelector).click(300, 300);
-    cy.get(mapSelector).click(300, 300);
+    clickRegion(300, 300);
+    clickRegion(300, 300);
 
     modProp(type);
 
-    cy.get(mapSelector).click(300, 300);
-    cy.get(mapSelector).click(300, 300);
+    clickRegion(300, 300);
+    clickRegion(300, 300);
 
     cy.get(`input[value=mapson_${type}_test_key_2]`).should('be.visible');
     cy.get(`input[value=mapson_${type}_test_value_2]`).should('be.visible');
@@ -197,8 +204,8 @@ describe('Merge tests', () => {
     drawPolygon();
     drawPolygon2();
 
-    cy.get(mapSelector).click(150, 150);
-    cy.get(mapSelector).click(350, 350);
+    clickRegion(150, 150);
+    clickRegion(350, 350);
 
     cy.toolbarButton('merge').click();
 
@@ -226,8 +233,8 @@ describe('Merge tests', () => {
     drawPolygon2();
     drawPolygon3();
 
-    cy.get(mapSelector).click(250, 250);
-    cy.get(mapSelector).click(400, 400);
+    clickRegion(250, 250);
+    clickRegion(400, 400);
 
     cy.toolbarButton('merge').click();
 
@@ -239,15 +246,72 @@ describe('Merge tests', () => {
   });
 });
 
+describe('Split tests', () => {
+  beforeEach(() => {
+    login();
+    cy.get('.mapcard').last().click();
+  });
+
+  it('should split region into two', () => {
+    drawPolygon2();
+
+    clickRegion(200, 200);
+
+    //draw split line
+    cy.toolbarButton('split').click();
+
+    clickRegion(50, 200).click(350, 200).click(350, 200);
+
+    doubleClickRegion(200, 150);
+
+    cy.hasVertexMarkers(4);
+
+    doubleClickRegion(200, 250);
+
+    cy.hasVertexMarkers(4);
+
+    cy.toolbarButton('delete').click();
+
+    clickRegion(200, 150);
+    clickRegion(200, 250);
+
+    cy.toolbarButton('delete').click();
+  });
+
+  it('should be able to merge region back', () => {
+    drawPolygon2();
+
+    clickRegion(200, 200);
+
+    //draw split line
+    cy.toolbarButton('split').click();
+
+    clickRegion(50, 200).click(350, 200).click(350, 200);
+
+    //select split features
+    clickRegion(200, 150);
+    clickRegion(200, 250);
+
+    cy.once('window:confirm', (text) => {
+      expect(text).to.equal('Merge the two selected regions?');
+
+      return true;
+    });
+
+    cy.toolbarButton('merge').click();
+
+    cy.get('a.action-undefined').filter(':visible').click().wait(500);
+
+    doubleClickRegion(200, 200);
+
+    cy.hasVertexMarkers(4);
+  });
+});
+
 const drawPolygon3 = () => {
   cy.toolbarButton('polygon').click();
 
-  cy.get(mapSelector)
-    .click(350, 350)
-    .click(350, 450)
-    .click(450, 450)
-    .click(450, 350)
-    .click(350, 350);
+  clickRegion(350, 350).click(350, 450).click(450, 450).click(450, 350).click(350, 350);
 
   cy.get('a.action-cancel').filter(':visible').click();
 };
@@ -255,12 +319,7 @@ const drawPolygon3 = () => {
 const drawPolygon2 = () => {
   cy.toolbarButton('polygon').click();
 
-  cy.get(mapSelector)
-    .click(100, 100)
-    .click(300, 100)
-    .click(300, 300)
-    .click(100, 300)
-    .click(100, 100);
+  clickRegion(100, 100).click(300, 100).click(300, 300).click(100, 300).click(100, 100);
 
   cy.get('a.action-cancel').filter(':visible').click();
 };
@@ -268,7 +327,7 @@ const drawPolygon2 = () => {
 const deletePolygon2 = () => {
   cy.toolbarButton('delete').click();
 
-  cy.get(mapSelector).click(150, 150);
+  clickRegion(150, 150);
 
   cy.toolbarButton('delete').click();
 };
@@ -276,12 +335,7 @@ const deletePolygon2 = () => {
 const drawPolygon = () => {
   cy.toolbarButton('polygon').click();
 
-  cy.get(mapSelector)
-    .click(200, 200)
-    .click(200, 400)
-    .click(400, 400)
-    .click(400, 200)
-    .click(200, 200);
+  clickRegion(200, 200).click(200, 400).click(400, 400).click(400, 200).click(200, 200);
 
   cy.get('a.action-cancel').filter(':visible').click();
 };
@@ -289,7 +343,7 @@ const drawPolygon = () => {
 const deletePolygon = () => {
   cy.toolbarButton('delete').click();
 
-  cy.get(mapSelector).click(300, 300);
+  clickRegion(300, 300);
 
   cy.toolbarButton('delete').click();
 };
@@ -297,7 +351,7 @@ const deletePolygon = () => {
 const drawPolyline = () => {
   cy.toolbarButton('polyline').click();
 
-  cy.get(mapSelector).click(100, 100).click(100, 200).click(100, 200);
+  clickRegion(100, 100).click(100, 200).click(100, 200);
 
   cy.get('a.action-cancel').filter(':visible').click();
 };
@@ -305,7 +359,7 @@ const drawPolyline = () => {
 const deletePolyline = () => {
   cy.toolbarButton('delete').click();
 
-  cy.get(mapSelector).click(100, 150);
+  clickRegion(100, 150);
 
   cy.toolbarButton('delete').click();
 };
@@ -337,4 +391,12 @@ const modProp = (type: string) => {
   cy.get('#' + type + '-save-button')
     .should('exist')
     .click();
+};
+
+const doubleClickRegion = (x: number, y: number) => {
+  return cy.get(mapSelector).dblclick(x, y).wait(DELAY);
+};
+
+const clickRegion = (x: number, y: number) => {
+  return cy.get(mapSelector).click(x, y).wait(DELAY);
 };

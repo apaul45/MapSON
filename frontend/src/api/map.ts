@@ -40,7 +40,6 @@ export const deleteFeature = (id: string, featureid: string) =>
 export const getAllMaps = (payload: AllMapsRequest) =>
   api.post<GetAllMapsResponse>('/maps/allmaps', payload);
 
-
 export default {
   createMap,
   deleteMap,
