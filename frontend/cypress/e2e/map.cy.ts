@@ -44,12 +44,18 @@ describe('Polygon tests', () => {
 
     doubleClickRegion(300, 300);
 
-    deletePolygon();
-
     // ONLY WORKS WITH SVG RENDERER
-    // cy.get('leaflet-interactive[fill="blue"]').trigger('mouseover').should('have.attr', 'fill').and('equal', 'green')
-    // clickRegion(300, 300)
-    // cy.get('leaflet-interactive[fill="red"]').trigger('mouseover').should('have.attr', 'fill').and('equal', 'teal')
+    cy.get('.leaflet-interactive[fill="blue"]')
+      .trigger('mouseover')
+      .should('have.attr', 'fill')
+      .and('equal', 'green');
+    clickRegion(300, 300);
+    cy.get('.leaflet-interactive[fill="red"]')
+      .trigger('mouseover')
+      .should('have.attr', 'fill')
+      .and('equal', 'teal');
+
+    deletePolygon();
   });
 
   it('should delete a polygon', () => {

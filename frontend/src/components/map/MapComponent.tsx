@@ -318,7 +318,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
         doubleClickZoom={false}
         id="map-container"
         //TODO: dynamically check if we need to use L.SVG vs L.Canvas depending on browser
-        renderer={new L.Canvas({ tolerance: 3 })}
+        renderer={new L.SVG({ tolerance: 3 })}
         //@ts-ignore
         bounds={bounds}
       >
