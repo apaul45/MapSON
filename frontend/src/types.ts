@@ -35,8 +35,7 @@ export interface MongoData {
 export interface CommonGeoJSONData {
   _id: string;
 }
-export type GeometryExt = CommonGeoJSONData & Geometry & MongoData;
-export type FeatureExt = CommonGeoJSONData & Feature<GeometryExt> & MongoData;
+
 export type GeometryExt = CommonGeoJSONData & Geometry & MongoData;
 export type FeatureExt = CommonGeoJSONData & Feature<GeometryExt> & MongoData;
 export type Features = {
