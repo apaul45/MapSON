@@ -65,6 +65,7 @@ describe('Project Invitation Tests', () => {
     login(null, null, null);
     register('10', '20', '30');
     createNew();
+    cy.wait(1000);
   });
   afterEach(() => logout());
 
