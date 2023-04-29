@@ -5,6 +5,7 @@ export interface User {
   username: string;
   password: string;
   maps: Map[];
+  _id: string;
 }
 
 export interface Published {
@@ -66,6 +67,7 @@ export interface Map {
   description?: string;
   properties: Record<string, any>;
   updatedAt?: string;
+  userAccess: Array<string>;
 }
 
 export interface Store {

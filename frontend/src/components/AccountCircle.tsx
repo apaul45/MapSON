@@ -5,9 +5,11 @@ import tinycolor from 'tinycolor2';
 import { useNavigate } from 'react-router-dom';
 import { Menu, MenuHandler, MenuItem, MenuList } from '@material-tailwind/react';
 
+export const bgColor = tinycolor.random().darken(30).toHexString();
+
 const AccountCircle = () => {
   //Generate and darken random color
-  const backgroundColor = useRef(tinycolor.random().darken(30).toHexString());
+  const backgroundColor = useRef(bgColor);
 
   const user = useSelector((state: RootState) => state.user.currentUser?.username);
 
