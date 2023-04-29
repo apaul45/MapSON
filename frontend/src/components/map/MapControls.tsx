@@ -300,23 +300,9 @@ const MapControls = ({
         customControls.forEach((c) => {
           if (!controls.includes(c.name)) {
             if (c.name === 'Split') {
-              const res = map.pm.Toolbar.copyDrawControl('Line', customControls[1]);
-              console.log(res);
+              const res = map.pm.Toolbar.copyDrawControl('Line', c);
               //@ts-ignore
-              const { drawInstance, control } = res;
-
-              drawInstance._oldEnable = drawInstance.enable;
-
-              drawInstance.enable = function (options: any) {
-                if (options) {
-                  options.snappable = false;
-                }
-
-                if (this.options) {
-                  this.options.snappable = false;
-                }
-                return this._oldEnable(options);
-              };
+              const { drawInstance } = res;
 
               //copied from geoman src
               drawInstance._finishShape = function () {
@@ -337,8 +323,7 @@ const MapControls = ({
                   return;
                 }
 
-                const polyline = L.polyline(coords, this.options).toGeoJSON(15);
-
+                const polyline = L.polyline(coords, this.options.pathOptions).toGeoJSON(15);
                 handleSplit(polyline);
 
                 if (this.options.snappable) {
