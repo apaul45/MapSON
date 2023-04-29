@@ -1,9 +1,9 @@
-import { login } from './account';
+import { login } from './utils';
 
 const mapSelector = '#map-container';
 
 beforeEach(() => {
-  login();
+  login(null, null, null);
   cy.get('#plus-sign').parent().should('be.visible').click();
   cy.contains('Create new Map').should('be.visible').click();
   cy.location('href').should((path) => {
@@ -13,7 +13,7 @@ beforeEach(() => {
 
 describe('Map interaction tests', () => {
   beforeEach(() => {
-    login();
+    login(null, null, null);
     cy.get('.mapcard').last().click();
   });
 
@@ -30,7 +30,7 @@ describe('Map interaction tests', () => {
 
 describe('Polygon tests', () => {
   beforeEach(() => {
-    login();
+    login(null, null, null);
     cy.get('.mapcard').last().click();
   });
 
@@ -88,7 +88,7 @@ describe('Polygon tests', () => {
 
 describe('Polyline tests', () => {
   beforeEach(() => {
-    login();
+    login(null, null, null);
     cy.get('.mapcard').last().click();
   });
 
@@ -184,7 +184,7 @@ describe('Map Properties Tests', () => {
 
 describe('Merge tests', () => {
   beforeEach(() => {
-    login();
+    login(null, null, null);
     cy.get('.mapcard').last().click();
   });
 

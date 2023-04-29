@@ -58,6 +58,7 @@ const ShareMapDialog = ({ isOpen, closeDialog }: Props) => {
             <DialogBody>
               <div className="flex space-x-5">
                 <Input
+                  id="invitation-username"
                   label="Username"
                   className="text-white"
                   onChange={(e) => setInvite(e.target.value)}
@@ -73,7 +74,7 @@ const ShareMapDialog = ({ isOpen, closeDialog }: Props) => {
                 <p className="text-white">people with access:</p>
                 {map?.userAccess.map((username) => {
                   return (
-                    <div className="flex my-1">
+                    <div className="flex my-1" key={`Access:${username}`}>
                       <div
                         className="rounded-full w-7 h-7 text-center text-white"
                         style={{
