@@ -253,6 +253,8 @@ describe('Split tests', () => {
 
     cy.hasVertexMarkers(4);
 
+    doubleClickRegion(200, 200);
+
     clickRegion(200, 200);
 
     //draw split line
@@ -264,9 +266,13 @@ describe('Split tests', () => {
 
     cy.hasVertexMarkers(4);
 
+    doubleClickRegion(200, 150);
+
     doubleClickRegion(200, 350);
 
     cy.hasVertexMarkers(4);
+
+    doubleClickRegion(200, 350);
 
     cy.toolbarButton('delete').click();
 
