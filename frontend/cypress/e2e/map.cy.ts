@@ -248,7 +248,7 @@ describe('Merge tests', () => {
 
 describe('Split tests', () => {
   beforeEach(() => {
-    login();
+    login(null, null, null);
     cy.get('.mapcard').last().click();
   });
 
