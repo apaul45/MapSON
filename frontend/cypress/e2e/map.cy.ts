@@ -249,12 +249,6 @@ describe('Split tests', () => {
   it('should split region into two', () => {
     drawPolygon2();
 
-    doubleClickRegion(200, 200);
-
-    cy.hasVertexMarkers(4);
-
-    doubleClickRegion(200, 200);
-
     clickRegion(200, 200);
 
     //draw split line
@@ -268,16 +262,16 @@ describe('Split tests', () => {
 
     doubleClickRegion(200, 150);
 
-    doubleClickRegion(200, 350);
+    doubleClickRegion(200, 250);
 
     cy.hasVertexMarkers(4);
 
-    doubleClickRegion(200, 350);
+    doubleClickRegion(200, 250);
 
     cy.toolbarButton('delete').click();
 
     clickRegion(200, 150);
-    clickRegion(200, 350);
+    clickRegion(200, 250);
 
     cy.toolbarButton('delete').click();
   });
