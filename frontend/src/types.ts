@@ -5,7 +5,6 @@ export interface User {
   username: string;
   password: string;
   maps: Map[];
-  _id: string;
 }
 
 export interface Published {
