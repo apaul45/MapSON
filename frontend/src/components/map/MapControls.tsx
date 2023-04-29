@@ -15,6 +15,7 @@ import * as turf from '@turf/turf';
 import { useEffect } from 'react';
 import { FeatureExt, LGeoJsonExt } from '../../types';
 import L from 'leaflet';
+import polygonSlice from '../../utils/polygon-slice';
 
 declare module 'leaflet' {
   namespace PM {
@@ -113,11 +114,18 @@ const MapControls = ({
       return f;
     });
 
-    const validFeatures = geojsonFeatures.filter(
-      (f) =>
+    let sourceIsMultiPolygon = false;
+    const validFeatures = geojsonFeatures.filter((f) => {
+      const valid =
         f.type === 'Feature' &&
-        (f.geometry.type === 'Polygon' || f.geometry.type === 'MultiPolygon')
-    ) as Feature<Polygon | MultiPolygon>[];
+        (f.geometry.type === 'Polygon' || f.geometry.type === 'MultiPolygon');
+
+      if (valid && f.geometry.type === 'MultiPolygon') {
+        sourceIsMultiPolygon = true;
+      }
+
+      return valid;
+    }) as Feature<Polygon | MultiPolygon>[];
 
     if (validFeatures.length !== geojsonFeatures.length) {
       console.debug(geojsonFeatures);
@@ -125,10 +133,9 @@ const MapControls = ({
       return;
     }
 
-    const union = validFeatures.reduce((prev, curr) => turf.union(prev, curr)!);
+    const union_res = validFeatures.reduce((prev, curr) => union(prev, curr)!);
 
-    if (union.geometry.type === 'MultiPolygon') {
-      console.log({ union });
+    if (!sourceIsMultiPolygon && union_res.geometry.type === 'MultiPolygon') {
       const allowNonContiguous = confirm(
         'This merge results in a non-contiguous polygon. Do you still want to continue?'
       );
@@ -139,9 +146,16 @@ const MapControls = ({
 
     features.forEach(({ layer }) => layer.remove());
 
-    const newLayer = L.geoJSON(union).addTo(map);
+    const newLayer = L.geoJSON(union_res).addTo(map);
 
-    map.fire('pm:merge', { newLayer, newFeature: union, oldLayers: features });
+    map.fire('pm:merge', { newLayer, newFeature: union_res, oldLayers: features });
+  };
+
+  const union = (
+    prev: Feature<Polygon | MultiPolygon>,
+    curr: Feature<Polygon | MultiPolygon>
+  ): Feature<Polygon | MultiPolygon> => {
+    return turf.union(prev, curr)!;
   };
 
   const handleSplit = (polyline: Feature<LineString | MultiLineString>) => {
@@ -155,18 +169,21 @@ const MapControls = ({
     const validFeatures = features.filter((l) => {
       const f = l.layer.toGeoJSON(15) as FeatureCollection | Feature;
 
-      const isValidFeature = f.type === 'Feature' && f.geometry.type === 'Polygon';
+      const isValidFeature =
+        f.type === 'Feature' &&
+        (f.geometry.type === 'Polygon' || f.geometry.type === 'MultiPolygon');
 
       const isValidFeatureCollection =
         f.type === 'FeatureCollection' &&
         f.features.length === 1 &&
-        f.features[0].geometry.type === 'Polygon';
+        (f.features[0].geometry.type === 'Polygon' ||
+          f.features[0].geometry.type === 'MultiPolygon');
 
       return isValidFeature || isValidFeatureCollection;
     });
 
     if (validFeatures.length === 0) {
-      console.error('Only polygons are valid candidates for splitting');
+      console.error('Only (multi)polygons are valid candidates for splitting');
       return;
     }
 
@@ -199,8 +216,11 @@ const MapControls = ({
 
     console.log({ polyline, geojson });
 
-    if (geojson.type !== 'Feature' || geojson.geometry.type !== 'Polygon') {
-      console.error('Invalid geometry type. Only allow polygons.');
+    if (
+      geojson.type !== 'Feature' ||
+      (geojson.geometry.type !== 'Polygon' && geojson.geometry.type !== 'MultiPolygon')
+    ) {
+      console.error('Invalid geometry type. Only allow (multi)polygons.');
       return;
     }
 
@@ -209,18 +229,9 @@ const MapControls = ({
       return;
     }
 
-    const split = turfCut(geojson as Feature<Polygon>, polyline as Feature<LineString>);
+    const split = polygonSlice(geojson as Feature<Polygon>, polyline as Feature<LineString>);
 
-    console.log({ split, geometry: geojson.geometry });
-
-    // if (
-    //   (split.type === 'Feature' &&
-    //     (split.geometry.type !== 'MultiPolygon' || split.geometry === geojson.geometry)) ||
-    //   (split.type !== 'Feature' && split === geojson.geometry)
-    // ) {
-    //   console.debug('Split returned same polygon');
-    //   return;
-    // }
+    console.log({ split });
 
     if (split.length === 1) {
       return;
@@ -239,61 +250,6 @@ const MapControls = ({
     console.log(newFeatures);
 
     return { oldLayer: layer, newFeatures };
-  };
-
-  function turfCut(poly: Feature<Polygon>, line: Feature<LineString>) {
-    // validation
-    if (poly.geometry.type !== 'Polygon') {
-      throw '"turf-cut" only accepts Polygon type as victim input';
-    }
-    if (line.geometry.type !== 'LineString') {
-      throw '"turf-cut" only accepts LineString type as axe input';
-    }
-
-    if (
-      turf.booleanPointInPolygon(turf.point(line.geometry.coordinates[0]), poly) ||
-      turf.booleanPointInPolygon(
-        turf.point(line.geometry.coordinates[line.geometry.coordinates.length - 1]),
-        poly
-      )
-    ) {
-      throw 'Both first and last points of the polyline must be outside of the polygon';
-    }
-
-    // erase replaced by difference and buffer function changed significantly
-    let _axe = turf.buffer(line, 0.001, { units: 'meters' }),
-      _body = turf.difference(poly, _axe),
-      pieces = [];
-
-    if (!_body) {
-      throw 'Failed getting difference while splitting';
-    }
-
-    if (_body.geometry.type == 'Polygon') {
-      pieces.push(turf.polygon(_body.geometry.coordinates));
-    } else {
-      _body.geometry.coordinates.forEach((a) => pieces.push(turf.polygon(a)));
-    }
-
-    pieces.forEach((a) => (a.properties = poly.properties));
-
-    return pieces;
-  }
-
-  const flattenPolygon = (
-    mp: Feature<MultiPolygon | Polygon> | MultiPolygon | Polygon
-  ): Polygon[] => {
-    if (mp.type === 'Feature') {
-      return flattenPolygon(mp.geometry);
-    }
-
-    if (mp.type === 'Polygon') {
-      return [mp];
-    }
-
-    console.log(mp);
-
-    return mp.coordinates.map((coords) => turf.polygon(coords).geometry);
   };
 
   const customControls: PM.CustomControlOptions[] = [

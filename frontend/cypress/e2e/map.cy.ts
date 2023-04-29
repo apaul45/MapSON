@@ -11,71 +11,6 @@ beforeEach(() => {
   });
 });
 
-describe('Split tests', () => {
-  beforeEach(() => {
-    login();
-    cy.get('.mapcard').last().click();
-  });
-
-  it('should split region into two', () => {
-    drawPolygon2();
-
-    cy.get(mapSelector).dblclick(200, 200);
-
-    cy.hasVertexMarkers(4);
-
-    cy.get(mapSelector).click(200, 200);
-
-    //draw split line
-    cy.toolbarButton('split').click();
-
-    cy.get(mapSelector).click(50, 200).click(350, 200).click(350, 200);
-
-    cy.get(mapSelector).dblclick(200, 150);
-
-    cy.hasVertexMarkers(4);
-
-    cy.get(mapSelector).dblclick(200, 350);
-
-    cy.hasVertexMarkers(4);
-
-    cy.toolbarButton('delete').click();
-
-    cy.get(mapSelector).click(200, 150);
-    cy.get(mapSelector).click(200, 350);
-
-    cy.toolbarButton('delete').click();
-  });
-
-  it('should be able to merge region back', () => {
-    drawPolygon2();
-
-    cy.get(mapSelector).click(200, 200);
-
-    //draw split line
-    cy.toolbarButton('split').click();
-
-    cy.get(mapSelector).click(50, 200).click(350, 200).click(350, 200);
-
-    //select split features
-    cy.get(mapSelector).click(200, 150);
-    cy.get(mapSelector).click(200, 350);
-
-    cy.once('window:confirm', (text) => {
-      expect(text).to.equal('Merge the two selected regions?');
-      return true;
-    });
-
-    cy.toolbarButton('merge').click();
-
-    cy.get('a.action-undefined').filter(':visible').click();
-
-    cy.get(mapSelector).dblclick(200, 200);
-
-    cy.hasVertexMarkers(6);
-  });
-});
-
 describe('Map interaction tests', () => {
   beforeEach(() => {
     login();
@@ -102,11 +37,11 @@ describe('Polygon tests', () => {
   it('should draw a polygon with proper hover change states', () => {
     drawPolygon();
 
-    cy.get(mapSelector).dblclick(300, 300);
+    doubleClickRegion(300, 300);
 
     cy.hasVertexMarkers(4);
 
-    cy.get(mapSelector).dblclick(300, 300);
+    doubleClickRegion(300, 300);
 
     deletePolygon();
 
@@ -119,15 +54,15 @@ describe('Polygon tests', () => {
   it('should delete a polygon', () => {
     drawPolygon();
 
-    cy.get(mapSelector).dblclick(300, 300);
+    doubleClickRegion(300, 300);
 
     cy.hasVertexMarkers(4);
 
-    cy.get(mapSelector).dblclick(300, 300);
+    doubleClickRegion(300, 300);
 
     deletePolygon();
 
-    cy.get(mapSelector).dblclick(300, 300);
+    doubleClickRegion(300, 300);
 
     cy.hasVertexMarkers(0);
   });
@@ -135,7 +70,7 @@ describe('Polygon tests', () => {
   it('should add and remove a vertex from polygon', () => {
     drawPolygon();
 
-    cy.get(mapSelector).dblclick(300, 300);
+    doubleClickRegion(300, 300);
 
     let vertex = cy.get('.marker-icon-middle').first();
 
@@ -160,7 +95,7 @@ describe('Polyline tests', () => {
   it('should draw a polyline', () => {
     drawPolyline();
 
-    cy.get(mapSelector).dblclick(100, 150);
+    doubleClickRegion(100, 150);
 
     cy.hasVertexMarkers(2);
 
@@ -170,19 +105,19 @@ describe('Polyline tests', () => {
   it('should delete a polyline', () => {
     drawPolyline();
 
-    cy.get(mapSelector).dblclick(100, 150);
+    doubleClickRegion(100, 150);
 
     cy.hasVertexMarkers(2);
 
-    cy.get(mapSelector).dblclick(100, 150);
+    doubleClickRegion(100, 150);
 
     deletePolyline();
 
-    cy.get(mapSelector).dblclick(100, 150);
+    doubleClickRegion(100, 150);
 
     cy.hasVertexMarkers(0);
 
-    cy.get(mapSelector).dblclick(100, 150);
+    doubleClickRegion(100, 150);
   });
 });
 
@@ -304,6 +239,72 @@ describe('Merge tests', () => {
   });
 });
 
+describe('Split tests', () => {
+  beforeEach(() => {
+    login();
+    cy.get('.mapcard').last().click();
+  });
+
+  it('should split region into two', () => {
+    drawPolygon2();
+
+    doubleClickRegion(200, 200);
+
+    cy.hasVertexMarkers(4);
+
+    cy.get(mapSelector).click(200, 200);
+
+    //draw split line
+    cy.toolbarButton('split').click();
+
+    cy.get(mapSelector).click(50, 200).click(350, 200).click(350, 200);
+
+    doubleClickRegion(200, 150);
+
+    cy.hasVertexMarkers(4);
+
+    doubleClickRegion(200, 350);
+
+    cy.hasVertexMarkers(4);
+
+    cy.toolbarButton('delete').click();
+
+    cy.get(mapSelector).click(200, 150);
+    cy.get(mapSelector).click(200, 350);
+
+    cy.toolbarButton('delete').click();
+  });
+
+  it('should be able to merge region back', () => {
+    drawPolygon2();
+
+    cy.get(mapSelector).click(200, 200);
+
+    //draw split line
+    cy.toolbarButton('split').click();
+
+    cy.get(mapSelector).click(50, 200).click(350, 200).click(350, 200);
+
+    //select split features
+    cy.get(mapSelector).click(200, 150);
+    cy.get(mapSelector).click(200, 250);
+
+    cy.once('window:confirm', (text) => {
+      expect(text).to.equal('Merge the two selected regions?');
+
+      return true;
+    });
+
+    cy.toolbarButton('merge').click();
+
+    cy.get('a.action-undefined').filter(':visible').click().wait(500);
+
+    doubleClickRegion(200, 200);
+
+    cy.hasVertexMarkers(4);
+  });
+});
+
 const drawPolygon3 = () => {
   cy.toolbarButton('polygon').click();
 
@@ -402,4 +403,8 @@ const modProp = (type: string) => {
   cy.get('#' + type + '-save-button')
     .should('exist')
     .click();
+};
+
+const doubleClickRegion = (x: number, y: number) => {
+  return cy.get(mapSelector).dblclick(x, y).wait(200);
 };
