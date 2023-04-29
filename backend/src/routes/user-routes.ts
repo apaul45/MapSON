@@ -68,7 +68,7 @@ router.post('/register', async (req: Request, res: Response) => {
   req.session.username = username;
   req.session.email = email;
   req.session._id = user._id;
-  res.status(200).json({ error: false });
+  res.status(200).json({ error: false, user: user.toJSON() });
 });
 
 router.post('/login', async (req: Request, res: Response) => {
@@ -86,6 +86,7 @@ router.post('/login', async (req: Request, res: Response) => {
     path: 'maps',
     populate: {
       path: 'owner',
+      select: 'username',
     },
   });
 

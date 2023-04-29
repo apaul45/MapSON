@@ -26,7 +26,8 @@ export const user = createModel<RootModel>()({
     async register(payload: User, state) {
       try {
         const response = await auth.register(payload);
-        dispatch.user.setCurrentUser(payload);
+        // @ts-ignore
+        dispatch.user.setCurrentUser(response.data.user);
       } catch (error: unknown) {
         const err = error as AxiosError;
         // @ts-ignore
