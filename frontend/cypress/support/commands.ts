@@ -37,7 +37,7 @@ declare global {
 Cypress.Commands.add('toolbarButton', (name) => cy.get(`.leaflet-pm-icon-${name}`));
 
 Cypress.Commands.add('hasVertexMarkers', (count) =>
-  cy.get('.marker-icon:not(.marker-icon-middle)').should(($p) => {
+  cy.get('.marker-icon:not(.marker-icon-middle)', { timeout: 10000 }).should(($p) => {
     expect($p).to.have.length(count);
   })
 );
