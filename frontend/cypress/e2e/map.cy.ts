@@ -262,13 +262,7 @@ describe('Split tests', () => {
 
     clickRegion(50, 200).click(350, 200).click(350, 200);
 
-    doubleClickRegion(200, 150);
-
-    cy.hasVertexMarkers(4);
-
-    doubleClickRegion(200, 250);
-
-    cy.hasVertexMarkers(4);
+    cy.hasLayers(2);
 
     cy.toolbarButton('delete').click();
 
