@@ -17,6 +17,7 @@ import { useSelector } from 'react-redux';
 import { MapComponentCallbacks } from '../../transactions/map/common';
 import jsTPS from '../../utils/jsTPS';
 import { CreateFeature } from '../../transactions/map/CreateFeature';
+import { RemoveFeature } from '../../transactions/map/RemoveFeature';
 
 export type SelectedFeature = { layer: LGeoJsonExt; id: any };
 
@@ -233,7 +234,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
   };
 
   const onCreate: L.PM.CreateEventHandler = async (e) =>
-    transactions.current.addTransaction(
+    await transactions.current.addTransaction(
       new CreateFeature(e.layer as LGeoJsonExt),
       mapRef.current!,
       callbacks
@@ -249,15 +250,12 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
     await mapStore.updateFeature({ id: layer._id, feature });
   };
 
-  const onRemove: L.PM.RemoveEventHandler = async (e) => {
-    console.log('REMOVED');
-
-    const layer = e.layer as LGeoJsonExt;
-
-    await mapStore.deleteFeature(layer._id);
-
-    unselectFeature(layer._id);
-  };
+  const onRemove: L.PM.RemoveEventHandler = async (e) =>
+    await transactions.current.addTransaction(
+      new RemoveFeature(e.layer as LGeoJsonExt),
+      mapRef.current!,
+      callbacks
+    );
 
   const onMerge: L.PM.MergeEventHandler = async (e) => {
     console.log('MERGED');
