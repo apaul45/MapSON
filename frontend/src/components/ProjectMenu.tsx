@@ -4,7 +4,7 @@ import { RootState, store } from '../models';
 import { Link } from 'react-router-dom';
 import { saveAs } from 'file-saver';
 import axios from 'axios';
-import { handlePublish } from './dialogs/ShareMapDialog';
+import { handlePublish, handleUnpublish } from './dialogs/ShareMapDialog';
 
 const ProjectMenu = () => {
   const user = useSelector((state: RootState) => state.user.currentUser);
@@ -79,9 +79,20 @@ const ProjectMenu = () => {
       <MenuItem className="hover:bg-sort-hover">Redo</MenuItem>
 
       <hr className="my-2 border-blue-gray-50 outline-none" />
-      <MenuItem className="hover:bg-sort-hover" onClick={() => handlePublish()}>
-        Publish
-      </MenuItem>
+
+      {
+        // @ts-ignore
+        map?.published.isPublished && map?.owner._id === user?._id ? (
+          <MenuItem className="hover:bg-sort-hover" onClick={() => handleUnpublish()}>
+            Unpublish
+          </MenuItem>
+        ) : //@ts-ignore
+        map?.owner._id === user?._id ? (
+          <MenuItem className="hover:bg-sort-hover" onClick={() => handlePublish()}>
+            Publish
+          </MenuItem>
+        ) : null
+      }
       <MenuItem className="hover:bg-sort-hover">Share</MenuItem>
 
       <Link to={user ? '/home' : '/discover'} className="hover:bg-sort-hover hover:outline-none">
