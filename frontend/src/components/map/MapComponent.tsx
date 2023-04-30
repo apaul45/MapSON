@@ -14,6 +14,9 @@ import 'leaflet-draw/dist/leaflet.draw.css';
 
 import { RootState, store } from '../../models';
 import { useSelector } from 'react-redux';
+import { MapComponentCallbacks } from '../../transactions/map/common';
+import jsTPS from '../../utils/jsTPS';
+import { CreateFeature } from '../../transactions/map/CreateFeature';
 
 export type SelectedFeature = { layer: LGeoJsonExt; id: any };
 
@@ -51,10 +54,11 @@ interface IMapComponent extends Map {
 const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapComponent) => {
   const { mapStore } = store.dispatch;
   const map = useSelector((state: RootState) => state.mapStore.currentMap);
-  const mapRef = useRef(map);
+  const mapRef = useRef<L.Map>(null!);
+  const transactions = useRef(new jsTPS());
 
   useEffect(() => {
-    mapRef.current = map;
+    transactions.current.clearAllTransactions();
   }, [map]);
 
   //second one is the most recently selected
@@ -67,16 +71,14 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
   };
 
   const selectFeature = (id: any, layer: LGeoJsonExt): SelectedFeature | undefined => {
-    const featureIndex = mapRef.current?.features.features.findIndex(
-      (feature) => feature._id === id
-    );
+    const featureIndex = map?.features.features.findIndex((feature) => feature._id === id);
     if (featureIndex !== undefined && featureIndex >= 0) {
       if (!('feature' in layer)) {
         // @ts-ignore
-        layer.feature = mapRef.current?.features.features[featureIndex];
+        layer.feature = map?.features.features[featureIndex];
       } else {
         // @ts-ignore
-        layer.feature.properties = mapRef.current?.features.features[featureIndex].properties;
+        layer.feature.properties = map?.features.features[featureIndex].properties;
       }
     }
 
@@ -220,23 +222,22 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
     ];
   }
 
-  const onCreate: L.PM.CreateEventHandler = async (e) => {
-    console.log('CREATED');
-    console.log({ map });
-    const layer = e.layer as LGeoJsonExt;
-
-    const feature = layer.toGeoJSON(15) as FeatureExt;
-    const id = await mapStore.createFeature(feature);
-
-    if (!id) {
-      console.error('Failed to create feature');
-      return;
-    }
-
-    feature._id = id;
-
-    onEachFeature(feature, layer as LGeoJsonExt);
+  const callbacks: MapComponentCallbacks = {
+    isSelected,
+    selectFeature,
+    unselectFeature,
+    getLayerID,
+    getSelectedFeatures,
+    resetSelectedFeature,
+    onEachFeature,
   };
+
+  const onCreate: L.PM.CreateEventHandler = async (e) =>
+    transactions.current.addTransaction(
+      new CreateFeature(e.layer as LGeoJsonExt),
+      mapRef.current!,
+      callbacks
+    );
 
   const onEdit: L.PM.EditEventHandler = async (e) => {
     console.log('EDITED');
@@ -306,8 +307,22 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
     );
   };
 
+  const undo = () => {
+    transactions.current.undoTransaction(mapRef.current!, callbacks);
+  };
+
+  const redo = () => {
+    transactions.current.doTransaction(mapRef.current!, callbacks);
+  };
+
   return (
     <div className="w-screen h-[calc(100vh-64px)]">
+      <button style={{ backgroundColor: 'white' }} onClick={() => undo()}>
+        Undo
+      </button>
+      <button style={{ backgroundColor: 'white' }} onClick={() => redo()}>
+        Redo
+      </button>
       <MapContainer
         style={{ width: '100%', minHeight: '100%', height: '100%', zIndex: 0 }}
         zoom={4}
@@ -319,6 +334,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
         renderer={new L.SVG({ tolerance: 3 })}
         //@ts-ignore
         bounds={bounds}
+        ref={mapRef}
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 

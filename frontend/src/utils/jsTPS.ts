@@ -37,25 +37,25 @@ export abstract class MapTransaction<T> extends BaseTransaction<T> {
   /**
    * This method is called by jTPS when a transaction is executed.
    */
-  abstract doTransaction(map: L.Map, callbacks: MapComponentCallbacks): void;
+  abstract doTransaction(map: L.Map, callbacks: MapComponentCallbacks): void | Promise<void>;
   /**
    * This method is called by jTPS when a transaction is undone.
    */
-  abstract undoTransaction(map: L.Map, callbacks: MapComponentCallbacks): void;
+  abstract undoTransaction(map: L.Map, callbacks: MapComponentCallbacks): void | Promise<void>;
 }
 
 export abstract class RegularTransaction<T> extends BaseTransaction<T> {
   /**
    * This method is called by jTPS when a transaction is executed.
    */
-  abstract doTransaction(): void;
+  abstract doTransaction(): void | Promise<void>;
   /**
    * This method is called by jTPS when a transaction is undone.
    */
-  abstract undoTransaction(): void;
+  abstract undoTransaction(): void | Promise<void>;
 }
 
-type Transaction = MapTransaction<any> | RegularTransaction<any>;
+export type Transaction = MapTransaction<any> | RegularTransaction<any>;
 
 /**
  * jsTPS
@@ -71,10 +71,8 @@ export default class jsTPS {
   mostRecentTransaction: number;
   performingDo: boolean;
   performingUndo: boolean;
-  map: L.Map;
-  callbacks: MapComponentCallbacks;
 
-  constructor(map: L.Map, callbacks: MapComponentCallbacks) {
+  constructor() {
     // THE TRANSACTION STACK
     this.transactions = [];
 
@@ -93,9 +91,6 @@ export default class jsTPS {
     // MANAGE CONCURRENT UPDATES
     this.performingDo = false;
     this.performingUndo = false;
-
-    this.map = map;
-    this.callbacks = callbacks;
   }
 
   /**
@@ -175,7 +170,7 @@ export default class jsTPS {
    *
    * @param {jsTPS_Transaction} transaction Transaction to add to the stack and do.
    */
-  addTransaction(transaction: Transaction) {
+  async addTransaction(transaction: Transaction, map: L.Map, callbacks: MapComponentCallbacks) {
     // ARE WE BRANCHING?
     if (
       this.mostRecentTransaction < 0 ||
@@ -193,7 +188,7 @@ export default class jsTPS {
     this.transactions[this.mostRecentTransaction + 1] = transaction;
 
     // AND EXECUTE IT
-    this.doTransaction();
+    await this.doTransaction(map, callbacks);
   }
 
   /**
@@ -203,14 +198,14 @@ export default class jsTPS {
    * counter. Note this function may be invoked as a result of either adding
    * a transaction (which also does it), or redoing a transaction.
    */
-  doTransaction() {
+  async doTransaction(map: L.Map, callbacks: MapComponentCallbacks) {
     if (this.hasTransactionToRedo()) {
       this.performingDo = true;
       let transaction = this.transactions[this.mostRecentTransaction + 1];
       if (transaction instanceof MapTransaction) {
-        transaction.doTransaction(this.map, this.callbacks);
+        await transaction.doTransaction(map, callbacks);
       } else if (transaction instanceof RegularTransaction) {
-        transaction.doTransaction();
+        await transaction.doTransaction();
       }
       this.mostRecentTransaction++;
       this.performingDo = false;
@@ -221,14 +216,14 @@ export default class jsTPS {
    * This function gets the most recently executed transaction on the
    * TPS stack and undoes it, moving the TPS counter accordingly.
    */
-  undoTransaction() {
+  async undoTransaction(map: L.Map, callbacks: MapComponentCallbacks) {
     if (this.hasTransactionToUndo()) {
       this.performingUndo = true;
       let transaction = this.transactions[this.mostRecentTransaction];
       if (transaction instanceof MapTransaction) {
-        transaction.undoTransaction(this.map, this.callbacks);
+        await transaction.undoTransaction(map, callbacks);
       } else {
-        transaction.undoTransaction();
+        await transaction.undoTransaction();
       }
       this.mostRecentTransaction--;
       this.performingUndo = false;

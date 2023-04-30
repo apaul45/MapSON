@@ -19,13 +19,13 @@ export class CreateFeature extends MapTransaction<CreateFeatureSerialized> {
   }
 
   async doTransaction(map: L.Map, callbacks: MapComponentCallbacks) {
-    // actions for first run on source client
-    if (this.firstRun && !this.isPeer) {
+    // dont repeat network connection on peer for first run
+    if (!(this.firstRun && this.isPeer)) {
       this.id = await store.dispatch.mapStore.createFeature(this.feature);
     }
 
-    // then actions for first run on any client
-    if (!this.firstRun) {
+    // if there's no layer
+    if (!this.layer) {
       this.layer = L.geoJSON(this.feature).addTo(map) as LGeoJsonExt;
     }
 
@@ -35,6 +35,7 @@ export class CreateFeature extends MapTransaction<CreateFeatureSerialized> {
 
     this.firstRun = false;
   }
+
   async undoTransaction(map: L.Map, callbacks: MapComponentCallbacks) {
     await store.dispatch.mapStore.deleteFeature(this.id!);
     callbacks.unselectFeature(this.id);
