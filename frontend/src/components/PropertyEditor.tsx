@@ -76,16 +76,18 @@ const PropertyEditor = ({ onSave, properties, viewOnly, type }: IPropertyEditor)
   const onUpdate = (newKey: string, newValue?: string, oldKey?: string, deleteKey?: boolean) => {
     if (deleteKey) {
       setProps((prev) => {
-        let oldState = { ...prev };
-        delete oldState[oldKey!];
-        return oldState;
+        let newState = Object.fromEntries(Object.entries(prev).filter(([k, v]) => k !== newKey));
+        return newState;
       });
     } else {
       setProps((prev) => {
-        let oldState = { ...prev };
-        delete oldState[oldKey!];
-        oldState[newKey] = newValue;
-        return oldState;
+        let newState = Object.fromEntries(
+          Object.entries(prev).map(([k, v]) => {
+            if (k === oldKey) return [newKey, newValue];
+            return [k, v];
+          })
+        );
+        return newState;
       });
     }
   };
@@ -93,8 +95,8 @@ const PropertyEditor = ({ onSave, properties, viewOnly, type }: IPropertyEditor)
   return (
     <div className="bg-gray m-2">
       <ul className="text-black">
-        {Object.entries(props).map(([k, v]) => (
-          <li key={k}>
+        {Object.entries(props).map(([k, v], i) => (
+          <li key={i}>
             <Property k={k} v={v} onUpdate={onUpdate} viewOnly={viewOnly} />
           </li>
         ))}
