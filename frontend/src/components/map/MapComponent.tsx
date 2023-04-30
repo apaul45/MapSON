@@ -7,7 +7,7 @@ import * as L from 'leaflet';
 import bbox from 'geojson-bbox';
 
 import MapControls from './MapControls';
-import { FeatureExt, LGeoJsonExt, Map } from '../../types';
+import { FeatureExt, LGeoJsonExt, Map, MongoData } from '../../types';
 
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw/dist/leaflet.draw.css';
@@ -18,6 +18,7 @@ import { MapComponentCallbacks } from '../../transactions/map/common';
 import jsTPS from '../../utils/jsTPS';
 import { CreateFeature } from '../../transactions/map/CreateFeature';
 import { RemoveFeature } from '../../transactions/map/RemoveFeature';
+import { EditFeature } from '../../transactions/map/EditFeature';
 
 export type SelectedFeature = { layer: LGeoJsonExt; id: any };
 
@@ -240,15 +241,12 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
       callbacks
     );
 
-  const onEdit: L.PM.EditEventHandler = async (e) => {
-    console.log('EDITED');
-
-    const layer = e.layer as L.GeoJSON;
-
-    const feature = layer.toGeoJSON(15);
-    //@ts-ignore
-    await mapStore.updateFeature({ id: layer._id, feature });
-  };
+  const onEdit: L.PM.EditEventHandler = async (e) =>
+    await transactions.current.addTransaction(
+      new EditFeature(e.layer as L.Polygon & MongoData),
+      mapRef.current!,
+      callbacks
+    );
 
   const onRemove: L.PM.RemoveEventHandler = async (e) =>
     await transactions.current.addTransaction(

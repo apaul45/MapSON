@@ -131,7 +131,10 @@ export const mapStore = createModel<RootModel>()({
         dispatch.error.setError(e.errorMessage ?? 'Unexpected error');
       }
     },
-    async updateFeature(payload: { id: string; feature: Partial<FeatureExt> }, state) {
+    async updateFeature(
+      payload: { id: string; feature: Partial<FeatureExt> },
+      state
+    ): Promise<FeatureExt | void> {
       const id = state.mapStore.currentMap?._id;
 
       let { id: featureid, feature } = payload;
@@ -153,6 +156,9 @@ export const mapStore = createModel<RootModel>()({
       let featureIndex = oldMap!.features.features.findIndex(
         (feature) => feature._id === featureid
       );
+
+      const oldFeature = oldMap!.features.features[featureIndex];
+
       oldMap!.features.features[featureIndex] = {
         ...oldMap!.features.features[featureIndex],
         ...feature,
@@ -165,6 +171,8 @@ export const mapStore = createModel<RootModel>()({
       } catch (e: any) {
         dispatch.error.setError(e.errorMessage ?? 'Unexpected error');
       }
+
+      return oldFeature;
     },
     async deleteFeature(payload: string, state) {
       const id = state.mapStore.currentMap?._id;
