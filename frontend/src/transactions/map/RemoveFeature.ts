@@ -1,21 +1,21 @@
 import { MapTransaction, TransactionType } from '../../utils/jsTPS';
 import { FeatureExt, LGeoJsonExt, LayerExt } from '../../types';
 import { store } from '../../models';
-import { MapComponentCallbacks } from './common';
+import { MapComponentCallbacks, extractFeature } from './common';
 import L from 'leaflet';
+import { FeatureCollection } from '@turf/turf';
 
 interface RemoveFeatureSerialized {}
 
 export class RemoveFeature extends MapTransaction<RemoveFeatureSerialized> {
-  readonly type: TransactionType = 'CreateFeature';
+  readonly type: TransactionType = 'RemoveFeature';
   feature: FeatureExt;
   layer?: LGeoJsonExt;
   id?: string;
 
   constructor(layer: LGeoJsonExt, isPeer = false) {
     super(isPeer);
-    this.layer = layer;
-    this.feature = layer.toGeoJSON(15) as FeatureExt;
+    this.feature = extractFeature(layer);
     this.id = layer._id;
   }
 
@@ -25,21 +25,21 @@ export class RemoveFeature extends MapTransaction<RemoveFeatureSerialized> {
       await store.dispatch.mapStore.deleteFeature(this.id!);
     }
 
-    callbacks.unselectFeature(this.id);
-
     this.id = undefined;
 
-    // if there's no layer
+    // remove layer
     this.layer?.remove();
     this.layer = undefined;
+
+    callbacks.unselectFeature(this.id);
 
     this.firstRun = false;
   }
 
   async undoTransaction(map: L.Map, callbacks: MapComponentCallbacks) {
     this.id = await store.dispatch.mapStore.createFeature(this.feature);
-    this.layer = L.geoJSON(this.feature).addTo(map) as LGeoJsonExt;
     this.feature._id = this.id!;
+    this.layer = L.geoJSON(this.feature).addTo(map) as LGeoJsonExt;
     callbacks.onEachFeature(this.feature, this.layer!);
   }
 

@@ -10,7 +10,13 @@ import { MapComponentCallbacks } from '../transactions/map/common';
  * @author THE McKilla Gorilla (accept no imposters)
  * @version 1.0
  */
-export type TransactionType = 'CreateFeature' | 'EditFeature' | 'DeleteFeature';
+export type TransactionType =
+  | 'CreateFeature'
+  | 'EditFeature'
+  | 'RemoveFeature'
+  | 'Multiple'
+  | 'Merge'
+  | 'Split';
 
 export abstract class BaseTransaction<T> {
   abstract readonly type: TransactionType;
@@ -202,6 +208,7 @@ export default class jsTPS {
     if (this.hasTransactionToRedo()) {
       this.performingDo = true;
       let transaction = this.transactions[this.mostRecentTransaction + 1];
+      console.log(`Do Transaction: ${transaction.type}`);
       if (transaction instanceof MapTransaction) {
         await transaction.doTransaction(map, callbacks);
       } else if (transaction instanceof RegularTransaction) {
@@ -220,6 +227,7 @@ export default class jsTPS {
     if (this.hasTransactionToUndo()) {
       this.performingUndo = true;
       let transaction = this.transactions[this.mostRecentTransaction];
+      console.log(`Undo Transaction: ${transaction.type}`);
       if (transaction instanceof MapTransaction) {
         await transaction.undoTransaction(map, callbacks);
       } else {

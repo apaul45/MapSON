@@ -10,3 +10,13 @@ export interface MapComponentCallbacks {
   resetSelectedFeature: () => void;
   onEachFeature: (feature: FeatureExt, layer: LGeoJsonExt) => void;
 }
+
+export const extractFeature = (layer: LGeoJsonExt | L.Polygon) => {
+  let geojson = layer.toGeoJSON(15);
+
+  if (geojson.type === 'FeatureCollection') {
+    return geojson.features[0] as FeatureExt;
+  }
+
+  return geojson as FeatureExt;
+};

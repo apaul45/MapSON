@@ -1,7 +1,7 @@
 import { MapTransaction, TransactionType } from '../../utils/jsTPS';
 import { FeatureExt, LGeoJsonExt, LayerExt, MongoData } from '../../types';
 import { store } from '../../models';
-import { MapComponentCallbacks } from './common';
+import { MapComponentCallbacks, extractFeature } from './common';
 import L from 'leaflet';
 
 interface EditFeatureSerialized {}
@@ -17,7 +17,7 @@ export class EditFeature extends MapTransaction<EditFeatureSerialized> {
     super(isPeer);
     this.layer = layer;
     this.id = layer._id;
-    this.feature = layer.toGeoJSON(15) as FeatureExt;
+    this.feature = extractFeature(layer);
   }
 
   async doTransaction(map: L.Map, callbacks: MapComponentCallbacks) {
