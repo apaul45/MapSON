@@ -11,7 +11,7 @@ interface Props {
 }
 
 export const handlePublish = async () => {
-  await store.dispatch.mapStore.updateCurrentMap({ published: {isPublished: true, publishedDate: Date()} });
+  await store.dispatch.mapStore.updateCurrentMap({ published: {isPublished: true, publishedDate: new Date()} });
 };
 
 export const handleUnpublish = async () => {
