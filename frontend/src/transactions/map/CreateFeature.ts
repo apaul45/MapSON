@@ -4,6 +4,7 @@ import { store } from '../../models';
 import { MapComponentCallbacks, extractFeature } from './common';
 import L from 'leaflet';
 import { Feature } from 'geojson';
+import { layerEvents } from 'react-leaflet-geoman-v2';
 
 interface CreateFeatureSerialized {}
 
@@ -26,13 +27,16 @@ export class CreateFeature extends MapTransaction<CreateFeatureSerialized> {
         feature: this.feature,
         featureIndex: this.featureIndex,
       }))!;
-      this.featureIndex = featureIndex;
+      if (!this.featureIndex) {
+        this.featureIndex = featureIndex;
+      }
       this.feature._id = id;
     }
 
     if (!this.firstRun) {
       const geoJSONLayer = callbacks.getGeoJSONLayer();
-      const layer = L.GeoJSON.geometryToLayer(this.feature, geoJSONLayer.options) as L.Layer & {
+      const options: L.LayerOptions = { ...geoJSONLayer.options, pmIgnore: false };
+      const layer = L.GeoJSON.geometryToLayer(this.feature, options) as L.Layer & {
         feature: Feature;
         defaultOptions: L.LayerOptions;
       };
@@ -40,6 +44,17 @@ export class CreateFeature extends MapTransaction<CreateFeatureSerialized> {
       layer.defaultOptions = layer.options;
       geoJSONLayer.resetStyle(layer);
       geoJSONLayer.addLayer(layer);
+
+      layerEvents(
+        layer,
+        {
+          onEdit: callbacks.onEdit,
+          onLayerRemove: callbacks.onRemove,
+          onCreate: callbacks.onCreate,
+        },
+        'on'
+      );
+
       this.layer = layer as unknown as LGeoJsonExt;
     }
 

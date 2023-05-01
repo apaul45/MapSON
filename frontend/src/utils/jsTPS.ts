@@ -16,7 +16,8 @@ export type TransactionType =
   | 'RemoveFeature'
   | 'Multiple'
   | 'Merge'
-  | 'Split';
+  | 'Split'
+  | 'CreateAndRemoveMultipleFeature';
 
 export abstract class BaseTransaction<T> {
   abstract readonly type: TransactionType;

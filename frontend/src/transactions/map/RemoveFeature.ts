@@ -4,6 +4,7 @@ import { store } from '../../models';
 import { MapComponentCallbacks } from './common';
 import L from 'leaflet';
 import { Feature } from 'geojson';
+import { layerEvents } from 'react-leaflet-geoman-v2';
 
 interface RemoveFeatureSerialized {}
 
@@ -41,23 +42,31 @@ export class RemoveFeature extends MapTransaction<RemoveFeatureSerialized> {
   }
 
   async undoTransaction(map: L.Map, callbacks: MapComponentCallbacks) {
-    const { id, featureIndex } = (await store.dispatch.mapStore.createFeature({
+    const { id } = (await store.dispatch.mapStore.createFeature({
       feature: this.feature,
       featureIndex: this.featureIndex,
     }))!;
-    this.featureIndex = featureIndex;
     this.feature._id = id;
 
     const geoJSONLayer = callbacks.getGeoJSONLayer();
-    const layer = L.GeoJSON.geometryToLayer(this.feature, geoJSONLayer.options) as L.Layer & {
+    const options: L.LayerOptions = { ...geoJSONLayer.options, pmIgnore: false };
+
+    const layer = L.GeoJSON.geometryToLayer(this.feature, options) as L.Layer & {
       feature: Feature;
       defaultOptions: L.LayerOptions;
     };
+
     layer.feature = L.GeoJSON.asFeature(this.feature);
     layer.defaultOptions = layer.options;
     geoJSONLayer.resetStyle(layer);
     callbacks.onEachFeature(this.feature, layer as unknown as LGeoJsonExt);
     geoJSONLayer.addLayer(layer);
+
+    layerEvents(
+      layer,
+      { onEdit: callbacks.onEdit, onLayerRemove: callbacks.onRemove, onCreate: callbacks.onCreate },
+      'on'
+    );
 
     this.layer = layer as unknown as LGeoJsonExt;
   }

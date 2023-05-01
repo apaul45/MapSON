@@ -260,7 +260,7 @@ mapRouter.post('/map/:id/feature', auth, async (req, res) => {
   try {
     const res = parseInt(req.query.index as string);
 
-    if (res && res >= 0) {
+    if (res !== undefined && res >= 0) {
       index = res;
     }
   } catch {

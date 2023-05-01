@@ -3,15 +3,15 @@ import { TransactionType } from '../../utils/jsTPS';
 import { CreateAndRemoveMultipleFeature } from './CreateAndRemoveMultipleFeatures';
 import { MapComponentCallbacks } from './common';
 
-export class MergeFeatures extends CreateAndRemoveMultipleFeature {
-  readonly type: TransactionType = 'Merge';
+export class SplitFeature extends CreateAndRemoveMultipleFeature {
+  readonly type: TransactionType = 'Split';
 
   constructor(
-    addedLayer: { layer: LGeoJsonExt; feature?: FeatureExt },
-    removedLayers: { layer: LGeoJsonExt; feature?: FeatureExt; featureIndex: number }[],
+    addedLayers: { layer: LGeoJsonExt; feature?: FeatureExt }[],
+    removedLayer: { layer: LGeoJsonExt; feature?: FeatureExt; featureIndex: number },
     callbacks: MapComponentCallbacks,
     isPeer = false
   ) {
-    super([addedLayer], removedLayers, callbacks, isPeer);
+    super(addedLayers, [removedLayer], callbacks, isPeer);
   }
 }

@@ -22,8 +22,9 @@ import { EditFeature } from '../../transactions/map/EditFeature';
 import { extendGeomanLayer } from '../../utils/geomanExtend';
 import { MultipleTransactions } from '../../transactions/map/MultipleTransactions';
 import { MergeFeatures } from '../../transactions/map/MergeFeatures';
-import { FeatureCollection } from 'geojson';
 import { cloneDeep } from 'lodash';
+import { SplitFeature } from '../../transactions/map/SplitFeature';
+import { InputAddedLayer } from '../../transactions/map/CreateAndRemoveMultipleFeatures';
 
 export type SelectedFeature = { layer: LGeoJsonExt; id: any };
 
@@ -259,7 +260,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
       type: 'getFeatureByIndex',
       feature,
       idx,
-      features: store.getState().mapStore.currentMap?.features.features,
+      features: JSON.stringify(map?.features.features.map((v) => v._id)),
     });
 
     return feature;
@@ -281,81 +282,85 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
     getFeatureById,
     getFeatureByIndex,
     getGeoJSONLayer,
+    onCreate: async (e) =>
+      await transactions.current.addTransaction(
+        new CreateFeature(e.layer as LGeoJsonExt),
+        mapRef.current!,
+        callbacks
+      ),
+    onEdit: async (e) => {
+      console.log('ON EDIT');
+      const { layer, affectedLayers } = e as typeof e & { affectedLayers: [L.Layer, L.LatLng][] };
+      // case for vertex pinning
+
+      const { feature, featureIndex } = getFeatureById((layer as any & MongoData)._id)!;
+      let layerTransaction: Transaction = new EditFeature(
+        layer as unknown as L.Polygon & MongoData,
+        feature,
+        featureIndex
+      );
+      if (affectedLayers?.length > 0) {
+        layerTransaction = new MultipleTransactions([
+          layerTransaction,
+          ...affectedLayers.map(([aLayer, _]) => {
+            const { feature: iFeature, featureIndex: iFeatureIndex } = getFeatureById(
+              (layer as any & MongoData)._id
+            )!;
+
+            return new EditFeature(
+              aLayer as unknown as L.Polygon & MongoData,
+              iFeature,
+              iFeatureIndex
+            );
+          }),
+        ]);
+      }
+      await transactions.current.addTransaction(layerTransaction, mapRef.current!, callbacks);
+    },
+
+    onRemove: async (e) => {
+      const { layer } = e;
+      const { feature, featureIndex } = getFeatureById((layer as LGeoJsonExt)._id)!;
+
+      await transactions.current.addTransaction(
+        new RemoveFeature(layer as LGeoJsonExt, feature, featureIndex),
+        mapRef.current!,
+        callbacks
+      );
+    },
   };
 
-  const onCreate: L.PM.CreateEventHandler = async (e) =>
-    await transactions.current.addTransaction(
-      new CreateFeature(e.layer as LGeoJsonExt),
-      mapRef.current!,
-      callbacks
-    );
+  // did it this way so handlers can be passed to transactions
 
-  const onEdit: L.PM.EditEventHandler = async (e) => {
-    const { layer, affectedLayers } = e as typeof e & { affectedLayers: [L.Layer, L.LatLng][] };
-    // case for vertex pinning
-
-    const { feature, featureIndex } = getFeatureById((layer as any & MongoData)._id)!;
-    let layerTransaction: Transaction = new EditFeature(
-      layer as unknown as L.Polygon & MongoData,
-      feature,
-      featureIndex
-    );
-    if (affectedLayers?.length > 0) {
-      layerTransaction = new MultipleTransactions([
-        layerTransaction,
-        ...affectedLayers.map(([aLayer, _]) => {
-          const { feature: iFeature, featureIndex: iFeatureIndex } = getFeatureById(
-            (layer as any & MongoData)._id
-          )!;
-
-          return new EditFeature(
-            aLayer as unknown as L.Polygon & MongoData,
-            iFeature,
-            iFeatureIndex
-          );
-        }),
-      ]);
-    }
-    await transactions.current.addTransaction(layerTransaction, mapRef.current!, callbacks);
-  };
-
-  const onRemove: L.PM.RemoveEventHandler = async (e) => {
-    const { layer } = e;
-    const { feature, featureIndex } = getFeatureById((layer as any & MongoData)._id)!;
-
-    await transactions.current.addTransaction(
-      new RemoveFeature(layer as LGeoJsonExt, feature, featureIndex),
-      mapRef.current!,
-      callbacks
-    );
-  };
+  const onCreate = callbacks.onCreate;
+  const onEdit = callbacks.onEdit;
+  const onRemove = callbacks.onRemove;
 
   const onMerge: L.PM.MergeEventHandler = async (e) =>
     await transactions.current.addTransaction(
-      new MergeFeatures(e.oldLayers, e.newLayer as LGeoJsonExt, e.newFeature, callbacks),
+      new MergeFeatures(
+        { layer: e.newLayer as LGeoJsonExt },
+        e.oldLayers.map((ol) => {
+          const { feature, featureIndex } = getFeatureById(ol.layer._id)!;
+          return { feature, featureIndex, layer: ol.layer };
+        }),
+        callbacks
+      ),
       mapRef.current!,
       callbacks
     );
 
   const onSplit: L.PM.SplitEventHandler = async (e) => {
-    const { oldLayer, newFeatures, polyline } = e;
+    const { feature, featureIndex } = getFeatureById(e.oldLayer._id)!;
 
-    await mapStore.deleteFeature(oldLayer._id);
-
-    await Promise.all(
-      newFeatures.map(async ({ layer, feature }) => {
-        const { id } = (await mapStore.createFeature({ feature }))!;
-
-        if (!id) {
-          console.error('Failed to create feature');
-          return;
-        }
-
-        feature._id = id;
-
-        onEachFeature(feature, layer as LGeoJsonExt);
-        unselectFeature(oldLayer._id);
-      })
+    await transactions.current.addTransaction(
+      new SplitFeature(
+        e.newFeatures as InputAddedLayer[],
+        { feature, featureIndex, layer: e.oldLayer },
+        callbacks
+      ),
+      mapRef.current!,
+      callbacks
     );
   };
 
