@@ -10,15 +10,19 @@ interface Props {
   closeDialog: Function;
 }
 
-export const handlePublish = () => {};
+export const handlePublish = async () => {
+  await store.dispatch.mapStore.updateCurrentMap({ published: {isPublished: true, publishedDate: new Date()} });
+};
+
+export const handleUnpublish = async () => {
+  await store.dispatch.mapStore.updateCurrentMap({ published: {isPublished: false, publishedDate: new Date(0)} });
+};
 
 const ShareMapDialog = ({ isOpen, closeDialog }: Props) => {
   const [invite, setInvite] = useState('');
   const map = useSelector((state: RootState) => state.mapStore.currentMap);
   const currentUser = useSelector((state: RootState) => state.user.currentUser);
   const { user, mapStore, error } = store.dispatch;
-
-  const handleUnpublish = () => {};
 
   const handleInvite = async () => {
     if (!(await user.updateUser({ userObj: { username: invite, mapToAdd: map?._id } }))) {
@@ -88,7 +92,7 @@ const ShareMapDialog = ({ isOpen, closeDialog }: Props) => {
                       </div>
                       <p className="text-white mx-1">
                         {username}
-                        {username === currentUser?.username ? '(you)' : null}
+                        {username === currentUser?.username ? ' (you)' : null}
                       </p>
                       {username === currentUser?.username ? null : (
                         <button
