@@ -29,8 +29,7 @@ describe('Map Card Tests', () => {
         cy.contains('Confirm').should('be.visible').click();
         cy.contains('My Map').should('not.exist');
     });
-})
-
+});
 
 // describe('MapCard Tests', () => {
 //   beforeEach(() => cy.visit('http://127.0.0.1:5173/home'))
