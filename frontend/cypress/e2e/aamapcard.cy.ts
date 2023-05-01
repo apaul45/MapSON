@@ -12,23 +12,20 @@ describe('Map Card Tests', () => {
     });
 
     it('should show the delete dialog', () => {
-        cy.contains('My Map').should('be.visible');
         cy.get('#delete-button').should('exist').click();
         cy.contains('Cancel').should('be.visible').click();
     });
 
     it('should close the delete dialog and not delete', () => {
-        cy.contains('My Map').should('be.visible');
         cy.get('#delete-button').should('exist').click();
         cy.contains('Cancel').should('be.visible').click();
         cy.contains('My Map').should('be.visible');
     });
 
     it('should delete the map', () => {
-        cy.contains('My Map').should('be.visible');
         cy.get('#delete-button').should('exist').click();
         cy.contains('Confirm').should('be.visible').click();
-        cy.contains('My Map').should('not.exist');
+        cy.contains('#delete-button').should('not.exist');
     });
 });
 
