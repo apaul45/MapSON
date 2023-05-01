@@ -1,9 +1,9 @@
-import { login, logout, upload } from './account';
+import { createNew, login, logout, register, upload } from './utils';
 
 describe('Map Card Tests', () => {
     before(() => {
-        login();
-        upload();
+        login(null, null, null);
+        createNew();
     });
 
     beforeEach(() => {
