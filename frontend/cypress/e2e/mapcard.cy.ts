@@ -1,4 +1,4 @@
-import { login, logout, account } from './account';
+import { login, logout, upload } from './account';
 
 describe('Map Card Tests', () => {
     before(() => {
