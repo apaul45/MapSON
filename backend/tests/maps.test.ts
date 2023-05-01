@@ -485,5 +485,5 @@ describe('Delete Map Test', () => {
 
     expect(res.statusCode).toBe(401);
     expect(res.body.errorMessage).toBe('invalid session');
-  })
-})
+  });
+});
