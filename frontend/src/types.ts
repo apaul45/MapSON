@@ -84,6 +84,10 @@ export interface Store {
   deleteDialog: boolean;
   shareDialog: boolean;
   addDialog: boolean;
+
+  //For live collab
+  // TODO: Make this a dictionary, so that user can join and track multiple rooms
+  roomList: string[];
 }
 
 export interface UserModel {

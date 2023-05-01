@@ -26,7 +26,8 @@ export const ProjectNavbar = ({
 }: Props) => {
   const [isEditNameActive, setEditNameActive] = useState(false);
 
-  const user = useSelector((state: RootState) => state.user.currentUser);
+  const loggedInUser = useSelector((state: RootState) => state.user.currentUser?.username);
+  const clientList = useSelector((state: RootState) => state.mapStore.roomList);
 
   const handleNameClick = () => {
     //TODO: Only editing the name active if this user owns the map, or is a collaborator
@@ -84,6 +85,18 @@ export const ProjectNavbar = ({
           </div>
 
           <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
+            {
+              //Render other users to the left of the two panel buttons
+              // TODO: Make this so that clientList is dictionary, and circles for users in currentMap room are rendered
+              clientList
+                .filter((user) => user !== loggedInUser)
+                .map((user) => (
+                  <div className="mr-2">
+                    <AccountCircle username={user} />
+                  </div>
+                ))
+            }
+
             <IconButton
               variant={!sidePanelToggle ? 'filled' : 'text'}
               onClick={() => setSidePanelToggle(false)}
@@ -149,7 +162,7 @@ export const ProjectNavbar = ({
             >
               Share
             </button>
-            {user && <AccountCircle />}
+            {loggedInUser && <AccountCircle username={loggedInUser} />}
           </div>
         </div>
       </div>

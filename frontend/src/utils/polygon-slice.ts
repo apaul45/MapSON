@@ -1,6 +1,22 @@
 import * as turf from '@turf/turf';
-import { Feature, LineString, MultiLineString, MultiPolygon, Polygon } from 'geojson';
+import {
+  Feature,
+  FeatureCollection,
+  LineString,
+  MultiLineString,
+  MultiPolygon,
+  Polygon,
+} from 'geojson';
 import union from '@turf/union-5';
+
+declare module '@turf/union-5' {
+  export default function (
+    ...features: (
+      | Feature<Polygon | LineString | MultiLineString>
+      | FeatureCollection<LineString | MultiLineString>
+    )[]
+  ): Feature<LineString | MultiLineString>;
+}
 
 export default function polygonSlice(
   poly: Feature<Polygon | MultiPolygon>,
@@ -32,8 +48,7 @@ export default function polygonSlice(
 
   const polyAsLine = turf.polygonToLine(poly);
   //turf-5 unions work with (multi)linestrings
-  //@ts-ignore
-  const unionedLines = union(polyAsLine, line)! as unknown as Feature<LineString | MultiLineString>;
+  const unionedLines = union(polyAsLine, line)!;
   console.log({ unionedLines });
   const polygonized = turf.polygonize(unionedLines);
   return polygonized.features.filter((ea) => {
