@@ -473,7 +473,7 @@ describe('Delete Map Test', () => {
 
   it('should delete the map', async () => {
     const res = await request(app)
-      .delete(`/maps/map/${createMapId}`)
+      .delete(`/maps/map/${createdMapId}`)
       .set('Cookie', loginCookie)
 
     expect(res.statusCode).toBe(200);
