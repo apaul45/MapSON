@@ -15,6 +15,7 @@ const initialState: Store = {
   deleteDialog: false,
   shareDialog: false,
   addDialog: false,
+  mapMarkedForDeletion: null,
   // TODO: Make this a dictionary, so that user can join and track multiple rooms
   roomList: [],
 };
@@ -35,6 +36,9 @@ export const mapStore = createModel<RootModel>()({
     },
     setAddDialog: (state, payload: boolean) => {
       return { ...state, addDialog: payload };
+    },
+    setMarkedMap: (state, payload: string) => {
+      return { ...state, mapMarkedForDeletion: payload };
     },
     setMaps: (state, payload: Map[]) => {
       return { ...state, maps: payload };
@@ -68,17 +72,16 @@ export const mapStore = createModel<RootModel>()({
         }
 
         await map.updateMap(id, payload);
-
         this.setCurrentMap({ ...state.mapStore.currentMap, ...payload });
       } catch (e: any) {
         dispatch.error.setError(e.response?.data.errorMessage ?? 'Unexpected error');
       }
     },
-    async createNewMap(payload: CreateMapRequest, state): Promise<any> {
+    async createNewMap(payload: CreateMapRequest, state): Promise<string | undefined> {
       try {
         const res = await map.createMap(payload);
-        dispatch.mapStore.setCurrentMap(res.data.map);
-        dispatch.user.setUserMaps(res.data.map);
+        this.setCurrentMap(res.data.map);
+        dispatch.user.addUserMap(res.data.map);
         return res.data.map._id;
       } catch (error: unknown) {
         const err = error as AxiosError;
@@ -88,7 +91,7 @@ export const mapStore = createModel<RootModel>()({
     },
     async deleteMap(payload: string, state) {
       try {
-        map.deleteMap(payload);
+        await map.deleteMap(payload);
 
         this.setMaps(state.mapStore.maps.filter((m: Map) => m._id !== payload));
         dispatch.user.removeUserMap(payload);
