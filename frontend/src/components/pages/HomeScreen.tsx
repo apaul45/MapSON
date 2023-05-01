@@ -53,7 +53,7 @@ export const HomeScreen = () => {
                   map={map}
                   name={map.name}
                   // @ts-ignore
-                  username={map.owner.username}
+                  username={username}
                   upvoteCount={map.upvotes.length}
                   downvoteCount={map.downvotes.length}
                   downloadCount={map.downloads}

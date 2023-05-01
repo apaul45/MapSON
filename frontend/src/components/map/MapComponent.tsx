@@ -13,6 +13,9 @@ import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw/dist/leaflet.draw.css';
 
 import { RootState, store } from '../../models';
+
+import { connect, joinRoom, leaveRoom } from '../../live-collab/socket';
+import { useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { MapComponentCallbacks } from '../../transactions/map/common';
 import jsTPS, { Transaction } from '../../utils/jsTPS';
@@ -60,12 +63,30 @@ interface IMapComponent extends Map {
 }
 
 const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapComponent) => {
+  const username = useSelector((state: RootState) => state.user.currentUser?.username);
   const { mapStore } = store.dispatch;
   const map = useSelector((state: RootState) => state.mapStore.currentMap);
   const leafletMap = useRef<L.Map>(null!);
   const geojsonLayer = useRef<L.GeoJSON>(null!);
   const transactions = useRef(new jsTPS(leafletMap));
   const mapRef = useRef(geoJSON);
+
+  const { id } = useParams();
+
+  // TODO: If unpublished, prevent user from accessing unless they were granted access
+  useEffect(() => {
+    if (username) {
+      connect();
+      joinRoom(username, id as unknown as string);
+    }
+
+    //Return function fires on unmount: disconnect when leaving project
+    return () => {
+      if (username) {
+        leaveRoom(username, id as unknown as string);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     mapRef.current = geoJSON;

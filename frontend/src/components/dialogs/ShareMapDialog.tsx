@@ -57,7 +57,7 @@ const ShareMapDialog = ({ isOpen, closeDialog }: Props) => {
 
         {
           // @ts-ignore
-          map?.published.isPublished && map?.owner._id === currentUser?._id ? (
+          map?.published && map.published.isPublished && map?.owner._id === currentUser?._id ? (
             <DialogBody className="text-white justify-center text-center">
               Unpublish this list to make edits and <br></br>invite others to edit
             </DialogBody>
@@ -140,7 +140,7 @@ const ShareMapDialog = ({ isOpen, closeDialog }: Props) => {
 
           {
             // @ts-ignore
-            map?.published.isPublished && map?.owner._id === currentUser?._id ? (
+            map?.published && map.published.isPublished && map?.owner._id === currentUser?._id ? (
               <button
                 onClick={() => handleUnpublish()}
                 className="rounded-md text-left mr-1 bg-blue hover:bg-blue-700 outline outline-1 text-white font-medium p-2 m-auto"

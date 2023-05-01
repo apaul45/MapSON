@@ -15,6 +15,8 @@ const initialState: Store = {
   deleteDialog: false,
   shareDialog: false,
   addDialog: false,
+  // TODO: Make this a dictionary, so that user can join and track multiple rooms
+  roomList: [],
 };
 
 export const mapStore = createModel<RootModel>()({
@@ -39,6 +41,9 @@ export const mapStore = createModel<RootModel>()({
     },
     setMapFilter: (state, payload: string) => {
       return { ...state, mapFilter: payload };
+    },
+    setRoomList: (state, payload: string[]) => {
+      return { ...state, roomList: payload };
     },
   },
 

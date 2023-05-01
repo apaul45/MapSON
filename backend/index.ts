@@ -1,7 +1,7 @@
 import { connect as mongoConnect } from 'mongoose';
-import app from './src/app';
-
 import dotenv from 'dotenv';
+import { server } from './src/socket';
+
 dotenv.config();
 
 const port = process.env.PORT;
@@ -11,6 +11,6 @@ mongoConnect(mongoStr)
   .then(() => console.log('mongodb connected'))
   .catch((e) => console.error('Connection error', e.message));
 
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
 });

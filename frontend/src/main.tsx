@@ -8,11 +8,9 @@ import { store } from './models';
 import './utils/geomanExtend';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
-  <React.StrictMode>
-    <ThemeProvider>
-      <Provider store={store}>
-        <App />
-      </Provider>
-    </ThemeProvider>
-  </React.StrictMode>
+  <ThemeProvider>
+    <Provider store={store}>
+      <App />
+    </Provider>
+  </ThemeProvider>
 );
