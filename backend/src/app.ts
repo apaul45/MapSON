@@ -6,6 +6,7 @@ import { default as MongoStore } from 'connect-mongo';
 
 import dotenv from 'dotenv';
 import cors from 'cors';
+import morgan from 'morgan';
 dotenv.config();
 
 const app: Express = express();
@@ -43,6 +44,8 @@ app.use(
     },
   })
 );
+
+app.use(morgan('dev'));
 
 app.get('/', (req: Request, res: Response) => {
   res.send('Express + TypeScript Server');

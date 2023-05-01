@@ -1,3 +1,4 @@
+import { MutableRefObject } from 'react';
 import { MapComponentCallbacks } from '../transactions/map/common';
 
 /**
@@ -10,7 +11,14 @@ import { MapComponentCallbacks } from '../transactions/map/common';
  * @author THE McKilla Gorilla (accept no imposters)
  * @version 1.0
  */
-export type TransactionType = 'CreateFeature' | 'EditFeature' | 'DeleteFeature';
+export type TransactionType =
+  | 'CreateFeature'
+  | 'EditFeature'
+  | 'RemoveFeature'
+  | 'Multiple'
+  | 'Merge'
+  | 'Split'
+  | 'CreateAndRemoveMultipleFeature';
 
 export abstract class BaseTransaction<T> {
   abstract readonly type: TransactionType;
@@ -71,8 +79,12 @@ export default class jsTPS {
   mostRecentTransaction: number;
   performingDo: boolean;
   performingUndo: boolean;
+  map: MutableRefObject<L.Map>;
+  callbacks?: MapComponentCallbacks;
 
-  constructor() {
+  constructor(map: MutableRefObject<L.Map>) {
+    this.map = map;
+
     // THE TRANSACTION STACK
     this.transactions = [];
 
@@ -188,7 +200,7 @@ export default class jsTPS {
     this.transactions[this.mostRecentTransaction + 1] = transaction;
 
     // AND EXECUTE IT
-    await this.doTransaction(map, callbacks);
+    await this.doTransaction();
   }
 
   /**
@@ -198,12 +210,13 @@ export default class jsTPS {
    * counter. Note this function may be invoked as a result of either adding
    * a transaction (which also does it), or redoing a transaction.
    */
-  async doTransaction(map: L.Map, callbacks: MapComponentCallbacks) {
+  async doTransaction() {
     if (this.hasTransactionToRedo()) {
       this.performingDo = true;
       let transaction = this.transactions[this.mostRecentTransaction + 1];
+      console.log(`Do Transaction: ${transaction.type}`);
       if (transaction instanceof MapTransaction) {
-        await transaction.doTransaction(map, callbacks);
+        await transaction.doTransaction(this.map.current!, this.callbacks!);
       } else if (transaction instanceof RegularTransaction) {
         await transaction.doTransaction();
       }
@@ -216,12 +229,13 @@ export default class jsTPS {
    * This function gets the most recently executed transaction on the
    * TPS stack and undoes it, moving the TPS counter accordingly.
    */
-  async undoTransaction(map: L.Map, callbacks: MapComponentCallbacks) {
+  async undoTransaction() {
     if (this.hasTransactionToUndo()) {
       this.performingUndo = true;
       let transaction = this.transactions[this.mostRecentTransaction];
+      console.log(`Undo Transaction: ${transaction.type}`);
       if (transaction instanceof MapTransaction) {
-        await transaction.undoTransaction(map, callbacks);
+        await transaction.undoTransaction(this.map.current!, this.callbacks!);
       } else {
         await transaction.undoTransaction();
       }

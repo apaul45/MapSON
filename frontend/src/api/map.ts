@@ -25,8 +25,8 @@ export const getMap = (id: string) => api.get<GetMapResponse>(`/maps/map/${id}`)
 export const updateMap = (id: string, payload: Partial<Map>) =>
   api.put<UpdateMapResponse>(`/maps/map/${id}`, { changes: payload });
 
-export const createFeature = (id: string, payload: Feature) =>
-  api.post<CreateFeatureResponse>(`/maps/map/${id}/feature`, payload);
+export const createFeature = (id: string, payload: Feature, index?: number) =>
+  api.post<CreateFeatureResponse>(`/maps/map/${id}/feature`, payload, { params: { index } });
 
 export const getFeature = (id: string, featureid: string) =>
   api.get<GetFeatureResponse>(`/maps/map/${id}/feature/${featureid}`);

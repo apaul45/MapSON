@@ -11,11 +11,15 @@ interface Props {
 }
 
 export const handlePublish = async () => {
-  await store.dispatch.mapStore.updateCurrentMap({ published: {isPublished: true, publishedDate: new Date()} });
+  await store.dispatch.mapStore.updateCurrentMap({
+    published: { isPublished: true, publishedDate: new Date() },
+  });
 };
 
 export const handleUnpublish = async () => {
-  await store.dispatch.mapStore.updateCurrentMap({ published: {isPublished: false, publishedDate: new Date(0)} });
+  await store.dispatch.mapStore.updateCurrentMap({
+    published: { isPublished: false, publishedDate: new Date(0) },
+  });
 };
 
 const ShareMapDialog = ({ isOpen, closeDialog }: Props) => {

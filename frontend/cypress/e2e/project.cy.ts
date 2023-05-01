@@ -130,7 +130,7 @@ describe('Publish Tests', () => {
   });
 
   it('should publish and unpublish the map', () => {
-    publish()
+    publish();
     cy.contains('Unpublish').should('be.visible').click();
     //cy.contains('Publish').should('be.visible');
   });

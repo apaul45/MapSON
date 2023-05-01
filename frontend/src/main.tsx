@@ -5,6 +5,7 @@ import './index.css';
 import { ThemeProvider } from '@material-tailwind/react';
 import { Provider } from 'react-redux';
 import { store } from './models';
+import './utils/geomanExtend';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <ThemeProvider>

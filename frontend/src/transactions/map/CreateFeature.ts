@@ -1,47 +1,81 @@
 import { MapTransaction, TransactionType } from '../../utils/jsTPS';
 import { FeatureExt, LGeoJsonExt, LayerExt } from '../../types';
 import { store } from '../../models';
-import { MapComponentCallbacks } from './common';
+import { MapComponentCallbacks, extractFeature } from './common';
 import L from 'leaflet';
+import { Feature } from 'geojson';
+import { layerEvents } from 'react-leaflet-geoman-v2';
 
 interface CreateFeatureSerialized {}
 
 export class CreateFeature extends MapTransaction<CreateFeatureSerialized> {
   readonly type: TransactionType = 'CreateFeature';
-  feature: FeatureExt;
   layer?: LGeoJsonExt;
-  id?: string;
+  feature: FeatureExt;
+  featureIndex?: number;
 
-  constructor(layer: LGeoJsonExt, isPeer = false) {
+  constructor(layer: LGeoJsonExt, feature: FeatureExt | undefined = undefined, isPeer = false) {
     super(isPeer);
     this.layer = layer;
-    this.feature = layer.toGeoJSON(15) as FeatureExt;
+    this.feature = feature ?? extractFeature(layer);
   }
 
   async doTransaction(map: L.Map, callbacks: MapComponentCallbacks) {
     // dont repeat network connection on peer for first run
     if (!(this.firstRun && this.isPeer)) {
-      this.id = await store.dispatch.mapStore.createFeature(this.feature);
+      const { id, featureIndex } = (await store.dispatch.mapStore.createFeature({
+        feature: this.feature,
+        featureIndex: this.featureIndex,
+      }))!;
+      if (!this.featureIndex) {
+        this.featureIndex = featureIndex;
+      }
+      this.feature._id = id;
     }
 
-    // if there's no layer
-    if (!this.layer) {
-      this.layer = L.geoJSON(this.feature).addTo(map) as LGeoJsonExt;
+    if (!this.firstRun) {
+      const geoJSONLayer = callbacks.getGeoJSONLayer();
+      const options: L.LayerOptions = { ...geoJSONLayer.options, pmIgnore: false };
+      const layer = L.GeoJSON.geometryToLayer(this.feature, options) as L.Layer & {
+        feature: Feature;
+        defaultOptions: L.LayerOptions;
+      };
+      layer.feature = L.GeoJSON.asFeature(this.feature);
+      layer.defaultOptions = layer.options;
+      geoJSONLayer.resetStyle(layer);
+      geoJSONLayer.addLayer(layer);
+
+      layerEvents(
+        layer,
+        {
+          onEdit: callbacks.onEdit,
+          onLayerRemove: callbacks.onRemove,
+          onCreate: callbacks.onCreate,
+        },
+        'on'
+      );
+
+      this.layer = layer as unknown as LGeoJsonExt;
     }
 
-    // then actions for all clients
-    this.feature._id = this.id!;
     callbacks.onEachFeature(this.feature, this.layer!);
 
     this.firstRun = false;
   }
 
   async undoTransaction(map: L.Map, callbacks: MapComponentCallbacks) {
-    await store.dispatch.mapStore.deleteFeature(this.id!);
-    callbacks.unselectFeature(this.id);
+    const id = callbacks.getFeatureByIndex(this.featureIndex!)?._id!;
+
+    if (this.layer?._id !== id) {
+      this.layer = callbacks.getLayerById(id) as LGeoJsonExt;
+    }
+
+    await store.dispatch.mapStore.deleteFeature(id);
+
     this.layer?.remove();
     this.layer = undefined;
-    this.id = undefined;
+
+    callbacks.unselectFeature(id);
   }
 
   serialize(): CreateFeatureSerialized {

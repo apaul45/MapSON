@@ -7,7 +7,7 @@ import * as L from 'leaflet';
 import bbox from 'geojson-bbox';
 
 import MapControls from './MapControls';
-import { FeatureExt, LGeoJsonExt, Map } from '../../types';
+import { FeatureExt, LGeoJsonExt, Map, MongoData } from '../../types';
 
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw/dist/leaflet.draw.css';
@@ -17,6 +17,17 @@ import { RootState, store } from '../../models';
 import { connect, joinRoom, leaveRoom } from '../../live-collab/socket';
 import { useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import { MapComponentCallbacks } from '../../transactions/map/common';
+import jsTPS, { Transaction } from '../../utils/jsTPS';
+import { CreateFeature } from '../../transactions/map/CreateFeature';
+import { RemoveFeature } from '../../transactions/map/RemoveFeature';
+import { EditFeature } from '../../transactions/map/EditFeature';
+import { extendGeomanLayer } from '../../utils/geomanExtend';
+import { MultipleTransactions } from '../../transactions/map/MultipleTransactions';
+import { MergeFeatures } from '../../transactions/map/MergeFeatures';
+import { cloneDeep } from 'lodash';
+import { SplitFeature } from '../../transactions/map/SplitFeature';
+import { InputAddedLayer } from '../../transactions/map/CreateAndRemoveMultipleFeatures';
 
 export type SelectedFeature = { layer: LGeoJsonExt; id: any };
 
@@ -54,6 +65,10 @@ interface IMapComponent extends Map {
 const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapComponent) => {
   const username = useSelector((state: RootState) => state.user.currentUser?.username);
   const { mapStore } = store.dispatch;
+  const map = useSelector((state: RootState) => state.mapStore.currentMap);
+  const leafletMap = useRef<L.Map>(null!);
+  const geojsonLayer = useRef<L.GeoJSON>(null!);
+  const transactions = useRef(new jsTPS(leafletMap));
   const mapRef = useRef(geoJSON);
 
   const { id } = useParams();
@@ -220,15 +235,12 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
       }
 
       layer._isConfigured = true;
+
+      extendGeomanLayer(layer.pm);
     },
     [canEdit]
   );
 
-  useEffect(() => {
-    return () => {
-      editLayer.current?.layer.pm.disable();
-    };
-  }, []);
   let bounds = undefined;
   if (geoJSON.features.length > 0) {
     const extent = bbox(geoJSON);
@@ -238,91 +250,181 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
     ];
   }
 
-  const onCreate: L.PM.CreateEventHandler = async (e) => {
-    console.log('CREATED');
-    //console.log({ map });
-    const layer = e.layer as LGeoJsonExt;
-
-    const feature = layer.toGeoJSON(15) as FeatureExt;
-    const id = await mapStore.createFeature(feature);
-
-    if (!id) {
-      console.error('Failed to create feature');
-      return;
-    }
-
-    feature._id = id;
-
-    onEachFeature(feature, layer as LGeoJsonExt);
-  };
-
-  const onEdit: L.PM.EditEventHandler = async (e) => {
-    console.log('EDITED');
-
-    const layer = e.layer as L.GeoJSON;
-
-    const feature = layer.toGeoJSON(15);
+  const getLayerById = (id: string) => {
     //@ts-ignore
-    await mapStore.updateFeature({ id: layer._id, feature });
+    const layers = Object.values(leafletMap.current._layers) as LGeoJsonExt[];
+    console.log(layers);
+
+    return layers.find((ly) => ly._id === id);
   };
 
-  const onRemove: L.PM.RemoveEventHandler = async (e) => {
-    console.log('REMOVED');
+  const getFeatureById = (id: string) => {
+    console.log({ type: 'getFeaturebyId', map, id });
 
-    const layer = e.layer as LGeoJsonExt;
-
-    await mapStore.deleteFeature(layer._id);
-
-    unselectFeature(layer._id);
-  };
-
-  const onMerge: L.PM.MergeEventHandler = async (e) => {
-    console.log('MERGED');
-    const { oldLayers, newLayer, newFeature } = e;
-
-    await Promise.all(
-      oldLayers.map(async (l) => {
-        await mapStore.deleteFeature(l.layer._id);
-        unselectFeature(l.id);
-      })
-    );
-
-    const layer = newLayer as LGeoJsonExt;
-    const feature = newFeature as FeatureExt;
-
-    const id = await mapStore.createFeature(feature);
-
-    if (!id) {
-      console.error('Failed to create feature');
+    if (!map) {
       return;
     }
 
-    feature._id = id;
+    const featureIndex = map.features.features.findIndex((v) => (v as FeatureExt)._id === id);
+    if (featureIndex === -1) {
+      return undefined;
+    }
 
-    onEachFeature(feature, layer as LGeoJsonExt);
+    const feature = map.features.features[featureIndex] as FeatureExt;
+
+    return { featureIndex, feature: cloneDeep(feature) };
   };
+
+  const getFeatureByIndex = (idx: number | undefined) => {
+    if (idx === undefined) {
+      return;
+    }
+
+    const feature = mapStore.getFeatureByIndex(idx);
+
+    console.log({
+      type: 'getFeatureByIndex',
+      feature,
+      idx,
+      features: JSON.stringify(map?.features.features.map((v) => v._id)),
+    });
+
+    return feature;
+  };
+
+  const getGeoJSONLayer = () => {
+    return geojsonLayer.current;
+  };
+
+  const callbacks: MapComponentCallbacks = {
+    isSelected,
+    selectFeature,
+    unselectFeature,
+    getLayerID,
+    getSelectedFeatures,
+    resetSelectedFeature,
+    onEachFeature,
+    getLayerById,
+    getFeatureById,
+    getFeatureByIndex,
+    getGeoJSONLayer,
+    onCreate: async (e) =>
+      await transactions.current.addTransaction(
+        new CreateFeature(e.layer as LGeoJsonExt),
+        leafletMap.current!,
+        callbacks
+      ),
+    onEdit: async (e) => {
+      const { layer, affectedLayers } = e as typeof e & { affectedLayers: [L.Layer, L.LatLng][] };
+      // case for vertex pinning
+
+      const { feature, featureIndex } = getFeatureById((layer as any & MongoData)._id)!;
+      let layerTransaction: Transaction = new EditFeature(
+        layer as unknown as L.Polygon & MongoData,
+        feature,
+        featureIndex
+      );
+      if (affectedLayers?.length > 0) {
+        layerTransaction = new MultipleTransactions([
+          layerTransaction,
+          ...affectedLayers.map(([aLayer, _]) => {
+            const { feature: iFeature, featureIndex: iFeatureIndex } = getFeatureById(
+              (aLayer as any & MongoData)._id
+            )!;
+
+            return new EditFeature(
+              aLayer as unknown as L.Polygon & MongoData,
+              iFeature,
+              iFeatureIndex
+            );
+          }),
+        ]);
+      }
+      await transactions.current.addTransaction(layerTransaction, leafletMap.current!, callbacks);
+    },
+
+    onRemove: async (e) => {
+      const { layer } = e;
+      const { feature, featureIndex } = getFeatureById((layer as LGeoJsonExt)._id)!;
+
+      await transactions.current.addTransaction(
+        new RemoveFeature(layer as LGeoJsonExt, feature, featureIndex),
+        leafletMap.current!,
+        callbacks
+      );
+    },
+  };
+
+  // did it this way so handlers can be passed to transactions
+
+  const onCreate = callbacks.onCreate;
+  const onEdit = callbacks.onEdit;
+  const onRemove = callbacks.onRemove;
+
+  transactions.current.callbacks = callbacks;
+
+  const onMerge: L.PM.MergeEventHandler = async (e) =>
+    await transactions.current.addTransaction(
+      new MergeFeatures(
+        { layer: e.newLayer as LGeoJsonExt },
+        e.oldLayers.map((ol) => {
+          const { feature, featureIndex } = getFeatureById(ol.layer._id)!;
+          return { feature, featureIndex, layer: ol.layer };
+        }),
+        callbacks
+      ),
+      leafletMap.current!,
+      callbacks
+    );
 
   const onSplit: L.PM.SplitEventHandler = async (e) => {
-    const { oldLayer, newFeatures, polyline } = e;
+    const { feature, featureIndex } = getFeatureById(e.oldLayer._id)!;
 
-    await mapStore.deleteFeature(oldLayer._id);
-
-    await Promise.all(
-      newFeatures.map(async ({ layer, feature }) => {
-        const id = await mapStore.createFeature(feature);
-
-        if (!id) {
-          console.error('Failed to create feature');
-          return;
-        }
-
-        feature._id = id;
-
-        onEachFeature(feature, layer as LGeoJsonExt);
-        unselectFeature(oldLayer._id);
-      })
+    await transactions.current.addTransaction(
+      new SplitFeature(
+        e.newFeatures as InputAddedLayer[],
+        { feature, featureIndex, layer: e.oldLayer },
+        callbacks
+      ),
+      leafletMap.current!,
+      callbacks
     );
   };
+
+  const undo = () => {
+    transactions.current.undoTransaction();
+  };
+
+  const redo = () => {
+    transactions.current.doTransaction();
+  };
+
+  useEffect(() => {
+    transactions.current.clearAllTransactions();
+  }, [map]);
+
+  useEffect(() => {
+    return () => {
+      editLayer.current?.layer.pm.disable();
+    };
+  }, []);
+
+  useEffect(() => {
+    const keydownHandler = (ev: KeyboardEvent) => {
+      if (ev.key.toLowerCase() === 'z' && ev.ctrlKey === true) {
+        if (ev.shiftKey === true) {
+          redo();
+        } else {
+          undo();
+        }
+      }
+    };
+    document.addEventListener('keydown', keydownHandler);
+
+    return () => {
+      document.removeEventListener('keydown', keydownHandler);
+    };
+  });
 
   return (
     <div className="w-screen h-[calc(100vh-64px)]">
@@ -337,6 +439,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
         renderer={new L.SVG({ tolerance: 3 })}
         //@ts-ignore
         bounds={bounds}
+        ref={leafletMap}
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
@@ -357,6 +460,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
           /* @ts-ignore */
           // Fine to ignore since we are guaranteeing the extensions to L.GeoJSON
           onEachFeature={onEachFeature}
+          ref={geojsonLayer}
         >
           <MapControls
             onCreate={onCreate}
