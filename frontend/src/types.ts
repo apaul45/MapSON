@@ -85,6 +85,10 @@ export interface Store {
   shareDialog: boolean;
   addDialog: boolean;
   mapMarkedForDeletion: string | null;
+
+  //For live collab
+  // TODO: Make this a dictionary, so that user can join and track multiple rooms
+  roomList: string[];
 }
 
 export interface UserModel {

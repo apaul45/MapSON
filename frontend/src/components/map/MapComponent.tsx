@@ -13,9 +13,10 @@ import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw/dist/leaflet.draw.css';
 
 import { RootState, store } from '../../models';
-import { useSelector } from 'react-redux';
 
-import * as turf from '@turf/turf';
+import { connect, joinRoom, leaveRoom } from '../../live-collab/socket';
+import { useParams } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 export type SelectedFeature = { layer: LGeoJsonExt; id: any };
 
@@ -51,8 +52,26 @@ interface IMapComponent extends Map {
 }
 
 const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapComponent) => {
+  const username = useSelector((state: RootState) => state.user.currentUser?.username);
   const { mapStore } = store.dispatch;
   const mapRef = useRef(geoJSON);
+
+  const { id } = useParams();
+
+  // TODO: If unpublished, prevent user from accessing unless they were granted access
+  useEffect(() => {
+    if (username) {
+      connect();
+      joinRoom(username, id as unknown as string);
+    }
+
+    //Return function fires on unmount: disconnect when leaving project
+    return () => {
+      if (username) {
+        leaveRoom(username, id as unknown as string);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     mapRef.current = geoJSON;
