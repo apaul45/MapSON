@@ -62,7 +62,7 @@ interface IMapComponent extends Map {
 const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapComponent) => {
   const { mapStore } = store.dispatch;
   const map = useSelector((state: RootState) => state.mapStore.currentMap);
-  const mapRef = useRef<L.Map>(null!);
+  const leafletMap = useRef<L.Map>(null!);
   const geojsonLayer = useRef<L.GeoJSON>(null!);
   const transactions = useRef(new jsTPS());
 
@@ -226,7 +226,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
 
   const getLayerById = (id: string) => {
     //@ts-ignore
-    const layers = Object.values(mapRef.current._layers) as LGeoJsonExt[];
+    const layers = Object.values(leafletMap.current._layers) as LGeoJsonExt[];
     console.log(layers);
 
     return layers.find((ly) => ly._id === id);
@@ -254,7 +254,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
       return;
     }
 
-    const feature = store.dispatch.mapStore.getFeatureByIndex(idx);
+    const feature = mapStore.getFeatureByIndex(idx);
 
     console.log({
       type: 'getFeatureByIndex',
@@ -285,7 +285,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
     onCreate: async (e) =>
       await transactions.current.addTransaction(
         new CreateFeature(e.layer as LGeoJsonExt),
-        mapRef.current!,
+        leafletMap.current!,
         callbacks
       ),
     onEdit: async (e) => {
@@ -315,7 +315,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
           }),
         ]);
       }
-      await transactions.current.addTransaction(layerTransaction, mapRef.current!, callbacks);
+      await transactions.current.addTransaction(layerTransaction, leafletMap.current!, callbacks);
     },
 
     onRemove: async (e) => {
@@ -324,7 +324,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
 
       await transactions.current.addTransaction(
         new RemoveFeature(layer as LGeoJsonExt, feature, featureIndex),
-        mapRef.current!,
+        leafletMap.current!,
         callbacks
       );
     },
@@ -346,7 +346,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
         }),
         callbacks
       ),
-      mapRef.current!,
+      leafletMap.current!,
       callbacks
     );
 
@@ -359,17 +359,17 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
         { feature, featureIndex, layer: e.oldLayer },
         callbacks
       ),
-      mapRef.current!,
+      leafletMap.current!,
       callbacks
     );
   };
 
   const undo = () => {
-    transactions.current.undoTransaction(mapRef.current!, callbacks);
+    transactions.current.undoTransaction(leafletMap.current!, callbacks);
   };
 
   const redo = () => {
-    transactions.current.doTransaction(mapRef.current!, callbacks);
+    transactions.current.doTransaction(leafletMap.current!, callbacks);
   };
 
   useEffect(() => {
@@ -401,7 +401,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
         renderer={new L.SVG({ tolerance: 3 })}
         //@ts-ignore
         bounds={bounds}
-        ref={mapRef}
+        ref={leafletMap}
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
