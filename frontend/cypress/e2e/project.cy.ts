@@ -128,7 +128,6 @@ describe('Publish Tests', () => {
     login(null, null, null);
     createNew();
   });
-  afterEach(() => logout());
 
   it('should publish and unpublish the map', () => {
     publish()
