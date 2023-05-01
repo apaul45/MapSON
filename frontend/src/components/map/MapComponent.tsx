@@ -294,7 +294,6 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
         callbacks
       ),
     onEdit: async (e) => {
-      console.log('ON EDIT');
       const { layer, affectedLayers } = e as typeof e & { affectedLayers: [L.Layer, L.LatLng][] };
       // case for vertex pinning
 
@@ -309,7 +308,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
           layerTransaction,
           ...affectedLayers.map(([aLayer, _]) => {
             const { feature: iFeature, featureIndex: iFeatureIndex } = getFeatureById(
-              (layer as any & MongoData)._id
+              (aLayer as any & MongoData)._id
             )!;
 
             return new EditFeature(
