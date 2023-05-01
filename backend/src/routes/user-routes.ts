@@ -68,7 +68,7 @@ router.post('/register', async (req: Request, res: Response) => {
   req.session.username = username;
   req.session.email = email;
   req.session._id = user._id;
-  res.status(200).json({ error: false });
+  res.status(200).json({ error: false, user: user.toJSON() });
 });
 
 router.post('/login', async (req: Request, res: Response) => {
@@ -82,7 +82,13 @@ router.post('/login', async (req: Request, res: Response) => {
   }
   const user = await User.findOne({
     $or: [{ email: emailOrUsername }, { username: emailOrUsername }],
-  }).populate('maps');
+  }).populate({
+    path: 'maps',
+    populate: {
+      path: 'owner',
+      select: 'username',
+    },
+  });
 
   if (!user) {
     return res.status(400).json({
@@ -151,23 +157,7 @@ router.post('/recover', async (req: Request, res: Response) => {
     });
   }
 
-  const url = 'https://api.sendinblue.com/v3/smtp/email';
-
-  const headers = {
-    'Content-Type': 'application/json',
-    'api-key': process.env.API_KEY,
-  };
-
-  const data = {
-    sender: { email: 'mapson2023@gmail.com' },
-    to: [{ email: email }],
-    subject: 'Mapson Password Recovery',
-    htmlContent: recoverLink,
-  };
-  axios
-    .post(url, data, { headers: headers })
-    .then((response) => console.log('send email response', response.data))
-    .catch((error) => console.log(error));
+  sendEmail(email, recoverLink, 'Mapson Password Recovery Link');
 
   res.status(200).json({ error: false });
 });
@@ -213,7 +203,9 @@ router.post('/update', async (req: Request, res: Response) => {
     });
   }
 
-  const newUser = await User.findOneAndUpdate({ email: userObj.email }, userObj, { new: true });
+  let newUser = await User.findOne({
+    $or: [{ username: userObj.username }, { email: userObj.email }],
+  });
 
   if (!newUser) {
     return res.status(400).json({
@@ -221,6 +213,24 @@ router.post('/update', async (req: Request, res: Response) => {
       errorMessage: 'user not found',
     });
   }
+
+  if (userObj.mapToAdd) {
+    newUser.maps.push(userObj.mapToAdd);
+    userObj.maps = newUser.maps;
+    sendEmail(
+      newUser.email,
+      `https://mapson.vercel.app/project/${encodeURIComponent(userObj.mapToAdd)}`,
+      'Mapson Project Inivation link'
+    );
+  } else if (userObj.mapToRemove) {
+    const index = newUser.maps.indexOf(userObj.mapToRemove);
+    if (index >= 0) {
+      newUser.maps.splice(index, 1);
+    }
+    userObj.maps = newUser.maps;
+  }
+
+  newUser = await User.findOneAndUpdate({ email: newUser.email }, userObj, { new: true });
 
   res.status(200).json({
     error: false,
@@ -251,5 +261,27 @@ router.get('/check', async (req: Request, res: Response) => {
 //   await user?.save();
 //   res.status(201).json();
 // });
+
+const sendEmail = (email: string, link: string, subject: string) => {
+  if (process.env.DEV) return;
+
+  const url = 'https://api.sendinblue.com/v3/smtp/email';
+
+  const headers = {
+    'Content-Type': 'application/json',
+    'api-key': process.env.API_KEY,
+  };
+
+  const data = {
+    sender: { email: 'mapson2023@gmail.com' },
+    to: [{ email: email }],
+    subject: subject,
+    htmlContent: link,
+  };
+  axios
+    .post(url, data, { headers: headers })
+    .then((response) => console.log('send email response', response.data))
+    .catch((error) => console.log(error));
+};
 
 export default router;

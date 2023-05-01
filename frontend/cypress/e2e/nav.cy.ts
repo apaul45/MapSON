@@ -1,4 +1,4 @@
-import { login, logout } from './account';
+import { login, logout } from './utils';
 
 describe('Navigation Bar Tests', () => {
   // it('should go to home', () => {
@@ -32,7 +32,7 @@ describe('Navigation Bar Tests', () => {
   });
 
   it('should create a new map', () => {
-    login();
+    login(null, null, null);
     cy.get('#plus-sign').parent().should('be.visible').click();
     cy.contains('Create new Map').should('be.visible').click();
     cy.location('pathname').should((path) => expect(path).to.include('/project'));
@@ -42,7 +42,7 @@ describe('Navigation Bar Tests', () => {
 
   describe('Add Map Tests', () => {
     beforeEach(() => {
-      login();
+      login(null, null, null);
       cy.get('#add-dialog').should('not.exist');
       cy.get('#plus-sign').parent().should('be.visible').click();
       cy.contains('Import from Shapefile/GeoJSON').should('be.visible').click();

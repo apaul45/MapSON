@@ -52,7 +52,8 @@ export const HomeScreen = () => {
                 <MapCard
                   map={map}
                   name={map.name}
-                  username={username}
+                  // @ts-ignore
+                  username={map.owner.username}
                   upvoteCount={map.upvotes.length}
                   downvoteCount={map.downvotes.length}
                   downloadCount={map.downloads}
