@@ -52,12 +52,12 @@ mapRouter.post('/map', auth, async (req: Request, res: Response) => {
     name: req.body.mapName,
     //@ts-ignore
     owner: user!._id,
-    userAccess: [],
+    userAccess: [user!.username],
     upvotes: [],
     downvotes: [],
     forks: 0,
     downloads: 0,
-    published: null,
+    published: { isPublished: false, publishedDate: new Date('0') },
     description: '',
     comments: [],
     // @ts-ignore

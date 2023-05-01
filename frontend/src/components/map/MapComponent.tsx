@@ -65,6 +65,11 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
   const leafletMap = useRef<L.Map>(null!);
   const geojsonLayer = useRef<L.GeoJSON>(null!);
   const transactions = useRef(new jsTPS());
+  const mapRef = useRef(geoJSON);
+
+  useEffect(() => {
+    mapRef.current = geoJSON;
+  }, [geoJSON]);
 
   //second one is the most recently selected
   const selectedFeatures = useRef<SelectedFeature[]>([]);
@@ -76,14 +81,14 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
   };
 
   const selectFeature = (id: any, layer: LGeoJsonExt): SelectedFeature | undefined => {
-    const featureIndex = map?.features.features.findIndex((feature) => feature._id === id);
+    const featureIndex = mapRef.current?.features.findIndex((feature) => feature._id === id);
     if (featureIndex !== undefined && featureIndex >= 0) {
       if (!('feature' in layer)) {
         // @ts-ignore
-        layer.feature = map?.features.features[featureIndex];
+        layer.feature = mapRef.current?.features[featureIndex];
       } else {
         // @ts-ignore
-        layer.feature.properties = map?.features.features[featureIndex].properties;
+        layer.feature.properties = mapRef.current?.features[featureIndex].properties;
       }
     }
 

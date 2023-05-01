@@ -14,6 +14,8 @@ export interface LoginResponse extends Response, User {}
 
 export interface LogoutResponse extends Response {}
 
+export interface UpdateResponse extends Response {}
+
 // MAP
 export interface CreateMapResponse extends Response {
   map: Map;

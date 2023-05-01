@@ -74,6 +74,7 @@ export interface Map {
   description?: string;
   properties: Record<string, any>;
   updatedAt?: string;
+  userAccess: Array<string>;
 }
 
 export interface Store {
