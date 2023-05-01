@@ -123,4 +123,22 @@ const invite = () => {
   cy.contains('Remove Access').should('be.visible');
 };
 
+describe('Publish Tests', () => {
+  beforeEach(() => {
+    login(null, null, null);
+  });
+  afterEach(() => logout());
+
+  it('should publish and unpublish the map', () => {
+    publish()
+    cy.contains('Unpublish').should('be.visible').click();
+    cy.contains('Publish').should('be.visible');
+  });
+});
+
+const publish = () => {
+  cy.contains('Share').should('be.visible').click();
+  cy.contains('Publish').should('be.visible').click();
+};
+
 export {};
