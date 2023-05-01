@@ -9,16 +9,46 @@ export const io = new Server(server, {
   },
 });
 
+let rooms: Record<string, Array<string>> = {};
+
 io.on('connection', (socket) => {
   console.log('connected!');
-  socket.on('joinRoom', (roomId: string) => {
+
+  socket.on('joinRoom', (username: string, roomId: string) => {
     socket.join(roomId);
     console.log(`joining room ${roomId}!`);
+
+    //Add user to this room
+    let clientList = rooms[roomId];
+
+    console.log(`clientList before adding: ${clientList}`);
+
+    rooms[roomId] = !clientList ? [username] : [...clientList, username];
+
+    console.log(`clientList after adding: ${rooms[roomId]}`);
+
+    //Broadcast this list so that everyone can save it
+    io.to(roomId).emit('sendClientList', rooms[roomId]);
   });
 
-  socket.on('getClientList', async (roomId: string) => {
-    const clientList = await io.in(roomId).fetchSockets();
-    socket.emit('sendClientList', clientList.length);
+  socket.on('leaveRoom', (username: string, roomId: string) => {
+    rooms[roomId] = rooms[roomId].filter((client) => client !== username);
+    socket.leave(roomId);
+    console.log(`${username} has left room ${roomId}!`);
+    console.log(`list of users left in room ${roomId}: ${rooms[roomId]}`);
+
+    //Broadcast this list so that everyone can save it
+    io.to(roomId).emit('sendClientList', rooms[roomId]);
+  });
+
+  //For when a user logs out
+  socket.on('leaveAllRooms', (username: string) => {
+    for (const roomId in rooms) {
+      rooms[roomId] = rooms[roomId].filter((client) => client !== username);
+
+      //Broadcast this list so that everyone can save it
+      io.to(roomId).emit('sendClientList', rooms[roomId]);
+    }
   });
 
   socket.on('disconnect', () => console.log('disconnected!'));
