@@ -422,7 +422,7 @@ describe('Publish Map Test', () => {
     const res = await request(app)
       .put(`/maps/map/${createdMapId}`)
       .set('Cookie', loginCookie)
-      .send({ changes: { published: {isPublished: true, publishedDate: new Date()} } });
+      .send({ changes: { published: { isPublished: true, publishedDate: new Date() } } });
 
     expect(res.statusCode).toBe(201);
   });
@@ -431,7 +431,7 @@ describe('Publish Map Test', () => {
     const res = await request(app)
       .put(`/maps/map/${createdMapId}`)
       .set('Cookie', loginCookie)
-      .send({ changes: { published: {isPublished: false, publishedDate: new Date(0)} } });
+      .send({ changes: { published: { isPublished: false, publishedDate: new Date(0) } } });
 
     expect(res.statusCode).toBe(201);
   });
@@ -439,9 +439,9 @@ describe('Publish Map Test', () => {
   it('should fail if no authentication', async () => {
     const res = await request(app)
       .put(`/maps/map/${createdMapId}`)
-      .send({ changes: { published: {isPublished: true, publishedDate: new Date()} } });
+      .send({ changes: { published: { isPublished: true, publishedDate: new Date() } } });
 
     expect(res.statusCode).toBe(401);
     expect(res.body.error).toBeTruthy();
   });
-})
+});
