@@ -19,6 +19,7 @@ import jsTPS from '../../utils/jsTPS';
 import { CreateFeature } from '../../transactions/map/CreateFeature';
 import { RemoveFeature } from '../../transactions/map/RemoveFeature';
 import { EditFeature } from '../../transactions/map/EditFeature';
+import { connect, getClientList, joinRoom, socket } from '../../live-collab/socket';
 
 export type SelectedFeature = { layer: LGeoJsonExt; id: any };
 
@@ -58,6 +59,16 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
   const map = useSelector((state: RootState) => state.mapStore.currentMap);
   const mapRef = useRef<L.Map>(null!);
   const transactions = useRef(new jsTPS());
+
+  useEffect(() => {
+    console.log('reached');
+    connect();
+    joinRoom(map?._id as unknown as string);
+    getClientList(map?._id as unknown as string);
+    socket.on('sendClientList', (clients) => {
+      console.log(clients);
+    });
+  }, []);
 
   useEffect(() => {
     transactions.current.clearAllTransactions();
