@@ -1,10 +1,11 @@
 import { createNew, login, logout, register, upload } from './utils';
 
+beforeEach(() => {
+    login(null, null, null);
+    createNew();
+});
+
 describe('Map Card Tests', () => {
-    before(() => {
-        login(null, null, null);
-        createNew();
-    });
 
     beforeEach(() => {
         cy.visit('http://127.0.0.1:5173/home');
