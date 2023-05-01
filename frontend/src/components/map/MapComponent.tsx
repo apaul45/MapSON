@@ -387,14 +387,25 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
     };
   }, []);
 
+  useEffect(() => {
+    const keydownHandler = (ev: KeyboardEvent) => {
+      if (ev.key.toLowerCase() === 'z' && ev.ctrlKey === true) {
+        if (ev.shiftKey === true) {
+          redo();
+        } else {
+          undo();
+        }
+      }
+    };
+    document.addEventListener('keydown', keydownHandler);
+
+    return () => {
+      document.removeEventListener('keydown', keydownHandler);
+    };
+  });
+
   return (
     <div className="w-screen h-[calc(100vh-64px)]">
-      <button style={{ backgroundColor: 'white' }} onClick={() => undo()}>
-        Undo
-      </button>
-      <button style={{ backgroundColor: 'white' }} onClick={() => redo()}>
-        Redo
-      </button>
       <MapContainer
         style={{ width: '100%', minHeight: '100%', height: '100%', zIndex: 0 }}
         zoom={4}
