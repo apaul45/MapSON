@@ -481,7 +481,7 @@ describe('Delete Map Test', () => {
 
   it('should fail if no authentication', async () => {
     const res = await request(app)
-      .delete(`/maps/map/${createMapId}`)
+      .delete(`/maps/map/${createdMapId}`)
 
     expect(res.statusCode).toBe(401);
     expect(res.body.errorMessage).toBe('invalid session');
