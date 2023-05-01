@@ -418,6 +418,18 @@ const stripFeature = (f: object) => {
 };
 
 describe('Publish Map Test', () => {
+  beforeEach(async () => {
+    const mapRes = await request(app)
+      .post('/maps/map')
+      .set('Cookie', loginCookie)
+      .send({ mapName: 'Jest Map' });
+
+    expect(mapRes.statusCode).toBe(200);
+    expect(mapRes.body.map.name).toBe('Jest Map');
+
+    createdMapId = mapRes.body.map._id;
+  });
+  
   it('should publish the created map', async () => {
     const res = await request(app)
       .put(`/maps/map/${createdMapId}`)
@@ -441,7 +453,37 @@ describe('Publish Map Test', () => {
       .put(`/maps/map/${createdMapId}`)
       .send({ changes: { published: {isPublished: true, publishedDate: new Date()} } });
 
-    expect(res.statusCode).toBe(401);
-    expect(res.body.error).toBeTruthy();
+      expect(res.statusCode).toBe(401);
+      expect(res.body.errorMessage).toBe('invalid session');
   });
+});
+
+describe('Delete Map Test', () => {
+  beforeEach(async () => {
+    const mapRes = await request(app)
+      .post('/maps/map')
+      .set('Cookie', loginCookie)
+      .send({ mapName: 'Jest Map' });
+
+    expect(mapRes.statusCode).toBe(200);
+    expect(mapRes.body.map.name).toBe('Jest Map');
+
+    createdMapId = mapRes.body.map._id;
+  });
+
+  it('should delete the map', async () => {
+    const res = await request(app)
+      .delete(`/maps/map/${createMapId}`)
+      .set('Cookie', loginCookie)
+
+    expect(res.statusCode).toBe(200);
+  });
+
+  it('should fail if no authentication', async () => {
+    const res = await request(app)
+      .delete(`/maps/map/${createMapId}`)
+
+    expect(res.statusCode).toBe(401);
+    expect(res.body.errorMessage).toBe('invalid session');
+  })
 })

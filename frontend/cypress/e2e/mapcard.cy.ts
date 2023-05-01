@@ -1,3 +1,36 @@
+import { createNew, login, logout, register, upload } from './utils';
+
+describe('Map Card Tests', () => {
+    before(() => {
+        login(null, null, null);
+        createNew();
+    });
+
+    beforeEach(() => {
+        cy.visit('http://127.0.0.1:5173/home');
+    });
+
+    it('should show the delete dialog', () => {
+        cy.contains('My Map').should('be.visible');
+        cy.get('#delete-button').should('exist').click();
+        cy.contains('Cancel').should('be.visible').click();
+    });
+
+    it('should close the delete dialog and not delete', () => {
+        cy.contains('My Map').should('be.visible');
+        cy.get('#delete-button').should('exist').click();
+        cy.contains('Cancel').should('be.visible').click();
+        cy.contains('My Map').should('be.visible');
+    });
+
+    it('should delete the map', () => {
+        cy.contains('My Map').should('be.visible');
+        cy.get('#delete-button').should('exist').click();
+        cy.contains('Confirm').should('be.visible').click();
+        cy.contains('My Map').should('not.exist');
+    });
+})
+
 // describe('MapCard Tests', () => {
 //   beforeEach(() => cy.visit('http://127.0.0.1:5173/home'))
 

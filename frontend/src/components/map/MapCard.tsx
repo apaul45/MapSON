@@ -88,6 +88,7 @@ export default function MapCard(props: any) {
               deleteCard(e);
               //handleSetCurrentMap();
             }}
+            id="delete-button"
             className="absolute top-0 right-0 "
           >
             <svg

@@ -12,16 +12,7 @@ export const user = createModel<RootModel>()({
     setCurrentUser: (state, payload: User | null) => {
       return { ...state, currentUser: payload };
     },
-    addUserMap: (state, payload: Map) => {
-      const user = state.currentUser;
-      if (!user) {
-        return state;
-      }
-      user.maps = [payload, ...(user.maps ?? [])];
-
-      return { ...state, currentUser: user };
-    },
-    setUserMaps: (state, payload: Map[]) => {
+    setUserMaps: (state, payload: Map) => {
       const user: User = state.currentUser as unknown as User;
       user.maps = [payload, ...(state.currentUser?.maps as unknown as Map[])];
       console.log(user);
