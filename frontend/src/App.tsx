@@ -1,8 +1,8 @@
-import './App.css'
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import './App.css';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import {
   MainNavbar,
-  HomeDiscoverScreen,
+  HomeScreen,
   ProjectScreen,
   LoginScreen,
   RegisterScreen,
@@ -10,15 +10,27 @@ import {
   RecoveryScreen,
   DeleteMapDialog,
   ErrorDialog,
-} from './components'
+  DiscoverScreen,
+} from './components';
+import { useEffect } from 'react';
+import { auth } from './api';
+import { store } from './models';
 
 function App() {
+  useEffect(() => {
+    const checkLoggedIn = async () => {
+      await store.dispatch.user.check();
+    };
+
+    checkLoggedIn();
+  }, []);
+
   return (
     <BrowserRouter>
       <MainNavbar />
       <Routes>
-        <Route path="/home" element={<HomeDiscoverScreen />} />
-        <Route path="/discover" element={<HomeDiscoverScreen />} />
+        <Route path="/home" element={<HomeScreen />} />
+        <Route path="/discover" element={<DiscoverScreen />} />
         <Route path="/project/:id" element={<ProjectScreen />} />
         <Route path="/login" element={<LoginScreen />} />
         <Route path="/register" element={<RegisterScreen />} />
@@ -28,7 +40,7 @@ function App() {
       <DeleteMapDialog />
       <ErrorDialog />
     </BrowserRouter>
-  )
+  );
 }
 
-export default App
+export default App;

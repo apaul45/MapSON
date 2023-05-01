@@ -4,6 +4,7 @@ import { RootState, store } from '../models';
 import { Link } from 'react-router-dom';
 import { saveAs } from 'file-saver';
 import axios from 'axios';
+import { handlePublish, handleUnpublish } from './dialogs/ShareMapDialog';
 
 const ProjectMenu = () => {
   const user = useSelector((state: RootState) => state.user.currentUser);
@@ -85,6 +86,19 @@ const ProjectMenu = () => {
 
       <hr className="my-2 border-blue-gray-50 outline-none" />
 
+      {
+        // @ts-ignore
+        map?.published.isPublished && map?.owner._id === user?._id ? (
+          <MenuItem className="hover:bg-sort-hover" onClick={() => handleUnpublish()}>
+            Unpublish
+          </MenuItem>
+        ) : //@ts-ignore
+        map?.owner._id === user?._id ? (
+          <MenuItem className="hover:bg-sort-hover" onClick={() => handlePublish()}>
+            Publish
+          </MenuItem>
+        ) : null
+      }
       <MenuItem className="hover:bg-sort-hover">Share</MenuItem>
 
       <Link to={user ? '/home' : '/discover'} className="hover:bg-sort-hover hover:outline-none">

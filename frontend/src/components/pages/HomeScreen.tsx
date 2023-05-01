@@ -1,27 +1,16 @@
-import { useLocation } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { AddMapDialog } from '../dialogs/AddMapDialog';
 import { RootState } from '../../models';
 import { Menu, MenuHandler, MenuItem, MenuList } from '@material-tailwind/react';
 import { MapCard } from '../map';
-import { store } from '../../models';
 
-export const HomeDiscoverScreen = () => {
-  const location = useLocation();
-
+export const HomeScreen = () => {
   const sortOptions = ['Upvotes', 'Downloads', 'Oldest-Newest', 'Newest-Oldest'];
   const [sortBy, setSortBy] = useState<string>('upvote');
 
   const userMaps = useSelector((state: RootState) => state.user.currentUser?.maps);
   const username = useSelector((state: RootState) => state.user.currentUser?.username);
-  const allMaps = useSelector((state: RootState) => state.mapStore.maps);
-
-  useEffect(() => {
-    if (location.pathname.includes('discover')) {
-      store.dispatch.mapStore.loadAllMaps(undefined);
-    }
-  }, []);
 
   return (
     <>
@@ -58,39 +47,21 @@ export const HomeDiscoverScreen = () => {
         <div className="grid grid-cols-5 gap-3 relative ">
           {
             //Render user's maps in home page
-            location.pathname.includes('home') &&
-              userMaps?.map((map) => (
-                <div key={`UserMapcard:${map._id}`} id={`UserMapcard:${map._id}`}>
-                  <MapCard
-                    mapid={map._id}
-                    name={map.name}
-                    username={username}
-                    upvoteCount={map.upvotes.length}
-                    downvoteCount={map.downvotes.length}
-                    downloadCount={map.downloads}
-                    description={map.description}
-                    date={map.updatedAt}
-                  />
-                </div>
-              ))
-          }
-          {
-            //Render non user, published maps in discover
-            location.pathname.includes('discover') &&
-              allMaps.map((map) => (
-                <div key={`Mapcard:${map._id}`}>
-                  <MapCard
-                    mapid={map._id}
-                    name={map.name}
-                    username={username}
-                    upvoteCount={map.upvotes.length}
-                    downvoteCount={map.downvotes.length}
-                    downloadCount={map.downloads}
-                    description={map.description}
-                    date={map.updatedAt}
-                  />
-                </div>
-              ))
+            userMaps?.map((map) => (
+              <div key={`UserMapcard:${map._id}`} id={`UserMapcard:${map._id}`}>
+                <MapCard
+                  map={map}
+                  name={map.name}
+                  // @ts-ignore
+                  username={map.owner.username}
+                  upvoteCount={map.upvotes.length}
+                  downvoteCount={map.downvotes.length}
+                  downloadCount={map.downloads}
+                  description={map.description}
+                  date={map.updatedAt}
+                />
+              </div>
+            ))
           }
         </div>
       </div>

@@ -23,8 +23,8 @@ export const user = createModel<RootModel>()({
     },
     setUserMaps: (state, payload: Map[]) => {
       const user: User = state.currentUser as unknown as User;
-
-      user.maps = payload;
+      user.maps = [payload, ...(state.currentUser?.maps as unknown as Map[])];
+      console.log(user);
       return { ...state, currentUser: user };
     },
   },
@@ -34,8 +34,9 @@ export const user = createModel<RootModel>()({
   effects: (dispatch) => ({
     async register(payload: User, state) {
       try {
-        await auth.register(payload);
-        dispatch.user.setCurrentUser(payload);
+        const response = await auth.register(payload);
+        // @ts-ignore
+        dispatch.user.setCurrentUser(response.data.user);
       } catch (error: unknown) {
         const err = error as AxiosError;
         // @ts-ignore
@@ -67,8 +68,24 @@ export const user = createModel<RootModel>()({
         dispatch.error.setError(err.response?.data.errorMessage);
       }
     },
-    async updateUser(payload: User, state) {
-      return;
+    async check() {
+      try {
+        const res = await auth.check();
+        dispatch.user.setCurrentUser(res.data);
+      } catch {
+        return;
+      }
+    },
+    async updateUser(payload, state) {
+      try {
+        await auth.update(payload);
+        return true;
+      } catch (error: unknown) {
+        const err = error as AxiosError;
+        // @ts-ignore
+        dispatch.error.setError(err.response?.data.errorMessage);
+        return false;
+      }
     },
     removeUserMap(payload: string, state) {
       this.setUserMaps(state.user.currentUser?.maps?.filter((m: Map) => m._id !== payload));
