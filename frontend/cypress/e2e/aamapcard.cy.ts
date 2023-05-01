@@ -4,7 +4,7 @@ beforeEach(() => {
     login(null, null, null);
     createNew();
     cy.get('#menu-button').should('exist').click();
-    cy.get('Exit project').should('exist').click();
+    cy.get('#menu-option-exit').should('exist').click();
     cy.wait(1000);
 });
 
