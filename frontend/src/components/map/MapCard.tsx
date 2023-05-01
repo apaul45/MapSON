@@ -71,7 +71,7 @@ export default function MapCard(props: any) {
   };
 
   const goToProject = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    navigate(`/project/${map}`);
+    navigate(`/project/${map._id}`);
   };
 
   return (
