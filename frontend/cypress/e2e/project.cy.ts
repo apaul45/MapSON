@@ -126,6 +126,7 @@ const invite = () => {
 describe('Publish Tests', () => {
   beforeEach(() => {
     login(null, null, null);
+    createNew();
   });
   afterEach(() => logout());
 
