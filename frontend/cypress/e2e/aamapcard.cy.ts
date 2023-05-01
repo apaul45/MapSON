@@ -3,13 +3,10 @@ import { createNew, login, logout, register, upload } from './utils';
 beforeEach(() => {
     login(null, null, null);
     createNew();
+    cy.visit('http://127.0.0.1:5173/home');
 });
 
 describe('Map Card Tests', () => {
-
-    beforeEach(() => {
-        cy.visit('http://127.0.0.1:5173/home');
-    });
 
     it('should show the delete dialog', () => {
         cy.get('#delete-button').should('exist').click();
