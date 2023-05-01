@@ -35,6 +35,7 @@ export interface UpdateMapResponse extends Response {}
 
 export interface CreateFeatureResponse extends Response {
   feature: FeatureExt;
+  featureIndex: number;
 }
 
 export interface GetFeatureResponse extends Response {

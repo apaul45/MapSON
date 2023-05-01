@@ -255,6 +255,17 @@ mapRouter.put('/map/:id', auth, async (req: Request, res: Response) => {
 
 mapRouter.post('/map/:id/feature', auth, async (req, res) => {
   const { id } = req.params;
+  let index: number | undefined = undefined;
+
+  try {
+    const res = parseInt(req.query.index as string);
+
+    if (res && res >= 0) {
+      index = res;
+    }
+  } catch {
+    index = undefined;
+  }
 
   if (!isValidObjectId(id)) {
     return res.status(400).json({
@@ -291,13 +302,20 @@ mapRouter.post('/map/:id/feature', auth, async (req, res) => {
     });
   }
 
+  if (index === undefined || index > map.features.features.length) {
+    index = map.features.features.length;
+  }
+
   await map.updateOne({
     $push: {
-      'features.features': feature,
+      'features.features': {
+        $each: [feature],
+        $position: index,
+      },
     },
   });
 
-  return res.status(200).json({ error: false, feature: feature });
+  return res.status(200).json({ error: false, feature: feature, featureIndex: index });
 });
 
 //no auth
@@ -351,7 +369,9 @@ mapRouter.put('/map/:mapid/feature/:featureid', auth, async (req, res) => {
   let feature;
   try {
     feature = await Feature.findByIdAndUpdate(featureid, body);
-  } catch {
+  } catch (e) {
+    console.log(e);
+    console.log('Failed to update');
     return res.status(400).json({
       error: true,
       errorMessage: 'Bad request',

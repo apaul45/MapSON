@@ -6,6 +6,7 @@ import { AxiosError } from 'axios';
 import { Feature } from '@turf/turf';
 import { Geometry } from 'geojson';
 import { AllMapsRequest, CreateMapRequest } from '../api/types';
+import { cloneDeep } from 'lodash';
 
 const initialState: Store = {
   currentMap: null,
@@ -49,7 +50,7 @@ export const mapStore = createModel<RootModel>()({
         const maps = await map.getAllMaps(payload);
         this.setMaps(maps.data.maps);
       } catch (e: any) {
-        dispatch.error.setError(e.errorMessage ?? 'Unexpected error');
+        dispatch.error.setError(e.response?.data.errorMessage ?? 'Unexpected error');
       }
     },
     async updateCurrentMap(payload: Partial<Map>, state) {
@@ -65,7 +66,7 @@ export const mapStore = createModel<RootModel>()({
 
         this.setCurrentMap({ ...state.mapStore.currentMap, ...payload });
       } catch (e: any) {
-        dispatch.error.setError(e.errorMessage ?? 'Unexpected error');
+        dispatch.error.setError(e.response?.data.errorMessage ?? 'Unexpected error');
       }
     },
     async createNewMap(payload: CreateMapRequest, state): Promise<any> {
@@ -91,7 +92,7 @@ export const mapStore = createModel<RootModel>()({
           this.setCurrentMap(null);
         }
       } catch (e: any) {
-        dispatch.error.setError(e.errorMessage ?? 'Unexpected error');
+        dispatch.error.setError(e.response?.data.errorMessage ?? 'Unexpected error');
       }
     },
 
@@ -107,10 +108,13 @@ export const mapStore = createModel<RootModel>()({
         this.setCurrentMap(loaded.data.map);
         return loaded.data.map._id;
       } catch (e: any) {
-        dispatch.error.setError(e.errorMessage ?? 'Unexpected error');
+        dispatch.error.setError(e.response?.data.errorMessage ?? 'Unexpected error');
       }
     },
-    async createFeature(payload: Feature<Geometry>, state): Promise<string | undefined> {
+    async createFeature(
+      payload: { feature: Feature<Geometry>; featureIndex?: number },
+      state
+    ): Promise<{ id: string; featureIndex: number } | undefined> {
       const id = state.mapStore.currentMap?._id;
 
       if (!id) {
@@ -120,15 +124,18 @@ export const mapStore = createModel<RootModel>()({
       }
 
       try {
-        const feature = await map.createFeature(id, payload);
+        //unset mongoose immutable fields
+        const f = { ...payload.feature, _id: undefined, __v: undefined };
+        const feature = await map.createFeature(id, f, payload.featureIndex);
 
         let oldMap = state.mapStore.currentMap;
-        oldMap?.features.features.push(feature.data.feature);
+
+        oldMap?.features.features.splice(feature.data.featureIndex, 0, feature.data.feature);
         this.setCurrentMap(oldMap);
 
-        return feature.data.feature._id;
+        return { id: feature.data.feature._id, featureIndex: feature.data.featureIndex };
       } catch (e: any) {
-        dispatch.error.setError(e.errorMessage ?? 'Unexpected error');
+        dispatch.error.setError(e.response?.data.errorMessage ?? 'Unexpected error');
       }
     },
     async updateFeature(
@@ -151,28 +158,37 @@ export const mapStore = createModel<RootModel>()({
         return;
       }
 
-      let oldMap = state.mapStore.currentMap;
+      // make a deep clone so we dont have weird ref stuff
+      feature = cloneDeep(feature);
 
-      let featureIndex = oldMap!.features.features.findIndex(
-        (feature) => feature._id === featureid
-      );
-
-      const oldFeature = oldMap!.features.features[featureIndex];
-
-      oldMap!.features.features[featureIndex] = {
-        ...oldMap!.features.features[featureIndex],
-        ...feature,
-      };
-
-      this.setCurrentMap(oldMap);
+      //unset mongoose immutable fields
+      delete feature._id;
+      delete feature.__v;
+      delete feature.updatedAt;
+      delete feature.createdAt;
 
       try {
         await map.updateFeature(id, featureid, feature);
-      } catch (e: any) {
-        dispatch.error.setError(e.errorMessage ?? 'Unexpected error');
-      }
 
-      return oldFeature;
+        let oldMap = state.mapStore.currentMap;
+
+        let featureIndex = oldMap!.features.features.findIndex(
+          (feature) => feature._id === featureid
+        );
+
+        const oldFeature = oldMap!.features.features[featureIndex];
+
+        oldMap!.features.features[featureIndex] = {
+          ...oldMap!.features.features[featureIndex],
+          ...feature,
+        };
+
+        this.setCurrentMap(oldMap);
+
+        return oldFeature;
+      } catch (e: any) {
+        dispatch.error.setError(e.response?.data.errorMessage ?? 'Unexpected error');
+      }
     },
     async deleteFeature(payload: string, state) {
       const id = state.mapStore.currentMap?._id;
@@ -188,38 +204,25 @@ export const mapStore = createModel<RootModel>()({
         return;
       }
 
-      let oldMap = state.mapStore.currentMap;
-
-      oldMap!.features.features = oldMap!.features.features.filter(
-        (feature) => feature._id !== payload
-      );
-
-      this.setCurrentMap(oldMap);
-
       try {
         await map.deleteFeature(id, payload);
+
+        let oldMap = state.mapStore.currentMap;
+
+        oldMap!.features.features = oldMap!.features.features.filter(
+          (feature) => feature._id !== payload
+        );
+
+        this.setCurrentMap(oldMap);
       } catch (e: any) {
-        dispatch.error.setError(e.errorMessage ?? 'Unexpected error');
+        dispatch.error.setError(e.response?.data.errorMessage ?? 'Unexpected error');
       }
     },
     clearMap(payload, state) {
       dispatch.mapStore.setCurrentMap(null!);
     },
-    updateFeatureCollection(
-      transform: (map: Map['features']['features']) => Map['features']['features'],
-      state
-    ) {
-      if (!state.mapStore.currentMap?.features) {
-        return;
-      }
-
-      dispatch.mapStore.setCurrentMap({
-        ...state.mapStore.currentMap,
-        features: {
-          ...state.mapStore.currentMap.features,
-          features: transform(state.mapStore.currentMap.features.features),
-        },
-      });
+    getFeatureByIndex(payload: number, state): FeatureExt | undefined {
+      return state.mapStore.currentMap?.features.features[payload];
     },
   }),
 });

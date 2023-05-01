@@ -15,13 +15,15 @@ import 'leaflet-draw/dist/leaflet.draw.css';
 import { RootState, store } from '../../models';
 import { useSelector } from 'react-redux';
 import { MapComponentCallbacks } from '../../transactions/map/common';
-import jsTPS from '../../utils/jsTPS';
+import jsTPS, { Transaction } from '../../utils/jsTPS';
 import { CreateFeature } from '../../transactions/map/CreateFeature';
 import { RemoveFeature } from '../../transactions/map/RemoveFeature';
 import { EditFeature } from '../../transactions/map/EditFeature';
 import { extendGeomanLayer } from '../../utils/geomanExtend';
 import { MultipleTransactions } from '../../transactions/map/MultipleTransactions';
 import { MergeFeatures } from '../../transactions/map/MergeFeatures';
+import { FeatureCollection } from 'geojson';
+import { cloneDeep } from 'lodash';
 
 export type SelectedFeature = { layer: LGeoJsonExt; id: any };
 
@@ -60,11 +62,8 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
   const { mapStore } = store.dispatch;
   const map = useSelector((state: RootState) => state.mapStore.currentMap);
   const mapRef = useRef<L.Map>(null!);
+  const geojsonLayer = useRef<L.GeoJSON>(null!);
   const transactions = useRef(new jsTPS());
-
-  useEffect(() => {
-    transactions.current.clearAllTransactions();
-  }, [map]);
 
   //second one is the most recently selected
   const selectedFeatures = useRef<SelectedFeature[]>([]);
@@ -215,11 +214,6 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
     [canEdit]
   );
 
-  useEffect(() => {
-    return () => {
-      editLayer.current?.layer.pm.disable();
-    };
-  }, []);
   let bounds = undefined;
   if (geoJSON.features.length > 0) {
     const extent = bbox(geoJSON);
@@ -229,6 +223,52 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
     ];
   }
 
+  const getLayerById = (id: string) => {
+    //@ts-ignore
+    const layers = Object.values(mapRef.current._layers) as LGeoJsonExt[];
+    console.log(layers);
+
+    return layers.find((ly) => ly._id === id);
+  };
+
+  const getFeatureById = (id: string) => {
+    console.log({ type: 'getFeaturebyId', map, id });
+
+    if (!map) {
+      return;
+    }
+
+    const featureIndex = map.features.features.findIndex((v) => (v as FeatureExt)._id === id);
+    if (featureIndex === -1) {
+      return undefined;
+    }
+
+    const feature = map.features.features[featureIndex] as FeatureExt;
+
+    return { featureIndex, feature: cloneDeep(feature) };
+  };
+
+  const getFeatureByIndex = (idx: number | undefined) => {
+    if (idx === undefined) {
+      return;
+    }
+
+    const feature = store.dispatch.mapStore.getFeatureByIndex(idx);
+
+    console.log({
+      type: 'getFeatureByIndex',
+      feature,
+      idx,
+      features: store.getState().mapStore.currentMap?.features.features,
+    });
+
+    return feature;
+  };
+
+  const getGeoJSONLayer = () => {
+    return geojsonLayer.current;
+  };
+
   const callbacks: MapComponentCallbacks = {
     isSelected,
     selectFeature,
@@ -237,6 +277,10 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
     getSelectedFeatures,
     resetSelectedFeature,
     onEachFeature,
+    getLayerById,
+    getFeatureById,
+    getFeatureByIndex,
+    getGeoJSONLayer,
   };
 
   const onCreate: L.PM.CreateEventHandler = async (e) =>
@@ -250,33 +294,45 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
     const { layer, affectedLayers } = e as typeof e & { affectedLayers: [L.Layer, L.LatLng][] };
     // case for vertex pinning
 
-    const layerTransaction = new EditFeature(e.layer as unknown as L.Polygon & MongoData);
+    const { feature, featureIndex } = getFeatureById((layer as any & MongoData)._id)!;
+    let layerTransaction: Transaction = new EditFeature(
+      layer as unknown as L.Polygon & MongoData,
+      feature,
+      featureIndex
+    );
     if (affectedLayers?.length > 0) {
-      await transactions.current.addTransaction(
-        new MultipleTransactions([
-          layerTransaction,
-          ...affectedLayers.map(
-            ([layer, _]) => new EditFeature(layer as unknown as L.Polygon & MongoData)
-          ),
-        ]),
-        mapRef.current!,
-        callbacks
-      );
-    } else {
-      await transactions.current.addTransaction(layerTransaction, mapRef.current!, callbacks);
+      layerTransaction = new MultipleTransactions([
+        layerTransaction,
+        ...affectedLayers.map(([aLayer, _]) => {
+          const { feature: iFeature, featureIndex: iFeatureIndex } = getFeatureById(
+            (layer as any & MongoData)._id
+          )!;
+
+          return new EditFeature(
+            aLayer as unknown as L.Polygon & MongoData,
+            iFeature,
+            iFeatureIndex
+          );
+        }),
+      ]);
     }
+    await transactions.current.addTransaction(layerTransaction, mapRef.current!, callbacks);
   };
 
-  const onRemove: L.PM.RemoveEventHandler = async (e) =>
+  const onRemove: L.PM.RemoveEventHandler = async (e) => {
+    const { layer } = e;
+    const { feature, featureIndex } = getFeatureById((layer as any & MongoData)._id)!;
+
     await transactions.current.addTransaction(
-      new RemoveFeature(e.layer as LGeoJsonExt),
+      new RemoveFeature(layer as LGeoJsonExt, feature, featureIndex),
       mapRef.current!,
       callbacks
     );
+  };
 
   const onMerge: L.PM.MergeEventHandler = async (e) =>
     await transactions.current.addTransaction(
-      new MergeFeatures(e.oldLayers, e.newLayer as LGeoJsonExt, e.newFeature),
+      new MergeFeatures(e.oldLayers, e.newLayer as LGeoJsonExt, e.newFeature, callbacks),
       mapRef.current!,
       callbacks
     );
@@ -288,7 +344,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
 
     await Promise.all(
       newFeatures.map(async ({ layer, feature }) => {
-        const id = await mapStore.createFeature(feature);
+        const { id } = (await mapStore.createFeature({ feature }))!;
 
         if (!id) {
           console.error('Failed to create feature');
@@ -310,6 +366,16 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
   const redo = () => {
     transactions.current.doTransaction(mapRef.current!, callbacks);
   };
+
+  useEffect(() => {
+    transactions.current.clearAllTransactions();
+  }, [map]);
+
+  useEffect(() => {
+    return () => {
+      editLayer.current?.layer.pm.disable();
+    };
+  }, []);
 
   return (
     <div className="w-screen h-[calc(100vh-64px)]">
@@ -351,6 +417,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
           /* @ts-ignore */
           // Fine to ignore since we are guaranteeing the extensions to L.GeoJSON
           onEachFeature={onEachFeature}
+          ref={geojsonLayer}
         >
           <MapControls
             onCreate={onCreate}

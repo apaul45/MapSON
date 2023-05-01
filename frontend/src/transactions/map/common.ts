@@ -9,6 +9,10 @@ export interface MapComponentCallbacks {
   getSelectedFeatures: () => SelectedFeature[];
   resetSelectedFeature: () => void;
   onEachFeature: (feature: FeatureExt, layer: LGeoJsonExt) => void;
+  getLayerById: (id: string) => L.Polygon | LGeoJsonExt | undefined;
+  getFeatureById: (id: string) => { featureIndex: number; feature: FeatureExt } | undefined;
+  getFeatureByIndex: (idx: number) => FeatureExt | undefined;
+  getGeoJSONLayer: () => L.GeoJSON;
 }
 
 export const extractFeature = (layer: LGeoJsonExt | L.Polygon) => {
