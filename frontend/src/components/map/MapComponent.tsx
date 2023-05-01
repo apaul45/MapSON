@@ -64,7 +64,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
   const map = useSelector((state: RootState) => state.mapStore.currentMap);
   const leafletMap = useRef<L.Map>(null!);
   const geojsonLayer = useRef<L.GeoJSON>(null!);
-  const transactions = useRef(new jsTPS());
+  const transactions = useRef(new jsTPS(leafletMap));
   const mapRef = useRef(geoJSON);
 
   useEffect(() => {
@@ -340,6 +340,8 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
   const onEdit = callbacks.onEdit;
   const onRemove = callbacks.onRemove;
 
+  transactions.current.callbacks = callbacks;
+
   const onMerge: L.PM.MergeEventHandler = async (e) =>
     await transactions.current.addTransaction(
       new MergeFeatures(
@@ -369,11 +371,11 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
   };
 
   const undo = () => {
-    transactions.current.undoTransaction(leafletMap.current!, callbacks);
+    transactions.current.undoTransaction();
   };
 
   const redo = () => {
-    transactions.current.doTransaction(leafletMap.current!, callbacks);
+    transactions.current.doTransaction();
   };
 
   useEffect(() => {
