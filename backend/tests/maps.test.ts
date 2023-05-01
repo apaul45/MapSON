@@ -439,7 +439,7 @@ describe('Publish Map Test', () => {
   it('should fail if no authentication', async () => {
     const res = await request(app)
       .put(`/maps/map/${createdMapId}`)
-      .send({ changes: published: {isPublished: true, publishedDate: new Date()} });
+      .send({ changes: { published: {isPublished: true, publishedDate: new Date()} } });
 
     expect(res.statusCode).toBe(401);
     expect(res.body.error).toBeTruthy();
