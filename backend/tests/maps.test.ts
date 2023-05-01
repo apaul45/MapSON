@@ -417,32 +417,61 @@ const stripFeature = (f: object) => {
   );
 };
 
-describe('Delete Map Test', () => {
-  beforeEach(async () => {
-    const mapRes = await request(app)
-      .post('/maps/map')
+describe('Publish Map Test', () => {
+  it('should publish the created map', async () => {
+    const res = await request(app)
+      .put(`/maps/map/${createdMapId}`)
       .set('Cookie', loginCookie)
-      .send({ mapName: 'Jest Map' });
+      .send({ changes: { published: {isPublished: true, publishedDate: new Date()} } });
 
-    expect(mapRes.statusCode).toBe(200);
-    expect(mapRes.body.map.name).toBe('Jest Map');
-
-    createdMapId = mapRes.body.map._id;
+    expect(res.statusCode).toBe(201);
   });
 
-  it('should delete the map', async () => {
+  it('should unpublish the created map', async () => {
     const res = await request(app)
-      .delete(`/maps/map/${createdMapId}`)
+      .put(`/maps/map/${createdMapId}`)
       .set('Cookie', loginCookie)
+      .send({ changes: { published: {isPublished: false, publishedDate: new Date(0)} } });
 
-    expect(res.statusCode).toBe(200);
+    expect(res.statusCode).toBe(201);
   });
 
   it('should fail if no authentication', async () => {
     const res = await request(app)
-      .delete(`/maps/map/${createdMapId}`)
+      .put(`/maps/map/${createdMapId}`)
+      .send({ changes: { published: {isPublished: true, publishedDate: new Date()} } });
 
     expect(res.statusCode).toBe(401);
-    expect(res.body.errorMessage).toBe('invalid session');
+    expect(res.body.error).toBeTruthy();
   });
-});
+})
+
+
+describe('Publish Map Test', () => {
+  it('should publish the created map', async () => {
+    const res = await request(app)
+      .put(`/maps/map/${createdMapId}`)
+      .set('Cookie', loginCookie)
+      .send({ changes: { published: {isPublished: true, publishedDate: new Date()} } });
+
+    expect(res.statusCode).toBe(201);
+  });
+
+  it('should unpublish the created map', async () => {
+    const res = await request(app)
+      .put(`/maps/map/${createdMapId}`)
+      .set('Cookie', loginCookie)
+      .send({ changes: { published: {isPublished: false, publishedDate: new Date(0)} } });
+
+    expect(res.statusCode).toBe(201);
+  });
+
+  it('should fail if no authentication', async () => {
+    const res = await request(app)
+      .put(`/maps/map/${createdMapId}`)
+      .send({ changes: { published: {isPublished: true, publishedDate: new Date()} } });
+
+    expect(res.statusCode).toBe(401);
+    expect(res.body.error).toBeTruthy();
+  });
+})

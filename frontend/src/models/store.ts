@@ -1,15 +1,16 @@
 import { createModel } from '@rematch/core';
 import { RootModel } from '.';
-import { Store, Map } from '../types';
+import { Store, Map, FeatureExt } from '../types';
 import { map } from '../api';
 import { AxiosError } from 'axios';
 import { Feature } from '@turf/turf';
 import { Geometry } from 'geojson';
-import { CreateMapRequest } from '../api/types';
+import { AllMapsRequest, CreateMapRequest } from '../api/types';
 
 const initialState: Store = {
   currentMap: null,
   maps: [],
+  mapFilter: '',
   deleteDialog: false,
   shareDialog: false,
   addDialog: false,
@@ -39,20 +40,20 @@ export const mapStore = createModel<RootModel>()({
     setMaps: (state, payload: Map[]) => {
       return { ...state, maps: payload };
     },
+    setMapFilter: (state, payload: string) => {
+      return { ...state, mapFilter: payload };
+    },
   },
 
   //Effects are (possibly async) functions that take in the store's state and payload, and return anything
 
   effects: (dispatch) => ({
-    async loadUserMaps(payload, state) {
-      return;
-    },
-    async loadAllMaps(payload: undefined, state) {
+    async loadAllMaps(payload: AllMapsRequest, state) {
       try {
-        const maps = await map.getAllMaps();
+        const maps = await map.getAllMaps(payload);
         this.setMaps(maps.data.maps);
       } catch (e: any) {
-        dispatch.error.setError(e);
+        dispatch.error.setError(e.errorMessage ?? 'Unexpected error');
       }
     },
     async updateCurrentMap(payload: Partial<Map>, state) {
@@ -67,7 +68,7 @@ export const mapStore = createModel<RootModel>()({
         await map.updateMap(id, payload);
         this.setCurrentMap({ ...state.mapStore.currentMap, ...payload });
       } catch (e: any) {
-        dispatch.error.setError(e);
+        dispatch.error.setError(e.errorMessage ?? 'Unexpected error');
       }
     },
     async createNewMap(payload: CreateMapRequest, state): Promise<string | undefined> {
@@ -93,7 +94,7 @@ export const mapStore = createModel<RootModel>()({
           this.setCurrentMap(null);
         }
       } catch (e: any) {
-        dispatch.error.setError(e);
+        dispatch.error.setError(e.errorMessage ?? 'Unexpected error');
       }
     },
 
@@ -109,12 +110,11 @@ export const mapStore = createModel<RootModel>()({
         this.setCurrentMap(loaded.data.map);
         return loaded.data.map._id;
       } catch (e: any) {
-        dispatch.error.setError(e);
+        dispatch.error.setError(e.errorMessage ?? 'Unexpected error');
       }
     },
     async createFeature(payload: Feature<Geometry>, state): Promise<string | undefined> {
       const id = state.mapStore.currentMap?._id;
-      console.log(state.mapStore.currentMap);
 
       if (!id) {
         console.error('No map selected');
@@ -131,10 +131,10 @@ export const mapStore = createModel<RootModel>()({
 
         return feature.data.feature._id;
       } catch (e: any) {
-        dispatch.error.setError(e);
+        dispatch.error.setError(e.errorMessage ?? 'Unexpected error');
       }
     },
-    async updateFeature(payload, state) {
+    async updateFeature(payload: { id: string; feature: Partial<FeatureExt> }, state) {
       const id = state.mapStore.currentMap?._id;
 
       let { id: featureid, feature } = payload;
@@ -152,21 +152,24 @@ export const mapStore = createModel<RootModel>()({
       }
 
       let oldMap = state.mapStore.currentMap;
-      if (oldMap !== null) {
-        let featureIndex = oldMap?.features.features.findIndex(
-          (feature) => feature._id === featureid
-        );
-        oldMap.features.features[featureIndex] = feature;
-      }
+
+      let featureIndex = oldMap!.features.features.findIndex(
+        (feature) => feature._id === featureid
+      );
+      oldMap!.features.features[featureIndex] = {
+        ...oldMap!.features.features[featureIndex],
+        ...feature,
+      };
+
       this.setCurrentMap(oldMap);
 
       try {
         await map.updateFeature(id, featureid, feature);
       } catch (e: any) {
-        dispatch.error.setError(e);
+        dispatch.error.setError(e.errorMessage ?? 'Unexpected error');
       }
     },
-    async deleteFeature(payload, state) {
+    async deleteFeature(payload: string, state) {
       const id = state.mapStore.currentMap?._id;
       if (!id) {
         console.error('No map selected');
@@ -180,11 +183,38 @@ export const mapStore = createModel<RootModel>()({
         return;
       }
 
+      let oldMap = state.mapStore.currentMap;
+
+      oldMap!.features.features = oldMap!.features.features.filter(
+        (feature) => feature._id !== payload
+      );
+
+      this.setCurrentMap(oldMap);
+
       try {
         await map.deleteFeature(id, payload);
       } catch (e: any) {
-        dispatch.error.setError(e);
+        dispatch.error.setError(e.errorMessage ?? 'Unexpected error');
       }
+    },
+    clearMap(payload, state) {
+      dispatch.mapStore.setCurrentMap(null!);
+    },
+    updateFeatureCollection(
+      transform: (map: Map['features']['features']) => Map['features']['features'],
+      state
+    ) {
+      if (!state.mapStore.currentMap?.features) {
+        return;
+      }
+
+      dispatch.mapStore.setCurrentMap({
+        ...state.mapStore.currentMap,
+        features: {
+          ...state.mapStore.currentMap.features,
+          features: transform(state.mapStore.currentMap.features.features),
+        },
+      });
     },
   }),
 });

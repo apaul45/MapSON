@@ -1,23 +1,23 @@
-import { useRef } from 'react'
-import { RootState, store } from '../models'
-import { useSelector } from 'react-redux'
-import tinycolor from 'tinycolor2'
-import { useNavigate } from 'react-router-dom'
-import { Menu, MenuHandler, MenuItem, MenuList } from '@material-tailwind/react'
+import { useRef } from 'react';
+import { RootState, store } from '../models';
+import { useSelector } from 'react-redux';
+import tinycolor from 'tinycolor2';
+import { useNavigate } from 'react-router-dom';
+import { Menu, MenuHandler, MenuItem, MenuList } from '@material-tailwind/react';
+
+export const bgColor = tinycolor.random().darken(30).toHexString();
 
 const AccountCircle = () => {
   //Generate and darken random color
-  const backgroundColor = useRef(tinycolor.random().darken(30).toHexString())
+  const backgroundColor = useRef(bgColor);
 
-  const user = useSelector(
-    (state: RootState) => state.user.currentUser?.username
-  )
+  const user = useSelector((state: RootState) => state.user.currentUser?.username);
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const logout = () => {
-    store.dispatch.user.logout()
-    navigate('/')
-  }
+    store.dispatch.user.logout();
+    navigate('/');
+  };
 
   return (
     <div className="relative ml-3">
@@ -35,7 +35,7 @@ const AccountCircle = () => {
         </MenuList>
       </Menu>
     </div>
-  )
-}
+  );
+};
 
-export default AccountCircle
+export default AccountCircle;

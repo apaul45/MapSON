@@ -36,3 +36,4 @@ frontend/cypress/downloads
 frontend/cypress/screenshots
 frontend/cypress/videos
 
+local-db
