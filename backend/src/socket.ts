@@ -10,12 +10,16 @@ export const io = new Server(server, {
 });
 
 io.on('connection', (socket) => {
+  console.log('connected!');
   socket.on('joinRoom', (roomId: string) => {
     socket.join(roomId);
+    console.log(`joining room ${roomId}!`);
   });
 
   socket.on('getClientList', async (roomId: string) => {
     const clientList = await io.in(roomId).fetchSockets();
     socket.emit('sendClientList', clientList.length);
   });
+
+  socket.on('disconnect', () => console.log('disconnected!'));
 });

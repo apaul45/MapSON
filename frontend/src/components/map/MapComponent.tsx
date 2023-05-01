@@ -12,10 +12,10 @@ import { FeatureExt, LGeoJsonExt, Map } from '../../types';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw/dist/leaflet.draw.css';
 
-import { RootState, store } from '../../models';
-import { useSelector } from 'react-redux';
+import { store } from '../../models';
 
-import * as turf from '@turf/turf';
+import { connect, joinRoom, getClientList, socket, disconnect } from '../../live-collab/socket';
+import { useParams } from 'react-router-dom';
 
 export type SelectedFeature = { layer: LGeoJsonExt; id: any };
 
@@ -53,6 +53,23 @@ interface IMapComponent extends Map {
 const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapComponent) => {
   const { mapStore } = store.dispatch;
   const mapRef = useRef(geoJSON);
+
+  const { id } = useParams();
+
+  useEffect(() => {
+    connect();
+    joinRoom(id as unknown as string);
+    getClientList(id as unknown as string);
+
+    socket.on('sendClientList', (clients) => {
+      console.log(clients);
+    });
+
+    //Return function fires on unmount: disconnect when leaving project
+    return () => {
+      disconnect();
+    };
+  }, []);
 
   useEffect(() => {
     mapRef.current = geoJSON;

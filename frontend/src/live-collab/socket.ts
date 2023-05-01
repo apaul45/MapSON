@@ -5,6 +5,7 @@ export const socket = io(import.meta.env.VITE_BACKEND_URL, {
 });
 
 export const connect = () => socket.connect();
+export const disconnect = () => socket.disconnect();
 
 export const joinRoom = (room: string) => socket.emit('joinRoom', room);
 export const getClientList = (room: string) => socket.emit('getClientList', room);
