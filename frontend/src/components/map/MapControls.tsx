@@ -1,4 +1,4 @@
-import { PM } from 'leaflet';
+import { LatLng, PM } from 'leaflet';
 import { GeomanControls } from 'react-leaflet-geoman-v2';
 import './MapControls.css';
 import { useMap } from 'react-leaflet';
@@ -15,6 +15,7 @@ import * as turf from '@turf/turf';
 import { useEffect } from 'react';
 import { FeatureExt, LGeoJsonExt } from '../../types';
 import L from 'leaflet';
+import 'leaflet-geometryutil';
 import polygonSlice from '../../utils/polygon-slice';
 
 declare module 'leaflet' {
@@ -62,6 +63,24 @@ interface IMapControls {
   canEdit: boolean;
   getSelectedFeatures: () => SelectedFeature[];
 }
+
+type Flatten<T> = T extends Array<infer U> ? U : T;
+
+const moveLatLng = (
+  position: LatLng[] | LatLng[][] | LatLng[][][],
+  ll: LatLng,
+  newll: LatLng
+): typeof position => {
+  return position.map((pos: Flatten<typeof position>) => {
+    if (Array.isArray(pos)) {
+      return moveLatLng(pos, ll, newll);
+    }
+
+    const res = pos.equals(ll) ? newll : pos;
+
+    return res;
+  }) as typeof position;
+};
 
 const MapControls = ({
   onCreate,
@@ -338,6 +357,8 @@ const MapControls = ({
             }
           }
         });
+
+        //editing PM.Edit.Line to allow for snapping
       }}
       options={{
         position: 'topright',

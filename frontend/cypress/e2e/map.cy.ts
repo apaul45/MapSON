@@ -74,6 +74,22 @@ describe('Polygon tests', () => {
     cy.hasVertexMarkers(0);
   });
 
+  it('should undo and redo for delete', () => {
+    drawPolygon();
+
+    cy.hasLayers(1);
+
+    triggerUndo();
+
+    cy.hasLayers(0);
+
+    triggerRedo();
+
+    cy.hasLayers(1);
+
+    triggerUndo();
+  });
+
   it('should add and remove a vertex from polygon', () => {
     drawPolygon();
 
@@ -90,6 +106,32 @@ describe('Polygon tests', () => {
     vertex.rightclick();
 
     cy.hasVertexMarkers(4);
+  });
+
+  it('should undo and redo for vertex editing', () => {
+    drawPolygon();
+
+    doubleClickRegion(300, 300);
+
+    let vertex = cy.get('.marker-icon-middle').first();
+
+    // adds vertex
+    vertex.click();
+
+    cy.hasVertexMarkers(5);
+
+    triggerUndo();
+
+    cy.hasVertexMarkers(4);
+
+    triggerRedo();
+
+    cy.hasVertexMarkers(5);
+
+    //undo edit
+    triggerUndo();
+    //undo draw
+    triggerUndo();
   });
 });
 
@@ -189,63 +231,6 @@ describe('Map Properties Tests', () => {
   });
 });
 
-describe('Merge tests', () => {
-  beforeEach(() => {
-    login(null, null, null);
-    cy.get('.mapcard').last().click();
-  });
-
-  it('should merge two adjacent polygons', () => {
-    cy.on('window:confirm', (text) => {
-      expect(text).to.equal('Merge the two selected regions?');
-      return true;
-    });
-
-    drawPolygon();
-    drawPolygon2();
-
-    clickRegion(150, 150);
-    clickRegion(350, 350);
-
-    cy.toolbarButton('merge').click();
-
-    cy.get('a.action-undefined').filter(':visible').click();
-
-    //triggers window:confirm
-
-    deletePolygon();
-  });
-
-  it('should prompt user if merge is to result in a non-contiguous polygon', () => {
-    cy.once('window:confirm', (text) => {
-      expect(text).to.equal('Merge the two selected regions?');
-
-      cy.once('window:confirm', (text) => {
-        expect(text).to.equal(
-          'This merge results in a non-contiguous polygon. Do you still want to continue?'
-        );
-        return true;
-      });
-
-      return true;
-    });
-
-    drawPolygon2();
-    drawPolygon3();
-
-    clickRegion(250, 250);
-    clickRegion(400, 400);
-
-    cy.toolbarButton('merge').click();
-
-    cy.get('a.action-undefined').filter(':visible').click();
-
-    //triggers both confirms
-
-    deletePolygon2();
-  });
-});
-
 describe('Split tests', () => {
   beforeEach(() => {
     login(null, null, null);
@@ -299,6 +284,140 @@ describe('Split tests', () => {
     doubleClickRegion(200, 200);
 
     cy.hasVertexMarkers(4);
+  });
+
+  it('should undo and redo split', () => {
+    drawPolygon2();
+
+    cy.hasLayers(1);
+
+    clickRegion(200, 200);
+
+    //draw split line
+    cy.toolbarButton('split').click();
+
+    clickRegion(50, 200).click(350, 200).click(350, 200);
+
+    cy.hasLayers(2);
+
+    triggerUndo();
+
+    cy.hasLayers(1);
+
+    triggerRedo();
+
+    cy.hasLayers(2);
+
+    //undo split
+    triggerUndo();
+    //undo draw poly
+    triggerUndo();
+  });
+});
+
+describe('Merge tests', () => {
+  beforeEach(() => {
+    login(null, null, null);
+    cy.get('.mapcard').last().click();
+  });
+
+  it('should merge two adjacent polygons', () => {
+    cy.on('window:confirm', (text) => {
+      expect(text).to.equal('Merge the two selected regions?');
+      return true;
+    });
+
+    drawPolygon();
+    drawPolygon2();
+
+    //deselects and turns off editing
+    triggerUndo();
+    triggerUndo();
+    triggerRedo();
+    triggerRedo();
+
+    clickRegion(150, 150);
+    clickRegion(350, 350);
+
+    cy.toolbarButton('merge').click();
+
+    cy.get('a.action-undefined').filter(':visible').click();
+
+    //triggers window:confirm
+
+    deletePolygon();
+  });
+
+  it('should undo and redo merge', () => {
+    cy.on('window:confirm', (text) => {
+      expect(text).to.equal('Merge the two selected regions?');
+      return true;
+    });
+
+    drawPolygon();
+    drawPolygon2();
+
+    //deselects and turns off editing
+    triggerUndo();
+    triggerUndo();
+    triggerRedo();
+    triggerRedo();
+
+    cy.hasLayers(2);
+
+    clickRegion(150, 150);
+    clickRegion(350, 350);
+
+    cy.toolbarButton('merge').click();
+
+    cy.get('a.action-undefined').filter(':visible').click();
+
+    cy.hasLayers(1);
+
+    triggerUndo(1000);
+
+    cy.hasLayers(2);
+
+    triggerRedo(1000);
+
+    cy.hasLayers(1);
+
+    //undo merge
+    triggerUndo();
+
+    //undo first poly
+    triggerUndo();
+    //undo second poly
+    triggerUndo();
+  });
+
+  it('should prompt user if merge is to result in a non-contiguous polygon', () => {
+    cy.once('window:confirm', (text) => {
+      expect(text).to.equal('Merge the two selected regions?');
+
+      cy.once('window:confirm', (text) => {
+        expect(text).to.equal(
+          'This merge results in a non-contiguous polygon. Do you still want to continue?'
+        );
+        return true;
+      });
+
+      return true;
+    });
+
+    drawPolygon2();
+    drawPolygon3();
+
+    clickRegion(250, 250);
+    clickRegion(400, 400);
+
+    cy.toolbarButton('merge').click();
+
+    cy.get('a.action-undefined').filter(':visible').click();
+
+    //triggers both confirms
+
+    deletePolygon2();
   });
 });
 
@@ -393,4 +512,11 @@ const doubleClickRegion = (x: number, y: number) => {
 
 const clickRegion = (x: number, y: number) => {
   return cy.get(mapSelector).click(x, y).wait(DELAY);
+};
+
+const triggerUndo = (delay = DELAY) => {
+  cy.get('body').trigger('keydown', { ctrlKey: true, key: 'z' }).wait(delay);
+};
+const triggerRedo = (delay = DELAY) => {
+  cy.get('body').trigger('keydown', { ctrlKey: true, shiftKey: true, key: 'z' }).wait(delay);
 };
