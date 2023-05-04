@@ -432,6 +432,13 @@ mapRouter.delete('/map/:mapid/feature/:featureid', auth, async (req, res) => {
   res.status(200).json({ error: false });
 });
 
+// mapRouter.put('/updatePublished', async (req: Request, res: Response) => {
+//   const published = { isPublished: false, publishedDate: new Date() };
+//   await Map.updateMany({ published: null }, { published });
+
+//   res.status(200).json();
+// });
+
 // Handles search maps request
 //mapRouter.get('/search', auth, async (req: Request, res: Response) => {})
 

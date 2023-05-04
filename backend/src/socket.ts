@@ -18,17 +18,19 @@ io.on('connection', (socket) => {
     socket.join(roomId);
     console.log(`joining room ${roomId}!`);
 
-    //Add user to this room
-    let clientList = rooms[roomId];
+    //Add user to this room, if it's a logged in user
+    if (username) {
+      let clientList = rooms[roomId];
 
-    console.log(`clientList before adding: ${clientList}`);
+      console.log(`clientList before adding: ${clientList}`);
 
-    rooms[roomId] = !clientList ? [username] : [...clientList, username];
+      rooms[roomId] = !clientList ? [username] : [...clientList, username];
 
-    console.log(`clientList after adding: ${rooms[roomId]}`);
+      console.log(`clientList after adding: ${rooms[roomId]}`);
 
-    //Broadcast this list so that everyone can save it
-    io.to(roomId).emit('sendClientList', rooms[roomId]);
+      //Broadcast this list so that everyone can save it
+      io.to(roomId).emit('sendClientList', rooms[roomId]);
+    }
   });
 
   socket.on('leaveRoom', (username: string, roomId: string) => {
