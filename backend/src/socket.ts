@@ -1,6 +1,7 @@
 import http from 'http';
 import { Server } from 'socket.io';
 import app from './app';
+import Map from './models/map-model';
 
 export const server = http.createServer(app);
 export const io = new Server(server, {
@@ -51,6 +52,13 @@ io.on('connection', (socket) => {
       //Broadcast this list so that everyone can save it
       io.to(roomId).emit('sendClientList', rooms[roomId]);
     }
+  });
+
+  socket.on('addComment', async (roomId: string) => {
+    //Save comment in db, then broadcast to all in the room
+    const map = await Map.findOne({ _id: roomId });
+    console.log(map?.comments);
+    io.to(roomId).emit('updateComments', map);
   });
 
   socket.on('disconnect', () => console.log('disconnected!'));

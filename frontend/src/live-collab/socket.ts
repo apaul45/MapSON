@@ -1,12 +1,12 @@
-import { useState } from 'react';
 import { io } from 'socket.io-client';
 import { store } from '../models';
+import { Comment, Map } from '../types';
 
 export const socket = io(import.meta.env.VITE_BACKEND_URL, {
   autoConnect: false, //Only connecting once in project,
 });
 
-export const clients = [];
+const { mapStore } = store.dispatch;
 
 //Emitters
 export const connect = () => socket.connect();
@@ -18,8 +18,12 @@ export const leaveRoom = (username: string, roomId: string) =>
 
 export const leaveAllRooms = (username: string) => socket.emit('leaveAllRooms', username);
 
+export const addComment = (roomId: string | undefined) => socket.emit('addComment', roomId);
+
 //Event handlers
 socket.on('sendClientList', (clients) => {
   console.log(clients);
-  store.dispatch.mapStore.setRoomList(clients);
+  mapStore.setRoomList(clients);
 });
+
+socket.on('updateComments', (map: Map) => mapStore.setCurrentMap(map));

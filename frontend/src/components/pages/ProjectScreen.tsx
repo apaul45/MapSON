@@ -1,6 +1,4 @@
 import { ProjectNavbar } from '../ProjectNavbar';
-import { Map } from '../../types';
-import { useNavigate } from 'react-router-dom';
 import DeletedMapDialog from '../dialogs/DeletedMapDialog';
 import ShareMapDialog from '../dialogs/ShareMapDialog';
 import { useEffect, useState } from 'react';
@@ -14,8 +12,6 @@ import { SelectedFeature } from '../map/MapComponent';
 import { store } from '../../models';
 
 export const ProjectScreen = () => {
-  const navigate = useNavigate();
-
   const user = useSelector((state: RootState) => state.user.currentUser);
   const map = useSelector((state: RootState) => state.mapStore.currentMap);
 
