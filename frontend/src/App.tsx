@@ -11,6 +11,7 @@ import {
   DeleteMapDialog,
   ErrorDialog,
   DiscoverScreen,
+  ResetScreen,
 } from './components';
 import { useEffect } from 'react';
 import { auth } from './api';
@@ -36,6 +37,7 @@ function App() {
         <Route path="/register" element={<RegisterScreen />} />
         <Route path="/" element={<FrontPageScreen />} />
         <Route path="/recover-account" element={<RecoveryScreen />} />
+        <Route path="/reset-password" element={<ResetScreen />} />
       </Routes>
       <DeleteMapDialog />
       <ErrorDialog />
