@@ -90,7 +90,7 @@ describe('Map Card Tests', () => {
   });
 });
 
-describe('Stadnalone Download Map Test', () => {
+describe('Standalone Download Map Test', () => {
   it('should download a map and update map counter', () => {
     const user: User = {
       email: 'downloadUser@email.com',
