@@ -97,7 +97,8 @@ describe('Stadnalone Download Map Test', () => {
     cy.get('#menu-button').click();
     cy.contains('Download as').invoke('show').click({ force: true }).click();
     cy.contains('GeoJSON').should('exist').click();
-    cy.readFile('cypress/downloads/test.geo.json').should('exist');
+    cy.wait(2000);
+    cy.readFile('cypress/downloads/download.geo.json').should('exist');
 
     cy.get('#menu-button').click();
     cy.contains('Exit project').click();
