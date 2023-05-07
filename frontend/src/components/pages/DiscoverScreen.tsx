@@ -100,15 +100,15 @@ export const DiscoverScreen = () => {
         {allMaps.map((map) => (
           <div key={`Mapcard:${map._id}`}>
             <MapCard
-              map={map}
+              id={map._id}
               name={map.name}
               //@ts-ignore
               username={map.owner.username}
-              upvoteCount={map.upvotes.length}
-              downvoteCount={map.downvotes.length}
+              upvotes={map.upvotes}
+              downvotes={map.downvotes}
               downloadCount={map.downloads}
-              description={map.description}
-              date={map.published.publishedDate}
+              description={map.description!}
+              date={map.published.publishedDate?.toString()!}
             />
           </div>
         ))}
