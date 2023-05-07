@@ -5,6 +5,7 @@ import { ProjectScreen } from './ProjectScreen';
 import { RecoveryScreen } from './RecoveryScreen';
 import { RegisterScreen } from './RegisterScreen';
 import { DiscoverScreen } from './DiscoverScreen';
+import { ResetScreen } from './ResetScreen';
 
 export {
   FrontPageScreen,
@@ -14,4 +15,5 @@ export {
   RecoveryScreen,
   RegisterScreen,
   ProjectScreen,
+  ResetScreen,
 };

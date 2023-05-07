@@ -61,7 +61,7 @@ router.post('/register', async (req: Request, res: Response) => {
     username: username,
     email: email,
     passwordHash: passwordHash,
-    recoveryKey: '',
+    recoveryKey: { key: '', expire: new Date(0) },
     maps: [],
   });
 
@@ -147,10 +147,12 @@ router.post('/recover', async (req: Request, res: Response) => {
     email
   )}&key=${encodeURIComponent(recoverKey)}`;
 
-  user.recoveryKey = recoverKey;
+  const now = new Date();
+  now.setHours(now.getHours() + 1);
+  user.recoveryKey = { key: recoverKey, expire: now };
   await user.save();
 
-  if (process.env.DEV) {
+  if (process.env.DEV === 'true') {
     return res.status(200).json({
       error: false,
       key: recoverKey,
@@ -174,10 +176,17 @@ router.patch('/recover', async (req: Request, res: Response) => {
 
   const user = await User.findOne({ email: email });
 
-  if (!user || user.recoveryKey !== recoverKey) {
+  if (!user || user.recoveryKey.key === '' || user.recoveryKey.key !== recoverKey) {
     return res.status(401).json({
       error: true,
-      errorMessage: 'invalid recovery key',
+      errorMessage: 'invalid recovery key or email',
+    });
+  }
+
+  if (user.recoveryKey.expire < new Date()) {
+    return res.status(400).json({
+      error: true,
+      errorMessage: 'session no longer available',
     });
   }
 
@@ -186,7 +195,7 @@ router.patch('/recover', async (req: Request, res: Response) => {
   const passwordHash = await bcrypt.hash(password, salt);
 
   user.passwordHash = passwordHash;
-  user.recoveryKey = '';
+  user.recoveryKey = { key: '', expire: new Date(0) };
 
   await user.save();
 
@@ -263,9 +272,9 @@ router.get('/check', async (req: Request, res: Response) => {
 // });
 
 const sendEmail = (email: string, link: string, subject: string) => {
-  if (process.env.DEV) return;
+  if (process.env.DEV === 'true') return;
 
-  const url = 'https://api.sendinblue.com/v3/smtp/email';
+  const url = 'https://api.brevo.com/v3/smtp/email';
 
   const headers = {
     'Content-Type': 'application/json',

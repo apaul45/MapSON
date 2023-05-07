@@ -201,9 +201,9 @@ describe('POST /user/recover', () => {
   });
 });
 
-describe('PATH /recover', () => {
+describe('PATCH /recover', () => {
   it('should change user password', async () => {
-    const res = await request(app).patch('/user/recover').send({
+    let res = await request(app).patch('/user/recover').send({
       email: email,
       recoverKey: key,
       password: 'test',
@@ -211,6 +211,14 @@ describe('PATH /recover', () => {
 
     expect(res.statusCode).toBe(200);
     expect(res.body.error).toBe(false);
+
+    res = await request(app).post('/user/login').send({
+      emailOrUsername: email,
+      password: 'test',
+    });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toBeTruthy();
   });
 
   it('should return error with null email/password', async () => {

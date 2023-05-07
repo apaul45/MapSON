@@ -16,7 +16,7 @@ const ProjectMenu = () => {
     store.dispatch.mapStore.setMarkedMap(map._id);
     store.dispatch.mapStore.setDeleteDialog(true);
   };
-  const { error } = store.dispatch;
+  const { mapStore, error } = store.dispatch;
 
   const exportGeojson = () => {
     if (!map?.features) {
@@ -25,6 +25,7 @@ const ProjectMenu = () => {
     }
     const blob = new Blob([JSON.stringify(map?.features)]);
     saveAs(blob, map?.name + '.geo.json');
+    updateDownload();
   };
 
   const exportShapefile = async () => {
@@ -42,6 +43,11 @@ const ProjectMenu = () => {
     });
     const blob = new Blob([res.data]);
     saveAs(blob, map?.name + '.zip');
+    updateDownload();
+  };
+
+  const updateDownload = async () => {
+    await mapStore.updateCurrentMap({ downloads: map?.downloads! + 1 });
   };
 
   return (

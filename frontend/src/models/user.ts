@@ -55,8 +55,27 @@ export const user = createModel<RootModel>()({
         return false;
       }
     },
-    async recoverPassword(payload: User, state) {
-      return;
+    async recoverPassword(payload, state) {
+      try {
+        const response = await auth.recover(payload);
+        return true;
+      } catch (error: unknown) {
+        const err = error as AxiosError;
+        // @ts-ignore
+        dispatch.error.setError(err.response?.data.errorMessage);
+        return false;
+      }
+    },
+    async resetPassword(payload, state) {
+      try {
+        const response = await auth.reset(payload);
+        return true;
+      } catch (error: unknown) {
+        const err = error as AxiosError;
+        // @ts-ignore
+        dispatch.error.setError(err.response?.data.errorMessage);
+        return false;
+      }
     },
     async logout() {
       try {
