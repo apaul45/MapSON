@@ -1,7 +1,7 @@
 import { createNew, login, logout, register, upload } from './utils';
 
 beforeEach(() => {
-  login(null, null, null);
+  login();
   createNew();
   cy.get('#menu-button').should('exist').click();
   cy.get('#menu-option-exit').should('exist').click();

@@ -236,8 +236,13 @@ export const mapStore = createModel<RootModel>()({
     async addComment(payload: Comment, state) {
       const comments = state.mapStore.currentMap?.comments;
       comments?.push(payload);
-      //@ts-ignore
-      await map.updateMap(state.mapStore.currentMap?._id, { comments: comments });
+
+      try {
+        //@ts-ignore
+        await map.updateMap(state.mapStore.currentMap?._id, { comments: comments });
+      } catch (e: any) {
+        dispatch.error.setError(e.response?.data.errorMessage ?? 'Unexpected error');
+      }
     },
   }),
 });

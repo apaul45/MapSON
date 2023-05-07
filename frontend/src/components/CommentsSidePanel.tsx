@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import CommentCard from './CommentCard';
 
 import { RootState, store } from '../models';
@@ -28,9 +28,9 @@ const CommentsSidePanel = () => {
 
   const handleComment = async () => {
     if (username) {
-      console.log({ username, comment });
       await store.dispatch.mapStore.addComment({ username, comment });
       addComment(currentMap?._id);
+      setComment('');
     }
   };
 
@@ -51,6 +51,8 @@ const CommentsSidePanel = () => {
             placeholder={canComment ? 'Leave a comment...' : 'Please log in to comment'}
             disabled={!canComment}
             onChange={(e) => setComment(e.target.value)}
+            onKeyDown={(e) => (e.key === 'Enter' ? handleComment() : '')}
+            value={comment}
           />
           <button
             className="w-[30%] rounded-md ml-1 px-1 py-1 bg-blue disabled:opacity-75"

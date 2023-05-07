@@ -1,8 +1,9 @@
+import { User } from '../../src/types';
 import { createNew, login, logout, register, upload } from './utils';
 
 describe('Project Screen Tests', () => {
   before(() => {
-    login(null, null, null);
+    login();
     cy.get('#plus-sign').parent().should('be.visible').click();
     cy.contains('Create new Map').should('be.visible').click();
     cy.location('href').should((path) => {
@@ -11,7 +12,7 @@ describe('Project Screen Tests', () => {
   });
 
   beforeEach(() => {
-    login(null, null, null);
+    login();
     cy.get('.mapcard').last().click();
   });
 
@@ -36,7 +37,7 @@ describe('Project Screen Tests', () => {
 
 describe('Project Nav Bar Tests', () => {
   beforeEach(() => {
-    login(null, null, null);
+    login();
     upload();
   });
   afterEach(() => logout());
@@ -61,9 +62,16 @@ describe('Project Nav Bar Tests', () => {
 });
 
 describe('Project Invitation Tests', () => {
+  const user: User = {
+    email: '10',
+    username: '20',
+    password: '30',
+    maps: [],
+  };
+
   beforeEach(() => {
-    register('10', '20', '30');
-    login(null, null, null);
+    register(user);
+    login();
     createNew();
   });
   afterEach(() => logout());
@@ -76,7 +84,7 @@ describe('Project Invitation Tests', () => {
 
     logout();
 
-    login('10', '20', '30');
+    login(user);
     cy.contains('Invitation Map One').should('be.visible');
   });
 
@@ -89,11 +97,11 @@ describe('Project Invitation Tests', () => {
     cy.url().then((url) => {
       logout();
 
-      login('10', '20', '30');
+      login(user);
       cy.contains('Invitation Map Two').should('be.visible');
 
       logout();
-      login(null, null, null);
+      login();
       cy.visit(url);
       cy.wait(1000);
       cy.contains('Share').should('be.visible').click();
@@ -102,7 +110,7 @@ describe('Project Invitation Tests', () => {
 
       logout();
 
-      login('10', '20', '30');
+      login(user);
       cy.contains('Invitation Map Two').should('not.exist');
     });
   });
@@ -125,7 +133,7 @@ const invite = () => {
 
 describe('Publish Tests', () => {
   beforeEach(() => {
-    login(null, null, null);
+    login();
     createNew();
   });
 
