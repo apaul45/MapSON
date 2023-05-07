@@ -1,16 +1,55 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { store } from '../../models';
+import { RootState, store } from '../../models';
+import { useSelector } from 'react-redux';
 
-export default function MapCard(props: any) {
+interface IMapCardProps {
+  id: string;
+  name: string;
+  username: string;
+  upvotes: string[];
+  downvotes: string[];
+  downloadCount: number;
+  description: string;
+  date: string;
+}
+
+export default function MapCard({
+  id,
+  name,
+  username,
+  upvotes,
+  downvotes,
+  downloadCount,
+  description,
+  date,
+}: IMapCardProps) {
+  useEffect(() => {
+    if (upvoteIndex >= 0 && upvoteClass === '') {
+      setUpvoteClass('text-upvote');
+    } else if (downvoteIndex >= 0 && downvoteClass === '') {
+      setdownvoteClass('text-downvote');
+    }
+  }, []);
+
   const [expand, setExpand] = useState<boolean>(false);
   const [upvoteClass, setUpvoteClass] = useState<string>('');
   const [downvoteClass, setdownvoteClass] = useState<string>('');
-  // const [upvoteCount, setUpvoteCount] = useState<number>(10)
-  // const [downvoteCount, setDownvoteCount] = useState<number>(10)
-  // const [downloadCount, setDownloadCount] = useState<number>(10)
-  const { map, name, username, upvoteCount, downvoteCount, downloadCount, description, date } =
-    props;
+  const [upvoteCount, setUpvoteCount] = useState<number>(upvotes.length);
+  const [downvoteCount, setDownvoteCount] = useState<number>(downvotes.length);
+
+  if (upvoteCount !== upvotes.length) {
+    setUpvoteCount(upvotes.length);
+  }
+  if (downvoteCount !== downvotes.length) {
+    setDownvoteCount(downvotes.length);
+  }
+
+  const { mapStore } = store.dispatch;
+
+  const user = useSelector((state: RootState) => state.user.currentUser);
+  let upvoteIndex = upvotes.indexOf(user?.username!);
+  let downvoteIndex = downvotes.indexOf(user?.username!);
 
   const dateFormat = new Date(date).toLocaleDateString('en-us', {
     year: 'numeric',
@@ -21,7 +60,7 @@ export default function MapCard(props: any) {
   //const description: string = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam odio nulla, tincidunt sit amet ultricies placerat, mollis a sem. Phasellus eget dui in ante porta vehicula ac in ante. Praesent bibendum volutpat risus, id efficitur turpis porta vel. Praesent tempus posuere tortor non faucibus. Sed imperdiet ex cursus felis condimentum bibendum. Sed scelerisque, velit eget bibendum ultrices, tortor quam aliquet risus, id hendrerit arcu metus et ante. '
 
   const location = useLocation();
-  console.log(location.pathname);
+  //console.log(location.pathname);
 
   const navigate = useNavigate();
 
@@ -29,7 +68,7 @@ export default function MapCard(props: any) {
     console.log('delete card');
     e.stopPropagation();
     store.dispatch.mapStore.setDeleteDialog(true);
-    store.dispatch.mapStore.setMarkedMap(map._id);
+    store.dispatch.mapStore.setMarkedMap(id);
   };
 
   const upvoteMap = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
@@ -37,15 +76,19 @@ export default function MapCard(props: any) {
     e.stopPropagation();
     if (downvoteClass === 'text-downvote') {
       setdownvoteClass('');
-      //setDownvoteCount(downvoteCount - 1)
+      setDownvoteCount(downvoteCount - 1);
+      modifyDownvotes(true);
     }
     if (upvoteClass.length === 0) {
       setUpvoteClass('text-upvote');
-      //setUpvoteCount(upvoteCount + 1)
+      setUpvoteCount(upvoteCount + 1);
+      modifyUpvotes(false);
     } else {
       setUpvoteClass('');
-      //setUpvoteCount(upvoteCount - 1)
+      setUpvoteCount(upvoteCount - 1);
+      modifyUpvotes(true);
     }
+    updateVotes();
   };
 
   const downvoteMap = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
@@ -53,25 +96,51 @@ export default function MapCard(props: any) {
     e.stopPropagation();
     if (upvoteClass === 'text-upvote') {
       setUpvoteClass('');
-      //setUpvoteCount(upvoteCount - 1)
+      setUpvoteCount(upvoteCount - 1);
+      modifyUpvotes(true);
     }
     if (downvoteClass.length === 0) {
       setdownvoteClass('text-downvote');
-      //setDownvoteCount(downvoteCount + 1)
+      setDownvoteCount(downvoteCount + 1);
+      modifyDownvotes(false);
     } else {
       setdownvoteClass('');
-      //setDownvoteCount(downvoteCount - 1)
+      setDownvoteCount(downvoteCount - 1);
+      modifyDownvotes(true);
+    }
+    updateVotes();
+  };
+
+  const updateVotes = async () => {
+    await mapStore.updateMap({
+      _id: id,
+      upvotes: upvotes,
+      downvotes: downvotes,
+    });
+  };
+
+  const modifyUpvotes = (del: Boolean) => {
+    if (del && upvoteIndex >= 0) {
+      upvotes.splice(upvoteIndex, 1);
+      upvoteIndex = -1;
+    } else {
+      upvotes.push(user?.username!);
+      upvoteIndex = upvotes.length - 1;
     }
   };
 
-  const downloadMap = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-    console.log('download map');
-    e.stopPropagation();
-    //setDownloadCount(downloadCount + 1)
+  const modifyDownvotes = (del: Boolean) => {
+    if (del && downvoteIndex >= 0) {
+      downvotes.splice(downvoteIndex, 1);
+      downvoteIndex = -1;
+    } else {
+      downvotes.push(user?.username!);
+      downvoteIndex = downvotes.length - 1;
+    }
   };
 
   const goToProject = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    navigate(`/project/${map._id}`);
+    navigate(`/project/${id}`);
   };
 
   return (
@@ -181,13 +250,7 @@ export default function MapCard(props: any) {
         </span>
 
         <span className="px-3 space-x-2 flex">
-          <button
-            id="download-button"
-            className=""
-            onClick={(e) => {
-              downloadMap(e);
-            }}
-          >
+          <div id="download-button" className="">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -202,7 +265,7 @@ export default function MapCard(props: any) {
                 d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
               />
             </svg>
-          </button>
+          </div>
           <span id="download-count" className="text-lg">
             {downloadCount}
           </span>

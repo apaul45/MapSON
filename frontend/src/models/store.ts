@@ -77,6 +77,19 @@ export const mapStore = createModel<RootModel>()({
         dispatch.error.setError(e.response?.data.errorMessage ?? 'Unexpected error');
       }
     },
+    async updateMap(payload: Partial<Map>, state) {
+      try {
+        const id = payload._id;
+        if (!id) {
+          console.error('Invalid map');
+          dispatch.error.setError('Invalid map');
+          return;
+        }
+        await map.updateMap(id, payload);
+      } catch (e: any) {
+        dispatch.error.setError(e.response?.data.errorMessage ?? 'Unexpected error');
+      }
+    },
     async createNewMap(payload: CreateMapRequest, state): Promise<string | undefined> {
       try {
         const res = await map.createMap(payload);

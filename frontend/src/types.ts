@@ -64,8 +64,8 @@ export interface Map {
   _id: string;
   name: string;
   owner: string | Owner;
-  upvotes: User[];
-  downvotes: User[];
+  upvotes: string[];
+  downvotes: string[];
   forks: number;
   downloads: number;
   published: Published;

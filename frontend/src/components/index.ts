@@ -11,6 +11,7 @@ import {
   ProjectScreen,
   RecoveryScreen,
   RegisterScreen,
+  ResetScreen,
 } from './pages';
 
 export {
@@ -29,4 +30,5 @@ export {
   RecoveryScreen,
   RegisterScreen,
   CommentCard,
+  ResetScreen,
 };
