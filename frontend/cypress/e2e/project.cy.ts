@@ -47,7 +47,6 @@ describe('Project Nav Bar Tests', () => {
     cy.contains('Download as').invoke('show').click({ force: true }).click();
 
     cy.contains('GeoJSON').should('exist').click();
-    cy.wait(2000);
     cy.readFile('cypress/downloads/test.geo.json').should('exist');
   });
 
