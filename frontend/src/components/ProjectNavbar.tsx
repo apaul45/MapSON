@@ -107,6 +107,7 @@ export const ProjectNavbar = ({
 
             <IconButton
               variant={sidePanelToggle ? 'filled' : 'text'}
+              id="comment-button"
               onClick={() => setSidePanelToggle(true)}
               className={`transition-all ml-1 mr-2 ${sidePanelToggle ? 'bg-gray/80' : ''}`}
             >

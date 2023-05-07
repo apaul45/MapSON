@@ -138,15 +138,33 @@ describe('Publish Tests', () => {
   });
 
   it('should publish and unpublish the map', () => {
-    publish();
+    cy.contains('Share').should('be.visible').click();
+    cy.contains('Publish').should('be.visible').click();
     cy.contains('Unpublish').should('be.visible').click();
     //cy.contains('Publish').should('be.visible');
   });
 });
 
-const publish = () => {
-  cy.contains('Share').should('be.visible').click();
-  cy.contains('Publish').should('be.visible').click();
-};
+describe('Comment Test', () => {
+  beforeEach(() => login());
+
+  it('should add a new comment', () => {
+    //Create new map first
+    cy.get('#plus-sign').parent().should('be.visible').click();
+    cy.contains('Create new Map').should('be.visible').click();
+    cy.location('href').should((path) => {
+      expect(path).to.include('/project');
+    });
+
+    //Then open comment panel and make a new comment
+    cy.get('#comment-button').click();
+    cy.get('#comment-panel').should('be.visible');
+
+    cy.get('#comment-input').type('Brand New Comment');
+    cy.get('#comment-submit-button').click();
+
+    cy.contains('Brand New Comment').should('be.visible');
+  });
+});
 
 export {};

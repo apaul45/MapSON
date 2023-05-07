@@ -105,6 +105,7 @@ describe('Navigation Bar Tests', () => {
       cy.location('pathname').should((path) => expect(path).to.include('/project'));
       cy.contains('#error-dialog').should('not.exist');
     });
+
     it('should import a shapefile zip file then go to project page', () => {
       cy.get('#add-dialog').should('be.visible');
       cy.get('[type="radio"]').check('shapefile');
