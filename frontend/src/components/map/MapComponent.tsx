@@ -77,22 +77,28 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
   const navigate = useNavigate();
 
   useEffect(() => {
-    //If guest or uninvited user tries to access unpublished list, redirect them
-    //@ts-ignore
-    if (!map?.published.isPublished && !map?.userAccess.includes(username)) {
-      console.log(map);
-      console.log(username);
-      //@ts-ignore
-      if (map?.owner.username !== username) {
-        navigate('/');
-        return;
-      }
-    }
+    const checkLoggedIn = async () => {
+      const username = await store.dispatch.user.check();
 
-    console.log('reached connection');
-    connect();
-    //@ts-ignore
-    joinRoom(username, id);
+      //If guest or uninvited user tries to access unpublished list, redirect them
+      //@ts-ignore
+      if (!map?.published.isPublished && !map?.userAccess.includes(username)) {
+        console.log(map);
+        console.log(username);
+        //@ts-ignore
+        if (map?.owner.username !== username) {
+          navigate('/');
+          return;
+        }
+      }
+
+      console.log('reached connection');
+      connect();
+      //@ts-ignore
+      joinRoom(username, id);
+    };
+
+    checkLoggedIn();
 
     //Return function fires on unmount: disconnect or leave room when leaving project
     return () => {
@@ -106,7 +112,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
         leaveRoom(username, id as unknown as string);
       }
     };
-  }, []);
+  }, [username]);
 
   useEffect(() => {
     mapRef.current = geoJSON;

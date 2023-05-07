@@ -56,7 +56,7 @@ const CommentsSidePanel = () => {
             placeholder={canComment ? 'Leave a comment...' : 'Please log in to comment'}
             disabled={!canComment}
             onChange={(e) => setComment(e.target.value)}
-            onKeyDown={(e) => (e.key === 'Enter' ? handleComment() : '')}
+            onKeyDown={(e) => e.key === 'Enter' ?? handleComment()}
             value={comment}
           />
           <button

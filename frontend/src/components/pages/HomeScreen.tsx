@@ -5,7 +5,6 @@ import { MapCard } from '../map';
 
 export const HomeScreen = () => {
   const userMaps = useSelector((state: RootState) => state.user.currentUser?.maps);
-  const username = useSelector((state: RootState) => state.user.currentUser?.username);
 
   return (
     <>
@@ -19,7 +18,7 @@ export const HomeScreen = () => {
                   map={map}
                   name={map.name}
                   // @ts-ignore
-                  username={username}
+                  username={map.owner.username}
                   upvoteCount={map.upvotes.length}
                   downvoteCount={map.downvotes.length}
                   downloadCount={map.downloads}
