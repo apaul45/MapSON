@@ -15,6 +15,7 @@ import {
   UpdateMapResponse,
 } from './types';
 
+// Map Routes
 export const createMap = (payload: CreateMapRequest) =>
   api.post<CreateMapResponse>('/maps/map', payload);
 
@@ -25,6 +26,9 @@ export const getMap = (id: string) => api.get<GetMapResponse>(`/maps/map/${id}`)
 export const updateMap = (id: string, payload: Partial<Map>) =>
   api.put<UpdateMapResponse>(`/maps/map/${id}`, { changes: payload });
 
+export const forkMap = (id: string) => api.post<CreateMapResponse>(`maps/fork/${id}`);
+
+// Feature Routes
 export const createFeature = (id: string, payload: Feature, index?: number) =>
   api.post<CreateFeatureResponse>(`/maps/map/${id}/feature`, payload, { params: { index } });
 
@@ -45,6 +49,7 @@ export default {
   deleteMap,
   getMap,
   updateMap,
+  forkMap,
   createFeature,
   getFeature,
   updateFeature,
