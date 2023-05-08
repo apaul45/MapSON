@@ -1,7 +1,7 @@
 import { MenuList, MenuItem, Menu, MenuHandler } from '@material-tailwind/react';
 import { useSelector } from 'react-redux';
 import { RootState, store } from '../models';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { saveAs } from 'file-saver';
 import axios from 'axios';
 import { handlePublish, handleUnpublish } from './dialogs/ShareMapDialog';
@@ -9,14 +9,9 @@ import { handlePublish, handleUnpublish } from './dialogs/ShareMapDialog';
 const ProjectMenu = () => {
   const user = useSelector((state: RootState) => state.user.currentUser);
   const map = useSelector((state: RootState) => state.mapStore.currentMap);
-  const openDeleteDialog = () => {
-    if (!map) {
-      return;
-    }
-    store.dispatch.mapStore.setMarkedMap(map._id);
-    store.dispatch.mapStore.setDeleteDialog(true);
-  };
   const { mapStore, error } = store.dispatch;
+
+  const navigate = useNavigate();
 
   const exportGeojson = () => {
     if (!map?.features) {
@@ -48,6 +43,20 @@ const ProjectMenu = () => {
 
   const updateDownload = async () => {
     await mapStore.updateCurrentMap({ downloads: map?.downloads! + 1 });
+  };
+
+  const openDeleteDialog = () => {
+    if (!map) {
+      return;
+    }
+    store.dispatch.mapStore.setMarkedMap(map._id);
+    store.dispatch.mapStore.setDeleteDialog(true);
+  };
+
+  const handleForkMap = async () => {
+    const id = await mapStore.forkMap(map?._id as unknown as string);
+
+    if (id) navigate(`/project/${id}`);
   };
 
   return (
@@ -82,7 +91,7 @@ const ProjectMenu = () => {
         </MenuList>
       </Menu>
 
-      <MenuItem>Make a copy</MenuItem>
+      {user?.email && <MenuItem onClick={handleForkMap}>Make a copy</MenuItem>}
 
       <hr className="my-2 border-blue-gray-50 outline-none" />
 

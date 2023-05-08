@@ -66,6 +66,7 @@ mapRouter.post('/map', auth, async (req: Request, res: Response) => {
   };
 
   const map = await Map.create(newMap);
+  map.populate({ path: 'owner', select: 'username' });
 
   //Also need to modify user's array of maps
   user?.maps.push(map._id);
@@ -191,6 +192,48 @@ mapRouter.post('/allmaps', async (req: Request, res: Response) => {
   // }
 
   res.status(200).json({ maps: maps });
+});
+
+mapRouter.post('/fork/:id', auth, async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { _id, username } = req.session;
+  const userId = _id;
+
+  const mapToFork = await Map.findOne({ _id: id });
+
+  if (!mapToFork) {
+    return res.status(400).json({ errorMessage: 'Invalid map' });
+  }
+
+  const newMap: IMap = {
+    name: mapToFork.name,
+    //@ts-ignore
+    owner: userId,
+    //@ts-ignore
+    userAccess: [username],
+    upvotes: [],
+    downvotes: [],
+    forks: 0,
+    downloads: 0,
+    published: { isPublished: false, publishedDate: new Date('0') },
+    description: '',
+    comments: [],
+    // @ts-ignore
+    properties: {},
+    features: mapToFork.features,
+  };
+
+  //Update the fork count of the map being forked
+  await Map.findOneAndUpdate({ _id: id }, { forks: mapToFork?.forks + 1 });
+
+  //Then save this new map and return it
+  let map = await Map.create(newMap);
+  map = await map.populate(['features.features', { path: 'owner', select: 'username' }]);
+
+  //Also need to modify user's array of maps
+  await User.findOneAndUpdate({ _id: userId }, { $push: { maps: map._id } });
+
+  res.status(200).json({ map: map.toJSON() });
 });
 
 //Handles get all of a user's maps request

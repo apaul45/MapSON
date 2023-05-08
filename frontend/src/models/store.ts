@@ -7,7 +7,6 @@ import { Feature } from '@turf/turf';
 import { Geometry } from 'geojson';
 import { AllMapsRequest, CreateMapRequest } from '../api/types';
 import { cloneDeep } from 'lodash';
-import { addComment } from '../live-collab/socket';
 
 const initialState: Store = {
   currentMap: null,
@@ -118,11 +117,17 @@ export const mapStore = createModel<RootModel>()({
       }
     },
 
-    sortMaps(payload, state) {
-      return;
-    },
-    filterMaps(payload, state) {
-      return;
+    async forkMap(payload: string, state): Promise<string | undefined> {
+      try {
+        const res = await map.forkMap(payload);
+        this.setCurrentMap(res.data.map);
+        dispatch.user.addUserMap(res.data.map);
+        return res.data.map._id;
+      } catch (error: unknown) {
+        const err = error as AxiosError;
+        // @ts-ignore
+        dispatch.error.setError(err.response?.data.errorMessage);
+      }
     },
     async loadMap(payload: string, state): Promise<string | undefined> {
       try {

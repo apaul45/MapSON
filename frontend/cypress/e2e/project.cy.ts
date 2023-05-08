@@ -1,5 +1,5 @@
 import { User } from '../../src/types';
-import { createNew, login, logout, register, upload } from './utils';
+import { createNew, importNew, login, logout, register, upload } from './utils';
 
 Cypress.on('uncaught:exception', (err, runnable) => {
   // returning false here prevents Cypress from
@@ -165,6 +165,29 @@ describe('Comment Test', () => {
     cy.get('#comment-submit-button').click();
 
     cy.contains('Brand New Comment').should('be.visible');
+  });
+});
+
+describe('Fork Map Test', () => {
+  it('should fork a existing published map', async () => {
+    login();
+    cy.wait(1000);
+
+    importNew('Brand New Forked Map');
+    cy.get('#menu-button').click();
+    cy.contains('Publish').should('be.visible').click();
+
+    cy.url().then((oldUrl) => {
+      logout();
+
+      login({ email: '100', username: '200', password: '300', maps: [] });
+      cy.visit(oldUrl);
+
+      cy.get('#menu-button').click();
+      cy.contains('Make a copy').click();
+
+      cy.url().then((url) => expect(url).to.not.equal(oldUrl));
+    });
   });
 });
 
