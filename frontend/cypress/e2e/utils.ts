@@ -59,3 +59,21 @@ export const createNew = () => {
   cy.contains('Create new Map').should('be.visible').click();
   cy.wait(1000);
 };
+
+export const importNew = (mapName: string) => {
+  cy.get('#add-dialog').should('not.exist');
+  cy.get('#plus-sign').parent().should('be.visible').click();
+  cy.contains('Import from Shapefile/GeoJSON').should('be.visible').click({ force: true });
+
+  cy.get('#add-dialog').should('be.visible');
+  cy.get('[type="radio"]').check('geojson');
+
+  cy.get('input[type=file]').selectFile('cypress/fixtures/mock.geo.json', {
+    force: true,
+  });
+  cy.get('#map-name').type(mapName);
+
+  cy.contains('Submit').should('exist').click();
+  cy.location('pathname').should((path) => expect(path).to.include('/project'));
+  cy.contains('#error-dialog').should('not.exist');
+};

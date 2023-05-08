@@ -195,6 +195,27 @@ describe('Update Map Test', () => {
   });
 });
 
+describe('Fork Map Tests', () => {
+  it('should fork a new map', async () => {
+    const res = await request(app).post(`/maps/fork/${createdMapId}`).set('Cookie', loginCookie);
+
+    expect(res.statusCode).toBe(200);
+
+    const forkedMap = await Map.findOne({ _id: createdMapId });
+    const newMap = res.body.map;
+
+    expect(newMap.name).toEqual(forkedMap?.name);
+    expect(newMap._id !== createdMapId);
+    expect(forkedMap?.forks).toBeGreaterThan(0);
+  });
+
+  it('should fail if no map to be forked', async () => {
+    const res = await request(app).post(`/maps/fork/hi`).set('Cookie', loginCookie);
+    expect(res.statusCode).toBe(400);
+    expect(res.body.errorMessage).toEqual('Invalid Map');
+  });
+});
+
 const EXAMPLE_FEATURE = {
   type: 'Feature',
   properties: {
