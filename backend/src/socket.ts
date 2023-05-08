@@ -1,6 +1,7 @@
 import http from 'http';
 import { Server } from 'socket.io';
 import app from './app';
+import Map from './models/map-model';
 
 export const server = http.createServer(app);
 export const io = new Server(server, {
@@ -18,17 +19,19 @@ io.on('connection', (socket) => {
     socket.join(roomId);
     console.log(`joining room ${roomId}!`);
 
-    //Add user to this room
-    let clientList = rooms[roomId];
+    //Add user to this room, if it's a logged in user
+    if (username) {
+      let clientList = rooms[roomId];
 
-    console.log(`clientList before adding: ${clientList}`);
+      console.log(`clientList before adding: ${clientList}`);
 
-    rooms[roomId] = !clientList ? [username] : [...clientList, username];
+      rooms[roomId] = !clientList ? [username] : [...clientList, username];
 
-    console.log(`clientList after adding: ${rooms[roomId]}`);
+      console.log(`clientList after adding: ${rooms[roomId]}`);
 
-    //Broadcast this list so that everyone can save it
-    io.to(roomId).emit('sendClientList', rooms[roomId]);
+      //Broadcast this list so that everyone can save it
+      io.to(roomId).emit('sendClientList', rooms[roomId]);
+    }
   });
 
   socket.on('leaveRoom', (username: string, roomId: string) => {
@@ -49,6 +52,13 @@ io.on('connection', (socket) => {
       //Broadcast this list so that everyone can save it
       io.to(roomId).emit('sendClientList', rooms[roomId]);
     }
+  });
+
+  socket.on('addComment', async (roomId: string) => {
+    //Save comment in db, then broadcast to all in the room
+    const map = await Map.findOne({ _id: roomId });
+    console.log(map?.comments);
+    io.to(roomId).emit('updateComments', map);
   });
 
   socket.on('disconnect', () => console.log('disconnected!'));

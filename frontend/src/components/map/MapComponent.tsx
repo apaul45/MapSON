@@ -14,8 +14,8 @@ import 'leaflet-draw/dist/leaflet.draw.css';
 
 import { RootState, store } from '../../models';
 
-import { connect, joinRoom, leaveRoom } from '../../live-collab/socket';
-import { useParams } from 'react-router-dom';
+import { connect, disconnect, joinRoom, leaveRoom, socket } from '../../live-collab/socket';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { MapComponentCallbacks } from '../../transactions/map/common';
 import jsTPS, { Transaction } from '../../utils/jsTPS';
@@ -64,29 +64,55 @@ interface IMapComponent extends Map {
 
 const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapComponent) => {
   const username = useSelector((state: RootState) => state.user.currentUser?.username);
-  const { mapStore } = store.dispatch;
   const map = useSelector((state: RootState) => state.mapStore.currentMap);
+
+  const { mapStore } = store.dispatch;
+
   const leafletMap = useRef<L.Map>(null!);
   const geojsonLayer = useRef<L.GeoJSON>(null!);
   const transactions = useRef(new jsTPS(leafletMap));
   const mapRef = useRef(geoJSON);
 
   const { id } = useParams();
+  const navigate = useNavigate();
 
-  // TODO: If unpublished, prevent user from accessing unless they were granted access
   useEffect(() => {
-    if (username) {
-      connect();
-      joinRoom(username, id as unknown as string);
-    }
+    const checkLoggedIn = async () => {
+      const username = await store.dispatch.user.check();
 
-    //Return function fires on unmount: disconnect when leaving project
+      //If guest or uninvited user tries to access unpublished list, redirect them
+      //@ts-ignore
+      if (!map?.published.isPublished && !map?.userAccess.includes(username)) {
+        console.log(map);
+        console.log(username);
+        //@ts-ignore
+        if (map?.owner.username !== username) {
+          navigate('/');
+          return;
+        }
+      }
+
+      console.log('reached connection');
+      connect();
+      //@ts-ignore
+      joinRoom(username, id);
+    };
+
+    checkLoggedIn();
+
+    //Return function fires on unmount: disconnect or leave room when leaving project
     return () => {
-      if (username) {
+      //Disconnect guest for now, may make it only leave room in the future
+      if (socket.connected) {
+        if (!username) {
+          disconnect();
+          return;
+        }
+
         leaveRoom(username, id as unknown as string);
       }
     };
-  }, []);
+  }, [username]);
 
   useEffect(() => {
     mapRef.current = geoJSON;

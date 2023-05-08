@@ -87,12 +87,13 @@ export const user = createModel<RootModel>()({
         dispatch.error.setError(err.response?.data.errorMessage);
       }
     },
-    async check() {
+    async check(): Promise<string> {
       try {
         const res = await auth.check();
         dispatch.user.setCurrentUser(res.data);
+        return res.data.username;
       } catch {
-        return;
+        return '';
       }
     },
     async updateUser(payload, state) {

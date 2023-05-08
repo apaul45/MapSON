@@ -2,7 +2,7 @@ import { login, logout } from './utils';
 
 describe('Discover Screen Tests', () => {
   beforeEach(() => {
-    login(null, null, null);
+    login();
 
     //Create new map, and publish it using PUT request
     cy.request('POST', 'http://localhost:4000/maps/map', { mapName: 'Cypress Test Map' }).then(
@@ -45,7 +45,7 @@ describe('Discover Screen Tests', () => {
   });
 
   it('should not show the logged in user maps', () => {
-    login(null, null, null);
+    login();
 
     //First check if created map in home screen
     cy.visit('http://127.0.0.1:5173/home');

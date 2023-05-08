@@ -32,7 +32,7 @@ describe('Navigation Bar Tests', () => {
   });
 
   it('should create a new map', () => {
-    login(null, null, null);
+    login();
     cy.get('#plus-sign').parent().should('be.visible').click();
     cy.contains('Create new Map').should('be.visible').click();
     cy.location('pathname').should((path) => expect(path).to.include('/project'));
@@ -42,7 +42,7 @@ describe('Navigation Bar Tests', () => {
 
   describe('Add Map Tests', () => {
     beforeEach(() => {
-      login(null, null, null);
+      login();
       cy.get('#add-dialog').should('not.exist');
       cy.get('#plus-sign').parent().should('be.visible').click();
       cy.contains('Import from Shapefile/GeoJSON').should('be.visible').click();
@@ -105,6 +105,7 @@ describe('Navigation Bar Tests', () => {
       cy.location('pathname').should((path) => expect(path).to.include('/project'));
       cy.contains('#error-dialog').should('not.exist');
     });
+
     it('should import a shapefile zip file then go to project page', () => {
       cy.get('#add-dialog').should('be.visible');
       cy.get('[type="radio"]').check('shapefile');

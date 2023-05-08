@@ -460,16 +460,13 @@ describe('Delete Map Test', () => {
   });
 
   it('should delete the map', async () => {
-    const res = await request(app)
-      .delete(`/maps/map/${createdMapId}`)
-      .set('Cookie', loginCookie)
+    const res = await request(app).delete(`/maps/map/${createdMapId}`).set('Cookie', loginCookie);
 
     expect(res.statusCode).toBe(200);
   });
 
   it('should fail if no authentication', async () => {
-    const res = await request(app)
-      .delete(`/maps/map/${createdMapId}`)
+    const res = await request(app).delete(`/maps/map/${createdMapId}`);
 
     expect(res.statusCode).toBe(401);
     expect(res.body.errorMessage).toBe('invalid session');
