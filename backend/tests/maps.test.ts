@@ -213,7 +213,7 @@ describe('Fork Map Tests', () => {
     const newId = new Types.ObjectId();
     const res = await request(app).post(`/maps/fork/${newId}`).set('Cookie', loginCookie);
     expect(res.statusCode).toBe(400);
-    expect(res.body.errorMessage).toEqual('Invalid Map');
+    expect(res.body.errorMessage).toEqual('Invalid map');
   });
 });
 
