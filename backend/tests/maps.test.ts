@@ -210,7 +210,8 @@ describe('Fork Map Tests', () => {
   });
 
   it('should fail if no map to be forked', async () => {
-    const res = await request(app).post(`/maps/fork/hi`).set('Cookie', loginCookie);
+    const newId = new Types.ObjectId();
+    const res = await request(app).post(`/maps/fork/${newId}`).set('Cookie', loginCookie);
     expect(res.statusCode).toBe(400);
     expect(res.body.errorMessage).toEqual('Invalid Map');
   });
