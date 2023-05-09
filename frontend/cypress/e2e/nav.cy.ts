@@ -93,7 +93,17 @@ describe('Navigation Bar Tests', () => {
     });
 
     it('should import a geojson file then go to project page', () => {
-      importNew('geojson');
+      cy.get('#add-dialog').should('be.visible');
+      cy.get('[type="radio"]').check('geojson');
+
+      cy.get('input[type=file]').selectFile('cypress/fixtures/mock.geo.json', {
+        force: true,
+      });
+      cy.get('#map-name').type('geojson');
+
+      cy.contains('Submit').should('exist').click();
+      cy.location('pathname').should((path) => expect(path).to.include('/project'));
+      cy.contains('#error-dialog').should('not.exist');
     });
 
     it('should import a shapefile zip file then go to project page', () => {
