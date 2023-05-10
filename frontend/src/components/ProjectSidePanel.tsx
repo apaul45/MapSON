@@ -30,6 +30,9 @@ const ProjectSidePanel = ({ selectedFeature, canEdit }: IProjectSidePanel) => {
       )
     : {};
 
+  customFeatureProps['name'] = (properties && properties.name) ?? '';
+  customFeatureProps['color'] = (properties && properties.color) ?? '';
+
   const saveRegionProperties = async (props: Record<string, any>) => {
     if (!selectedFeature) {
       return;
@@ -38,13 +41,19 @@ const ProjectSidePanel = ({ selectedFeature, canEdit }: IProjectSidePanel) => {
     let newProperties: Record<string, any> = Object.fromEntries(
       Object.entries(props)
         .filter(([k, v]) => k.length > 0)
+        .filter(([k, v]) => k !== 'name' && k !== 'color')
         .map(([k, v]) => ['mapson_' + k, v])
     );
+
+    newProperties['name'] = props['name'];
+    newProperties['color'] = props['color'];
 
     let ogProps = {};
     if (properties) {
       ogProps = Object.fromEntries(
-        Object.entries(properties).filter(([k, v]) => !k.startsWith('mapson_'))
+        Object.entries(properties)
+          .filter(([k, v]) => !k.startsWith('mapson_'))
+          .filter(([k, v]) => k !== 'name' && k !== 'color')
       );
     }
 
