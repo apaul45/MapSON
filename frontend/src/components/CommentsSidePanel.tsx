@@ -29,7 +29,7 @@ const CommentsSidePanel = () => {
   const handleComment = async () => {
     if (username) {
       await store.dispatch.mapStore.addComment({ username, comment });
-      addComment(currentMap?._id);
+      addComment(currentMap?._id, { username, comment });
       setComment('');
     }
   };

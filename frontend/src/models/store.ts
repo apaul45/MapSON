@@ -49,6 +49,15 @@ export const mapStore = createModel<RootModel>()({
     setRoomList: (state, payload: string[]) => {
       return { ...state, roomList: payload };
     },
+    setComments: (state, payload: Comment) => {
+      if (state.currentMap) {
+        return {
+          ...state,
+          currentMap: { ...state.currentMap, comments: [...state.currentMap?.comments, payload] },
+        };
+      }
+      return state;
+    },
   },
 
   //Effects are (possibly async) functions that take in the store's state and payload, and return anything
@@ -252,12 +261,13 @@ export const mapStore = createModel<RootModel>()({
       return state.mapStore.currentMap?.features.features[payload];
     },
     async addComment(payload: Comment, state) {
-      const comments = state.mapStore.currentMap?.comments;
-      comments?.push(payload);
-
       try {
-        //@ts-ignore
-        await map.updateMap(state.mapStore.currentMap?._id, { comments: comments });
+        const currentMap = state.mapStore.currentMap;
+        if (!currentMap) return;
+
+        await map.updateMap(currentMap._id, {
+          comments: [...currentMap.comments, payload],
+        });
       } catch (e: any) {
         dispatch.error.setError(e.response?.data.errorMessage ?? 'Unexpected error');
       }

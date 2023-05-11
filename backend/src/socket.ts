@@ -54,11 +54,9 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('addComment', async (roomId: string) => {
-    //Save comment in db, then broadcast to all in the room
-    const map = await Map.findOne({ _id: roomId });
-    console.log(map?.comments);
-    io.to(roomId).emit('updateComments', map);
+  socket.on('addComment', (roomId: string, comment: any) => {
+    console.log(comment);
+    io.to(roomId).emit('updateComments', comment);
   });
 
   socket.on('disconnect', () => console.log('disconnected!'));

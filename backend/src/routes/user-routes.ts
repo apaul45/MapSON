@@ -248,7 +248,13 @@ router.post('/update', async (req: Request, res: Response) => {
 
 //
 router.get('/check', async (req: Request, res: Response) => {
-  const user = await User.findById(req.session._id).populate('maps');
+  const user = await User.findById(req.session._id).populate({
+    path: 'maps',
+    populate: {
+      path: 'owner',
+      select: 'username',
+    },
+  });
 
   if (!user) {
     return res.status(400).json({

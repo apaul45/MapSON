@@ -18,7 +18,8 @@ export const leaveRoom = (username: string, roomId: string) =>
 
 export const leaveAllRooms = (username: string) => socket.emit('leaveAllRooms', username);
 
-export const addComment = (roomId: string | undefined) => socket.emit('addComment', roomId);
+export const addComment = (roomId: string | undefined, comment: Comment) =>
+  socket.emit('addComment', roomId, comment);
 
 //Event handlers
 socket.on('sendClientList', (clients) => {
@@ -26,4 +27,4 @@ socket.on('sendClientList', (clients) => {
   mapStore.setRoomList(clients);
 });
 
-socket.on('updateComments', (map: Map) => mapStore.setCurrentMap(map));
+socket.on('updateComments', (comment: Comment) => mapStore.setComments(comment));
