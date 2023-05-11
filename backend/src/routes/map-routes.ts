@@ -58,7 +58,7 @@ mapRouter.post('/map', auth, async (req: Request, res: Response) => {
     forks: 0,
     downloads: 0,
     published: { isPublished: false, publishedDate: new Date('0') },
-    description: '',
+    description: 'My New Map',
     comments: [],
     // @ts-ignore
     properties: {},
