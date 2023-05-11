@@ -24,6 +24,7 @@ export const HomeScreen = () => {
                   downloadCount={map.downloads}
                   description={map.description!}
                   date={map.updatedAt!}
+                  isPublished={map.published.isPublished}
                 />
               </div>
             ))

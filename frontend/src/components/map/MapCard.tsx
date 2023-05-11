@@ -23,6 +23,7 @@ export default function MapCard({
   downloadCount,
   description,
   date,
+  isPublished,
 }: IMapCardProps) {
   useEffect(() => {
     if (upvoteIndex >= 0 && upvoteClass === '') {
@@ -129,7 +130,7 @@ export default function MapCard({
     setDescriptionText(description);
   };
 
-  const updateDescription = async (desc) => { 
+  const updateDescription = async (desc: string) => { 
     await mapStore.updateMap({ 
       _id: id,
       description: desc,
@@ -162,7 +163,7 @@ export default function MapCard({
   };
 
   return (
-    <div className="max-w-sm rounded overflow-hidden shadow-lg relative bg-white">
+    <div className={isPublished ? "max-w-sm rounded overflow-hidden shadow-lg relative bg-green-200" : "max-w-sm rounded overflow-hidden shadow-lg relative bg-white"}>
       <div
         className="relative hover:cursor-pointer mapcard"
         onClick={(e) => {
@@ -202,7 +203,7 @@ export default function MapCard({
       <div className="py-3 px-3">
         <div className="font-bold text-xl text-left">{name}</div>
         {expand ?  
-          !isEditDescriptionActive && user?.username !== username ? 
+          !isEditDescriptionActive ? 
             <p
               id="description"
               className="text-gray-700 text-base text-left"
