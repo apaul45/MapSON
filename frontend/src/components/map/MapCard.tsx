@@ -12,6 +12,7 @@ interface IMapCardProps {
   downloadCount: number;
   description: string;
   date: string;
+  published: boolean;
 }
 
 export default function MapCard({
@@ -169,7 +170,7 @@ export default function MapCard({
   };
 
   return (
-    <div className={isPublished ? "max-w-sm rounded overflow-hidden shadow-lg relative bg-green-200" : "max-w-sm rounded overflow-hidden shadow-lg relative bg-white"}>
+    <div className={published ? "max-w-sm rounded overflow-hidden shadow-lg relative bg-green-200" : "max-w-sm rounded overflow-hidden shadow-lg relative bg-white"}>
       <div
         className="relative hover:cursor-pointer mapcard"
         onClick={(e) => {
