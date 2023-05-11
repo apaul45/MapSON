@@ -1,10 +1,12 @@
 import { Menu, MenuHandler, MenuList, MenuItem } from '@material-tailwind/react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { store, RootState } from '../../models';
 import { AddMapDialog } from '../dialogs';
 import { MapCard } from '../map';
 import { AllMapsRequest } from '../../api/types';
+
+const sortOptions = ['Upvotes', 'Downvotes', 'Downloads', 'Oldest-Newest', 'Newest-Oldest'];
 
 export const DiscoverScreen = () => {
   useEffect(() => {
@@ -12,17 +14,14 @@ export const DiscoverScreen = () => {
     window.addEventListener('scroll', handleScroll, true);
   }, []);
 
-  const sortOptions = ['Upvotes', 'Downvotes', 'Downloads', 'Oldest-Newest', 'Newest-Oldest'];
   const [sortBy, setSortBy] = useState<string>('upvote');
-
   const [limit, setLimit] = useState<number>(5);
   const [bottom, setBottom] = useState<boolean>(false);
 
-  const mapFilter = useSelector((state: RootState) => state.mapStore.mapFilter);
   const allMaps = useSelector((state: RootState) =>
-    mapFilter
+    state.mapStore.mapFilter
       ? //@ts-ignore
-        state.mapStore.maps.filter((map) => map.owner.username === mapFilter)
+        state.mapStore.maps.filter((map) => map.owner.username === state.mapStore.mapFilter)
       : state.mapStore.maps
   );
 
@@ -36,29 +35,29 @@ export const DiscoverScreen = () => {
   // Needed to load in more maps once end of scroll reached
   useEffect(() => {
     if (bottom) {
-      loadMoreMaps(sortBy.toLowerCase());
+      setTimeout(() => loadMoreMaps(sortBy.toLowerCase()), 200);
     }
   }, [bottom]);
 
-  const loadMoreMaps = (sortOption: string) => {
+  const loadMoreMaps = (sortOption: string, lim = limit) => {
     //Make oldest-newest and newest-oldest options ready to send
     const option = sortOption.includes('oldest') ? 'published.publishedDate' : sortOption;
 
-    // All options sort descending, except oldest to newest
+    // All options sort by descending, except oldest to newest
     let sortBy = sortOption === 'oldest-newest' ? { [option]: 1 } : { [option]: -1 };
 
     let request: AllMapsRequest = {
-      limit: limit + 5,
+      limit: lim + 5,
       sortBy: sortBy,
     };
 
     store.dispatch.mapStore.loadAllMaps(request);
-    setLimit(limit + 5);
-    window.scrollTo(0, 0);
+    setLimit(lim === limit ? limit + 5 : limit);
   };
 
   const handleSort = (option: string) => {
-    loadMoreMaps(option.toLowerCase());
+    //Sort limit # of maps
+    loadMoreMaps(option.toLowerCase(), limit - 5);
     setSortBy(option);
   };
 
@@ -113,14 +112,35 @@ export const DiscoverScreen = () => {
           </div>
         ))}
       </div>
-      {bottom && (
+      {bottom ? (
         <div
-          className="inline-block mt-2 text-white h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"
+          className="inline-block mt-5 text-white h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"
           role="status"
         >
           <span className="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]">
             Loading...
           </span>
+        </div>
+      ) : (
+        <div className="text-center text-white mt-5">
+          Scroll for more
+          <div className="flex justify-center">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              style={{ color: 'white' }}
+              className="w-7 h-7 animate-bounce"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M19.5 5.25l-7.5 7.5-7.5-7.5m15 6l-7.5 7.5-7.5-7.5"
+              />
+            </svg>
+          </div>
         </div>
       )}
       <AddMapDialog />

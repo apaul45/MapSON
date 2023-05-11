@@ -1,6 +1,6 @@
 import { createModel } from '@rematch/core';
 import { RootModel } from '.';
-import { Store, Map, FeatureExt } from '../types';
+import { Store, Map, FeatureExt, Comment } from '../types';
 import { map } from '../api';
 import { AxiosError } from 'axios';
 import { Feature } from '@turf/turf';
@@ -117,11 +117,17 @@ export const mapStore = createModel<RootModel>()({
       }
     },
 
-    sortMaps(payload, state) {
-      return;
-    },
-    filterMaps(payload, state) {
-      return;
+    async forkMap(payload: string, state): Promise<string | undefined> {
+      try {
+        const res = await map.forkMap(payload);
+        this.setCurrentMap(res.data.map);
+        dispatch.user.addUserMap(res.data.map);
+        return res.data.map._id;
+      } catch (error: unknown) {
+        const err = error as AxiosError;
+        // @ts-ignore
+        dispatch.error.setError(err.response?.data.errorMessage);
+      }
     },
     async loadMap(payload: string, state): Promise<string | undefined> {
       try {
@@ -244,6 +250,17 @@ export const mapStore = createModel<RootModel>()({
     },
     getFeatureByIndex(payload: number, state): FeatureExt | undefined {
       return state.mapStore.currentMap?.features.features[payload];
+    },
+    async addComment(payload: Comment, state) {
+      const comments = state.mapStore.currentMap?.comments;
+      comments?.push(payload);
+
+      try {
+        //@ts-ignore
+        await map.updateMap(state.mapStore.currentMap?._id, { comments: comments });
+      } catch (e: any) {
+        dispatch.error.setError(e.response?.data.errorMessage ?? 'Unexpected error');
+      }
     },
   }),
 });

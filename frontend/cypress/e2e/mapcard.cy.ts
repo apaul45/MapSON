@@ -1,8 +1,9 @@
-import { createNew, login, logout, register, upload } from './utils';
+import { User } from '../../src/types';
+import { createNew, login } from './utils';
 
 describe('Map Card Tests', () => {
   beforeEach(() => {
-    login(null, null, null);
+    login();
     createNew();
     cy.get('#menu-button').should('exist').click();
     cy.get('#menu-option-exit').should('exist').click();
@@ -89,9 +90,16 @@ describe('Map Card Tests', () => {
   });
 });
 
-describe('Stadnalone Download Map Test', () => {
+describe('Standalone Download Map Test', () => {
   it('should download a map and update map counter', () => {
-    login('downloadUser@email.com', 'downloadUser', 'password');
+    const user: User = {
+      email: 'downloadUser@email.com',
+      username: 'downloadUser',
+      password: 'password',
+      maps: [],
+    };
+
+    login(user);
     createNew();
 
     cy.get('#menu-button').click();

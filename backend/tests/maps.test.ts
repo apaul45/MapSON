@@ -195,6 +195,28 @@ describe('Update Map Test', () => {
   });
 });
 
+describe('Fork Map Tests', () => {
+  it('should fork a new map', async () => {
+    const res = await request(app).post(`/maps/fork/${createdMapId}`).set('Cookie', loginCookie);
+
+    expect(res.statusCode).toBe(200);
+
+    const forkedMap = await Map.findOne({ _id: createdMapId });
+    const newMap = res.body.map;
+
+    expect(newMap.name).toEqual(forkedMap?.name);
+    expect(newMap._id !== createdMapId);
+    expect(forkedMap?.forks).toBeGreaterThan(0);
+  });
+
+  it('should fail if no map to be forked', async () => {
+    const newId = new Types.ObjectId();
+    const res = await request(app).post(`/maps/fork/${newId}`).set('Cookie', loginCookie);
+    expect(res.statusCode).toBe(400);
+    expect(res.body.errorMessage).toEqual('Invalid map');
+  });
+});
+
 const EXAMPLE_FEATURE = {
   type: 'Feature',
   properties: {
@@ -460,16 +482,13 @@ describe('Delete Map Test', () => {
   });
 
   it('should delete the map', async () => {
-    const res = await request(app)
-      .delete(`/maps/map/${createdMapId}`)
-      .set('Cookie', loginCookie)
+    const res = await request(app).delete(`/maps/map/${createdMapId}`).set('Cookie', loginCookie);
 
     expect(res.statusCode).toBe(200);
   });
 
   it('should fail if no authentication', async () => {
-    const res = await request(app)
-      .delete(`/maps/map/${createdMapId}`)
+    const res = await request(app).delete(`/maps/map/${createdMapId}`);
 
     expect(res.statusCode).toBe(401);
     expect(res.body.errorMessage).toBe('invalid session');

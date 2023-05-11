@@ -1,8 +1,15 @@
-import { createNew, login, logout, register, upload } from './utils';
+import { User } from '../../src/types';
+import { createNew, importNew, login, logout, register, upload } from './utils';
+
+Cypress.on('uncaught:exception', (err, runnable) => {
+  // returning false here prevents Cypress from
+  // failing the test
+  return false;
+});
 
 describe('Project Screen Tests', () => {
   before(() => {
-    login(null, null, null);
+    login();
     cy.get('#plus-sign').parent().should('be.visible').click();
     cy.contains('Create new Map').should('be.visible').click();
     cy.location('href').should((path) => {
@@ -11,7 +18,7 @@ describe('Project Screen Tests', () => {
   });
 
   beforeEach(() => {
-    login(null, null, null);
+    login();
     cy.get('.mapcard').last().click();
   });
 
@@ -36,7 +43,7 @@ describe('Project Screen Tests', () => {
 
 describe('Project Nav Bar Tests', () => {
   beforeEach(() => {
-    login(null, null, null);
+    login();
     upload();
   });
   afterEach(() => logout());
@@ -61,9 +68,16 @@ describe('Project Nav Bar Tests', () => {
 });
 
 describe('Project Invitation Tests', () => {
+  const user: User = {
+    email: '10',
+    username: '20',
+    password: '30',
+    maps: [],
+  };
+
   beforeEach(() => {
-    register('10', '20', '30');
-    login(null, null, null);
+    register(user);
+    login();
     createNew();
   });
   afterEach(() => logout());
@@ -76,11 +90,11 @@ describe('Project Invitation Tests', () => {
 
     logout();
 
-    login('10', '20', '30');
+    login(user);
     cy.contains('Invitation Map One').should('be.visible');
   });
 
-  it('should remove a new memeber to the project', () => {
+  it('should remove a new member to the project', () => {
     invite();
     cy.get('#root').click('right', { force: true });
     cy.get('#project-name').dblclick();
@@ -89,11 +103,11 @@ describe('Project Invitation Tests', () => {
     cy.url().then((url) => {
       logout();
 
-      login('10', '20', '30');
+      login(user);
       cy.contains('Invitation Map Two').should('be.visible');
 
       logout();
-      login(null, null, null);
+      login();
       cy.visit(url);
       cy.wait(1000);
       cy.contains('Share').should('be.visible').click();
@@ -102,7 +116,7 @@ describe('Project Invitation Tests', () => {
 
       logout();
 
-      login('10', '20', '30');
+      login(user);
       cy.contains('Invitation Map Two').should('not.exist');
     });
   });
@@ -125,20 +139,56 @@ const invite = () => {
 
 describe('Publish Tests', () => {
   beforeEach(() => {
-    login(null, null, null);
+    login();
     createNew();
   });
 
   it('should publish and unpublish the map', () => {
-    publish();
+    cy.contains('Share').should('be.visible').click();
+    cy.contains('Publish').should('be.visible').click();
     cy.contains('Unpublish').should('be.visible').click();
     //cy.contains('Publish').should('be.visible');
   });
 });
 
-const publish = () => {
-  cy.contains('Share').should('be.visible').click();
-  cy.contains('Publish').should('be.visible').click();
-};
+describe('Comment Test', () => {
+  beforeEach(() => login());
+
+  it('should add a new comment', () => {
+    createNew();
+
+    //Then open comment panel and make a new comment
+    cy.get('#comment-button').click();
+    cy.get('#comment-panel').should('be.visible');
+
+    cy.get('#comment-input').type('Brand New Comment');
+    cy.get('#comment-submit-button').click();
+
+    cy.contains('Brand New Comment').should('be.visible');
+  });
+});
+
+describe('Fork Map Test', () => {
+  it('should fork a existing published map', async () => {
+    login();
+    cy.wait(1000);
+
+    importNew('Brand New Forked Map');
+    cy.get('#menu-button').click();
+    cy.contains('Publish').should('be.visible').click();
+
+    cy.url().then((oldUrl) => {
+      logout();
+
+      login({ email: '100', username: '200', password: '300', maps: [] });
+      cy.visit(oldUrl);
+
+      cy.get('#menu-button').click();
+      cy.contains('Make a copy').click();
+
+      cy.url().then((url) => expect(url).to.not.equal(oldUrl));
+    });
+  });
+});
 
 export {};

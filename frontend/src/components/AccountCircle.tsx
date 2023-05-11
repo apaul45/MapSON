@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import { RootState, store } from '../models';
 import { useSelector } from 'react-redux';
 import tinycolor from 'tinycolor2';
@@ -8,11 +8,7 @@ import { leaveAllRooms } from '../live-collab/socket';
 
 export const bgColor = tinycolor.random().darken(30).toHexString();
 
-interface Props {
-  username: string;
-}
-
-const AccountCircle = ({ username }: Props) => {
+const AccountCircle = ({ username }: { username: string }) => {
   //Generate and darken random color
   const backgroundColor = useRef(bgColor);
 
@@ -21,6 +17,7 @@ const AccountCircle = ({ username }: Props) => {
     (state: RootState) => state.user.currentUser?.username === username
   );
 
+  //If logged in user's circle, redirect when logging out
   const navigate = useNavigate();
   const logout = () => {
     leaveAllRooms(username);
