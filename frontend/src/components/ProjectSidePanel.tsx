@@ -101,6 +101,7 @@ const ProjectSidePanel = ({ selectedFeature, canEdit }: IProjectSidePanel) => {
                   }}
                   viewOnly={!canEdit}
                   type="feature"
+                  selectedFeature={selectedFeature}
                 />
               </div>
             ) : (
@@ -116,6 +117,7 @@ const ProjectSidePanel = ({ selectedFeature, canEdit }: IProjectSidePanel) => {
               }}
               viewOnly={!canEdit}
               type="map"
+              selectedFeature={null}
             />
           </TabPanel>
         </TabsBody>
