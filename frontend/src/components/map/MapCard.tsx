@@ -202,7 +202,7 @@ export default function MapCard({
       <div className="py-3 px-3">
         <div className="font-bold text-xl text-left">{name}</div>
         {expand ?  
-          !isEditDescriptionActive && user?.username == username ? 
+          !isEditDescriptionActive && user?.username !== username ? 
             <p
               id="description"
               className="text-gray-700 text-base text-left"
@@ -213,6 +213,7 @@ export default function MapCard({
           : 
             <input
               id="description-field"
+              maxLength={240}
               className="text-black h-full w-full rounded-[6px] border-black bg-white px-3 py-2.5 font-sans text-sm font-normal transition-all outline outline-1 outline-black"
               defaultValue={descriptionText}
               onKeyUp={(e) => handleTextChange(e)}
