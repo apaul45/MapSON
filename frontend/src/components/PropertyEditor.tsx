@@ -69,7 +69,7 @@ const Property = ({ k, v, onUpdate, viewOnly, selectedFeature }: IProperty) => {
           onOpen={() =>
             selectedFeature?.layer.setStyle({
               fillColor: value === '' ? 'blue' : value,
-              fillOpacity: 0.5,
+              fillOpacity: 0.2,
               color: value === '' ? 'blue' : value,
             })
           }
