@@ -58,7 +58,9 @@ const ProjectSidePanel = ({ selectedFeature, canEdit }: IProjectSidePanel) => {
     });
 
     selectedFeature.layer.feature.properties = { ...ogProps, ...newProperties };
-    selectedFeature.layer.bindPopup(newProperties['name']);
+    newProperties['name'] === ''
+      ? selectedFeature.layer.unbindPopup()
+      : selectedFeature.layer.bindPopup(newProperties['name']);
   };
 
   const saveMapProperties = async (props: Record<string, any>) => {
