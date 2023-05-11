@@ -23,7 +23,7 @@ export default function MapCard({
   downloadCount,
   description,
   date,
-  isPublished,
+  published,
 }: IMapCardProps) {
   useEffect(() => {
     if (upvoteIndex >= 0 && upvoteClass === '') {
