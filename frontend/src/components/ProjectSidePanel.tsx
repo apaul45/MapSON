@@ -2,12 +2,7 @@ import PropertyEditor from './PropertyEditor';
 import { Tabs, Tab, TabsBody, TabsHeader, TabPanel } from '@material-tailwind/react';
 import { SelectedFeature } from './map/MapComponent';
 import { RootState, store } from '../models';
-import { useRef } from 'react';
 import { useSelector } from 'react-redux';
-
-const EXAMPLE_PROPERTIES = Object.fromEntries(
-  Array.from(Array(10).keys()).map((v) => [`Key${v}`, `Value${v}`])
-);
 
 interface IProjectSidePanel {
   selectedFeature: SelectedFeature | null;
@@ -30,6 +25,9 @@ const ProjectSidePanel = ({ selectedFeature, canEdit }: IProjectSidePanel) => {
       )
     : {};
 
+  customFeatureProps['name'] = (properties && properties.name) ?? '';
+  customFeatureProps['color'] = (properties && properties.color) ?? '';
+
   const saveRegionProperties = async (props: Record<string, any>) => {
     if (!selectedFeature) {
       return;
@@ -38,13 +36,19 @@ const ProjectSidePanel = ({ selectedFeature, canEdit }: IProjectSidePanel) => {
     let newProperties: Record<string, any> = Object.fromEntries(
       Object.entries(props)
         .filter(([k, v]) => k.length > 0)
+        .filter(([k, v]) => k !== 'name' && k !== 'color')
         .map(([k, v]) => ['mapson_' + k, v])
     );
+
+    newProperties['name'] = props['name'];
+    newProperties['color'] = props['color'];
 
     let ogProps = {};
     if (properties) {
       ogProps = Object.fromEntries(
-        Object.entries(properties).filter(([k, v]) => !k.startsWith('mapson_'))
+        Object.entries(properties)
+          .filter(([k, v]) => !k.startsWith('mapson_'))
+          .filter(([k, v]) => k !== 'name' && k !== 'color')
       );
     }
 
@@ -54,6 +58,9 @@ const ProjectSidePanel = ({ selectedFeature, canEdit }: IProjectSidePanel) => {
     });
 
     selectedFeature.layer.feature.properties = { ...ogProps, ...newProperties };
+    newProperties['name'] === ''
+      ? selectedFeature.layer.unbindPopup()
+      : selectedFeature.layer.bindPopup(newProperties['name']);
   };
 
   const saveMapProperties = async (props: Record<string, any>) => {
@@ -64,7 +71,11 @@ const ProjectSidePanel = ({ selectedFeature, canEdit }: IProjectSidePanel) => {
   };
 
   return (
-    <div className="bg-gray z-0 text-white h-[calc(100vh-64px)]" style={{ minWidth: '20vw' }}>
+    <div
+      className="bg-gray z-0 text-white h-[calc(100vh-64px)]"
+      style={{ minWidth: '20vw' }}
+      key={selectedFeature?.id}
+    >
       <Tabs value="Feature">
         <TabsHeader
           className="bg-gray"
@@ -92,6 +103,7 @@ const ProjectSidePanel = ({ selectedFeature, canEdit }: IProjectSidePanel) => {
                   }}
                   viewOnly={!canEdit}
                   type="feature"
+                  selectedFeature={selectedFeature}
                 />
               </div>
             ) : (
@@ -107,6 +119,7 @@ const ProjectSidePanel = ({ selectedFeature, canEdit }: IProjectSidePanel) => {
               }}
               viewOnly={!canEdit}
               type="map"
+              selectedFeature={null}
             />
           </TabPanel>
         </TabsBody>

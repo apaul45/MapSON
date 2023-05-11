@@ -1,15 +1,20 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@material-tailwind/react';
+import { SketchPicker } from 'react-color';
+import Popup from 'reactjs-popup';
+import { SELECTED, SelectedFeature } from './map/MapComponent';
 
 interface IProperty {
   k?: string;
   v?: string;
   onUpdate: (newKey: string, newValue?: string, oldKey?: string, deleteKey?: boolean) => void;
   viewOnly: boolean;
+  selectedFeature: SelectedFeature | null;
 }
-const Property = ({ k, v, onUpdate, viewOnly }: IProperty) => {
+const Property = ({ k, v, onUpdate, viewOnly, selectedFeature }: IProperty) => {
   const [key, setKey] = useState(k);
   const [value, setValue] = useState(v);
+  const [color, setColor] = useState(key === 'color' ? (value === '' ? 'blue' : value) : null);
 
   const updateKey = (newKey: string) => {
     onUpdate(newKey, value, key, false);
@@ -37,9 +42,58 @@ const Property = ({ k, v, onUpdate, viewOnly }: IProperty) => {
         className="m-2 block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 sm:text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
         value={value}
         onChange={(e) => updateValue(e.target.value)}
-        placeholder="value"
+        placeholder={key === 'name' ? 'name value' : key === 'color' ? 'color value' : 'value'}
         disabled={viewOnly}
       ></input>
+      {key === 'color' ? (
+        <Popup
+          trigger={
+            <button data-popover-target="popover-bottom-end" className="">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="gray"
+                className="w-5 h-5"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.994 15.994 0 011.622-3.395m3.42 3.42a15.995 15.995 0 004.764-4.648l3.876-5.814a1.151 1.151 0 00-1.597-1.597L14.146 6.32a15.996 15.996 0 00-4.649 4.763m3.42 3.42a6.776 6.776 0 00-3.42-3.42"
+                />
+              </svg>
+            </button>
+          }
+          position="bottom right"
+          onOpen={() =>
+            selectedFeature?.layer.setStyle({
+              fillColor: value === '' ? 'blue' : value,
+              fillOpacity: 0.2,
+              color: value === '' ? 'blue' : value,
+            })
+          }
+          onClose={() => selectedFeature?.layer.setStyle(SELECTED)}
+        >
+          <SketchPicker
+            //@ts-ignore
+            color={color}
+            onChangeComplete={(color) => {
+              updateValue(color.hex);
+            }}
+            onChange={(color) => {
+              // @ts-ignore
+              setColor(color.rgb);
+              selectedFeature?.layer.setStyle({
+                fillColor: color.hex,
+                fillOpacity: 0.2,
+                color: color.hex,
+              });
+            }}
+          ></SketchPicker>
+        </Popup>
+      ) : null}
+
       <button onClick={() => onUpdate(key!, value, key, true)}>
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -65,9 +119,16 @@ interface IPropertyEditor {
   properties: Record<string, any>;
   viewOnly: boolean;
   type: string;
+  selectedFeature: SelectedFeature | null;
 }
 
-const PropertyEditor = ({ onSave, properties, viewOnly, type }: IPropertyEditor) => {
+const PropertyEditor = ({
+  onSave,
+  properties,
+  viewOnly,
+  type,
+  selectedFeature,
+}: IPropertyEditor) => {
   const [props, setProps] = useState(properties);
   useEffect(() => {
     setProps(properties);
@@ -97,7 +158,13 @@ const PropertyEditor = ({ onSave, properties, viewOnly, type }: IPropertyEditor)
       <ul className="text-black">
         {Object.entries(props).map(([k, v], i) => (
           <li key={i}>
-            <Property k={k} v={v} onUpdate={onUpdate} viewOnly={viewOnly} />
+            <Property
+              k={k}
+              v={v}
+              onUpdate={onUpdate}
+              viewOnly={viewOnly}
+              selectedFeature={selectedFeature}
+            />
           </li>
         ))}
       </ul>
