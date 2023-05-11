@@ -500,7 +500,7 @@ describe('Edit Description Test', () => {
     const res = await request(app)
       .put(`/maps/map/${createdMapId}`)
       .set('Cookie', loginCookie)
-      .send({ changes: { published: "Jest Map" } });
+      .send({ changes: { description: "Jest Map" } });
 
     expect(res.statusCode).toBe(201);
   });
@@ -508,7 +508,7 @@ describe('Edit Description Test', () => {
   it('should fail if no authentication', async () => {
     const res = await request(app)
       .put(`/maps/map/${createdMapId}`)
-      .send({ changes: { published: "Jest Map" } });
+      .send({ changes: { description: "Jest Map" } });
 
     expect(res.statusCode).toBe(401);
     expect(res.body.error).toBeTruthy();
