@@ -55,6 +55,15 @@ const SELECTED_AND_HOVERED = {
   color: 'black',
 };
 
+const getCurrentColor = (feature: FeatureExt) =>
+  feature.properties?.color
+    ? {
+        fillColor: feature.properties.color as string,
+        fillOpacity: 0.2,
+        color: feature.properties.color as string,
+      }
+    : IDLE;
+
 const position: L.LatLngTuple = [37.335556, -122.009167];
 
 interface IMapComponent extends Map {
@@ -170,7 +179,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
     for (const f of selectedFeatures.current) {
       const { id, layer } = f;
       unselectFeature(id);
-      layer.setStyle(IDLE);
+      layer.setStyle(getCurrentColor(f.layer.feature));
     }
   };
 
@@ -204,7 +213,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
         if (isSelected(id)) {
           layer.setStyle(SELECTED);
         } else {
-          layer.setStyle(IDLE);
+          layer.setStyle(getCurrentColor(layer.feature));
         }
 
         layer.closePopup();
@@ -220,9 +229,9 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
 
         if (isSelected(id)) {
           unselectFeature(id);
-          layer.setStyle(IDLE);
+          layer.setStyle(getCurrentColor(layer.feature));
         } else {
-          selectFeature(id, layer)?.layer.setStyle(IDLE);
+          selectFeature(id, layer)?.layer.setStyle(getCurrentColor(layer.feature));
           layer.setStyle(SELECTED);
         }
       };
@@ -478,7 +487,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
             if (isSelected(feat?._id)) {
               base = SELECTED;
             } else {
-              base = IDLE;
+              base = getCurrentColor(feat);
             }
 
             return { ...base, weight: 2 };
