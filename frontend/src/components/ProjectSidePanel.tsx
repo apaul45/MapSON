@@ -2,12 +2,7 @@ import PropertyEditor from './PropertyEditor';
 import { Tabs, Tab, TabsBody, TabsHeader, TabPanel } from '@material-tailwind/react';
 import { SelectedFeature } from './map/MapComponent';
 import { RootState, store } from '../models';
-import { useRef } from 'react';
 import { useSelector } from 'react-redux';
-
-const EXAMPLE_PROPERTIES = Object.fromEntries(
-  Array.from(Array(10).keys()).map((v) => [`Key${v}`, `Value${v}`])
-);
 
 interface IProjectSidePanel {
   selectedFeature: SelectedFeature | null;
@@ -63,6 +58,7 @@ const ProjectSidePanel = ({ selectedFeature, canEdit }: IProjectSidePanel) => {
     });
 
     selectedFeature.layer.feature.properties = { ...ogProps, ...newProperties };
+    selectedFeature.layer.bindPopup(newProperties['name']);
   };
 
   const saveMapProperties = async (props: Record<string, any>) => {
@@ -73,7 +69,11 @@ const ProjectSidePanel = ({ selectedFeature, canEdit }: IProjectSidePanel) => {
   };
 
   return (
-    <div className="bg-gray z-0 text-white h-[calc(100vh-64px)]" style={{ minWidth: '20vw' }}>
+    <div
+      className="bg-gray z-0 text-white h-[calc(100vh-64px)]"
+      style={{ minWidth: '20vw' }}
+      key={selectedFeature?.id}
+    >
       <Tabs value="Feature">
         <TabsHeader
           className="bg-gray"

@@ -208,6 +208,57 @@ describe('Region Properties Tests', () => {
     cy.get(`input[value=mapson_${type}_test_key_2]`).should('be.visible');
     cy.get(`input[value=mapson_${type}_test_value_2]`).should('be.visible');
   });
+
+  it('should add a name to a region', () => {
+    drawPolygon();
+    clickRegion(300, 300);
+    cy.contains('Feature Properties:').should('exist');
+
+    cy.get("input[placeholder='name value']").should('exist').type('unique name');
+    cy.get('#' + type + '-save-button')
+      .should('exist')
+      .click();
+
+    clickRegion(300, 300);
+
+    cy.get(mapSelector).trigger('mouseover', [300, 300]).wait(10);
+    cy.contains('unique name').should('exist');
+    cy.wait(10);
+
+    clickRegion(300, 300);
+    cy.get("input[placeholder='name value']").should('exist').clear().type('unique name 2');
+    cy.get('#' + type + '-save-button')
+      .should('exist')
+      .click();
+
+    clickRegion(300, 300);
+    cy.get(mapSelector).trigger('mouseover', [300, 300]).wait(DELAY);
+    cy.contains('unique name 2').should('exist');
+  });
+
+  it('should modify the color of a region', () => {
+    drawPolygon();
+    clickRegion(300, 300);
+    cy.contains('Feature Properties:').should('exist');
+
+    cy.get("input[placeholder='color value']").should('exist').type('pink');
+    cy.get('#' + type + '-save-button')
+      .should('exist')
+      .click();
+
+    clickRegion(300, 300);
+
+    cy.get('[fill="pink"]').should('exist');
+
+    clickRegion(300, 300);
+    cy.get("input[placeholder='color value']").clear().type('yellow');
+    cy.get('#' + type + '-save-button')
+      .should('exist')
+      .click();
+
+    clickRegion(300, 300);
+    cy.get('[fill="yellow"]').should('exist');
+  });
 });
 
 describe('Map Properties Tests', () => {
@@ -482,9 +533,11 @@ const addProp = (type: string) => {
     .should('exist')
     .click();
   cy.get("input[placeholder='key']")
+    .last()
     .should('exist')
     .type('mapson_' + type + '_test_key');
   cy.get("input[placeholder='value']")
+    .last()
     .should('exist')
     .type('mapson_' + type + '_test_value');
   cy.get('#' + type + '-save-button')
