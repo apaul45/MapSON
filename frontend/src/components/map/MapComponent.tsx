@@ -43,7 +43,7 @@ const IDLE = {
   color: 'blue',
 };
 
-const SELECTED = {
+export const SELECTED = {
   fillColor: 'red',
   fillOpacity: 0.5,
   color: 'black',

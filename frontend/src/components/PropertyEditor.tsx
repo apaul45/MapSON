@@ -2,17 +2,19 @@ import { useState, useEffect } from 'react';
 import { Button } from '@material-tailwind/react';
 import { SketchPicker } from 'react-color';
 import Popup from 'reactjs-popup';
+import { SELECTED, SelectedFeature } from './map/MapComponent';
 
 interface IProperty {
   k?: string;
   v?: string;
   onUpdate: (newKey: string, newValue?: string, oldKey?: string, deleteKey?: boolean) => void;
   viewOnly: boolean;
+  selectedFeature: SelectedFeature | null;
 }
-const Property = ({ k, v, onUpdate, viewOnly }: IProperty) => {
+const Property = ({ k, v, onUpdate, viewOnly, selectedFeature }: IProperty) => {
   const [key, setKey] = useState(k);
   const [value, setValue] = useState(v);
-  const [color, setColor] = useState({ r: '0', g: '0', b: '255', a: '1' });
+  const [color, setColor] = useState(key === 'color' ? (value === '' ? 'blue' : value) : null);
 
   const updateKey = (newKey: string) => {
     onUpdate(newKey, value, key, false);
@@ -64,6 +66,14 @@ const Property = ({ k, v, onUpdate, viewOnly }: IProperty) => {
             </button>
           }
           position="bottom right"
+          onOpen={() =>
+            selectedFeature?.layer.setStyle({
+              fillColor: value === '' ? 'blue' : value,
+              fillOpacity: 0.5,
+              color: value === '' ? 'blue' : value,
+            })
+          }
+          onClose={() => selectedFeature?.layer.setStyle(SELECTED)}
         >
           <SketchPicker
             //@ts-ignore
@@ -71,8 +81,15 @@ const Property = ({ k, v, onUpdate, viewOnly }: IProperty) => {
             onChangeComplete={(color) => {
               updateValue(color.hex);
             }}
-            //@ts-ignore
-            onChange={(color) => setColor(color.rgb)}
+            onChange={(color) => {
+              // @ts-ignore
+              setColor(color.rgb);
+              selectedFeature?.layer.setStyle({
+                fillColor: color.hex,
+                fillOpacity: 0.2,
+                color: color.hex,
+              });
+            }}
           ></SketchPicker>
         </Popup>
       ) : null}
@@ -102,9 +119,16 @@ interface IPropertyEditor {
   properties: Record<string, any>;
   viewOnly: boolean;
   type: string;
+  selectedFeature: SelectedFeature | null;
 }
 
-const PropertyEditor = ({ onSave, properties, viewOnly, type }: IPropertyEditor) => {
+const PropertyEditor = ({
+  onSave,
+  properties,
+  viewOnly,
+  type,
+  selectedFeature,
+}: IPropertyEditor) => {
   const [props, setProps] = useState(properties);
   useEffect(() => {
     setProps(properties);
@@ -134,7 +158,13 @@ const PropertyEditor = ({ onSave, properties, viewOnly, type }: IPropertyEditor)
       <ul className="text-black">
         {Object.entries(props).map(([k, v], i) => (
           <li key={i}>
-            <Property k={k} v={v} onUpdate={onUpdate} viewOnly={viewOnly} />
+            <Property
+              k={k}
+              v={v}
+              onUpdate={onUpdate}
+              viewOnly={viewOnly}
+              selectedFeature={selectedFeature}
+            />
           </li>
         ))}
       </ul>
