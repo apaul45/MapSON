@@ -117,4 +117,21 @@ describe('Standalone Download Map Test', () => {
   });
 });
 
+describe('Edit description test', () => {
+  beforeEach(() => {
+    login();
+    createNew();
+    cy.get('#menu-button').should('exist').click();
+    cy.get('#menu-option-exit').should('exist').click();
+    cy.wait(1000);
+  });
+
+  it('should edit the description', () =. {
+    cy.get('#expand-collapse-button').should('exist').click();
+    cy.get('#description').should('exist').dblclick();
+    cy.get('#description-field').type('{ctrl+a}Cypress Map{enter')
+    cy.get('#description').should('exist')
+  })
+})
+
 export {};

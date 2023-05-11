@@ -123,6 +123,12 @@ export default function MapCard({
     });
   };
 
+  const canEditDescription = () => {
+    if (user?.username === username) {
+      setEditDescriptionActive(true)
+    }
+  }
+
   const handleTextChange = (e: any) => {
     description = e.target.value;
     setEditDescriptionActive(e.code !== 'Enter');
@@ -207,7 +213,7 @@ export default function MapCard({
             <p
               id="description"
               className="text-gray-700 text-base text-left"
-              onDoubleClick={() => setEditDescriptionActive(true)}
+              onDoubleClick={() => canEditDescription()}
             >
               {descriptionText}
             </p>
