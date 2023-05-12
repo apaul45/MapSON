@@ -19,6 +19,7 @@ export interface IMap {
   comments: Comment[];
   properties: Types.Map<string | number>;
   features: FeatureCollection;
+  preview?: String;
 }
 
 const commentSchema = new Schema<Comment>({
@@ -50,6 +51,7 @@ const mapSchema = new Schema<IMap>(
     comments: [commentSchema],
     properties: { type: Schema.Types.Map, of: Schema.Types.Mixed },
     features: { type: featureCollectionSchema, required: true },
+    preview: { type: String },
   },
   { timestamps: true }
 );

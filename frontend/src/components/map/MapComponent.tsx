@@ -1,6 +1,6 @@
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useCallback, useRef, useLayoutEffect } from 'react';
 
-import { GeoJSON, MapContainer, TileLayer } from 'react-leaflet';
+import { GeoJSON, MapContainer, TileLayer, useMap } from 'react-leaflet';
 
 import * as L from 'leaflet';
 // @ts-ignore
@@ -28,6 +28,8 @@ import { MergeFeatures } from '../../transactions/map/MergeFeatures';
 import { cloneDeep } from 'lodash';
 import { SplitFeature } from '../../transactions/map/SplitFeature';
 import { InputAddedLayer } from '../../transactions/map/CreateAndRemoveMultipleFeatures';
+import FileSaver from 'file-saver';
+import domtoimage from 'dom-to-image';
 
 export type SelectedFeature = { layer: LGeoJsonExt; id: any };
 
@@ -66,12 +68,13 @@ const getCurrentColor = (feature: FeatureExt) =>
 
 const position: L.LatLngTuple = [37.335556, -122.009167];
 
-interface IMapComponent extends Map {
+interface Props extends Map {
   canEdit: boolean;
   setSelectedFeature: Function;
+  setLeafletMap: Function;
 }
 
-const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapComponent) => {
+const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafletMap }: Props) => {
   const username = useSelector((state: RootState) => state.user.currentUser?.username);
   const map = useSelector((state: RootState) => state.mapStore.currentMap);
 
@@ -104,7 +107,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
       console.log('reached connection');
       connect();
       //@ts-ignore
-      joinRoom(username, id);
+      joinRoom(username, id); //joinRoom will send empty username for guest
     };
 
     checkLoggedIn();
@@ -126,6 +129,10 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
   useEffect(() => {
     mapRef.current = geoJSON;
   }, [geoJSON]);
+
+  useLayoutEffect(() => {
+    setLeafletMap(leafletMap.current);
+  }, [leafletMap.current]);
 
   //second one is the most recently selected
   const selectedFeatures = useRef<SelectedFeature[]>([]);
@@ -276,7 +283,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
     [canEdit]
   );
 
-  let bounds = undefined;
+  let bounds: any = undefined;
   if (geoJSON.features.length > 0) {
     const extent = bbox(geoJSON);
     bounds = [
@@ -343,12 +350,15 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
     getFeatureById,
     getFeatureByIndex,
     getGeoJSONLayer,
-    onCreate: async (e) =>
+    onCreate: async (e) => {
       await transactions.current.addTransaction(
         new CreateFeature(e.layer as LGeoJsonExt),
         leafletMap.current!,
         callbacks
-      ),
+      );
+
+      //saveScreenshot();
+    },
     onEdit: async (e) => {
       const { layer, affectedLayers } = e as typeof e & { affectedLayers: [L.Layer, L.LatLng][] };
       // case for vertex pinning
@@ -462,53 +472,56 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
   });
 
   return (
-    <div className="w-screen h-[calc(100vh-64px)]">
-      <MapContainer
-        style={{ width: '100%', minHeight: '100%', height: '100%', zIndex: 0 }}
-        zoom={4}
-        markerZoomAnimation={false}
-        center={bounds === undefined ? position : undefined}
-        doubleClickZoom={false}
-        id="map-container"
-        //TODO: dynamically check if we need to use L.SVG vs L.Canvas depending on browser
-        renderer={new L.SVG({ tolerance: 3 })}
-        //@ts-ignore
-        bounds={bounds}
-        ref={leafletMap}
-      >
-        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-
-        <GeoJSON
-          data={geoJSON}
-          style={(f) => {
-            const feat = f as FeatureExt;
-            let base;
-
-            if (isSelected(feat?._id)) {
-              base = SELECTED;
-            } else {
-              base = getCurrentColor(feat);
-            }
-
-            return { ...base, weight: 2 };
-          }}
-          /* @ts-ignore */
-          // Fine to ignore since we are guaranteeing the extensions to L.GeoJSON
-          onEachFeature={onEachFeature}
-          ref={geojsonLayer}
+    <>
+      <div className="w-screen h-[calc(100vh-64px)]">
+        <MapContainer
+          style={{ width: '100%', minHeight: '100%', height: '100%', zIndex: 0 }}
+          zoom={4}
+          markerZoomAnimation={false}
+          center={bounds === undefined ? position : undefined}
+          doubleClickZoom={false}
+          id="map-container"
+          //TODO: dynamically check if we need to use L.SVG vs L.Canvas depending on browser
+          renderer={new L.SVG({ tolerance: 3 })}
+          //@ts-ignore
+          bounds={bounds}
+          ref={leafletMap}
         >
-          <MapControls
-            onCreate={onCreate}
-            onEdit={onEdit}
-            onRemove={onRemove}
-            getSelectedFeatures={getSelectedFeatures}
-            onMerge={onMerge}
-            onSplit={onSplit}
-            canEdit={canEdit}
-          />
-        </GeoJSON>
-      </MapContainer>
-    </div>
+          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+
+          <GeoJSON
+            data={geoJSON}
+            style={(f) => {
+              const feat = f as FeatureExt;
+              let base;
+
+              if (isSelected(feat?._id)) {
+                base = SELECTED;
+              } else {
+                base = getCurrentColor(feat);
+              }
+
+              return { ...base, weight: 2 };
+            }}
+            /* @ts-ignore */
+            // Fine to ignore since we are guaranteeing the extensions to L.GeoJSON
+            onEachFeature={onEachFeature}
+            ref={geojsonLayer}
+          >
+            <MapControls
+              onCreate={onCreate}
+              onEdit={onEdit}
+              onRemove={onRemove}
+              getSelectedFeatures={getSelectedFeatures}
+              onMerge={onMerge}
+              onSplit={onSplit}
+              canEdit={canEdit}
+            />
+          </GeoJSON>
+        </MapContainer>
+      </div>
+      <div id="screenshot-map"></div>
+    </>
   );
 };
 

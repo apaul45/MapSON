@@ -7,6 +7,7 @@ import { Feature } from '@turf/turf';
 import { Geometry } from 'geojson';
 import { AllMapsRequest, CreateMapRequest } from '../api/types';
 import { cloneDeep } from 'lodash';
+import L from 'leaflet';
 
 const initialState: Store = {
   currentMap: null,

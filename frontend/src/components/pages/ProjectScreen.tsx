@@ -18,6 +18,8 @@ export const ProjectScreen = () => {
   const { mapStore } = store.dispatch;
 
   const { id } = useParams();
+  //For use in taking a screenshot of the map before leaving
+  const [leafletMap, setLeafletMap] = useState<L.Map | null>(null);
 
   useEffect(() => {
     setError(false);
@@ -72,6 +74,7 @@ export const ProjectScreen = () => {
         setMapName={setMapName}
         setSidePanelToggle={setSidePanelToggle}
         sidePanelToggle={sidePanelToggle}
+        leafletMap={leafletMap}
       />
 
       <div className="flex flex-row">
@@ -80,6 +83,7 @@ export const ProjectScreen = () => {
           setSelectedFeature={setSelectedFeature}
           key={'MAP'}
           {...map}
+          setLeafletMap={(map: L.Map) => setLeafletMap(map)}
         />
         {!sidePanelToggle && (
           <ProjectSidePanel selectedFeature={selectedFeature} canEdit={canEdit} />

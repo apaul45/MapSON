@@ -4,7 +4,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { RootState, store } from '../models';
 import AccountCircle from './AccountCircle';
 import { useSelector } from 'react-redux';
-import { Button, Input, Menu, MenuHandler, MenuItem, MenuList } from '@material-tailwind/react';
+import { Input, Menu, MenuHandler, MenuItem, MenuList } from '@material-tailwind/react';
 
 export const MainNavbar = () => {
   const location = useLocation();
@@ -18,6 +18,8 @@ export const MainNavbar = () => {
   const navigate = useNavigate();
 
   const openAddDialog = () => mapStore.setAddDialog(true);
+
+  const showSearchBar = () => ['/home', '/discover'].includes(location.pathname);
 
   const handleCreateMap = async () => {
     const id = await mapStore.createNewMap({
@@ -58,7 +60,7 @@ export const MainNavbar = () => {
 
                     {
                       // Render search textfield for discover page only
-                      location.pathname !== '/' && (
+                      showSearchBar() && (
                         <div id="search-field" className="w-72">
                           <div className="relative flex w-full max-w-[24rem] text-white">
                             <Input
