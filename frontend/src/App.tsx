@@ -14,7 +14,6 @@ import {
   ResetScreen,
 } from './components';
 import { useEffect } from 'react';
-import { auth } from './api';
 import { store } from './models';
 
 function App() {

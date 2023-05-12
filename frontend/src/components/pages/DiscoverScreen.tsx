@@ -108,6 +108,8 @@ export const DiscoverScreen = () => {
               downloadCount={map.downloads}
               description={map.description!}
               date={map.published.publishedDate?.toString()!}
+              preview={map.preview ? (map.preview as string) : ''}
+              published={map.published.isPublished} //this is only here to avoid type errors
             />
           </div>
         ))}

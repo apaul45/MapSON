@@ -1,5 +1,5 @@
 import { User } from '../../src/types';
-import { createNew, login } from './utils';
+import { createNew, login, logout } from './utils';
 
 describe('Map Card Tests', () => {
   beforeEach(() => {
@@ -9,6 +9,7 @@ describe('Map Card Tests', () => {
     cy.get('#menu-option-exit').should('exist').click();
     cy.wait(1000);
   });
+
   it('should show the delete dialog', () => {
     cy.get('#delete-button').should('exist').click();
     cy.contains('Cancel').should('be.visible').click();
@@ -88,6 +89,15 @@ describe('Map Card Tests', () => {
       });
     });
   });
+
+  it('should edit the description', () => {
+    logout();
+    login();
+    cy.get('#expand-collapse-button').should('exist').click();
+    cy.get('#description').should('exist').dblclick({ force: true });
+    cy.get('#description-field').should('exist').type('Cypress Map{enter}');
+    cy.get('#description').should('exist');
+  });
 });
 
 describe('Standalone Download Map Test', () => {
@@ -108,7 +118,9 @@ describe('Standalone Download Map Test', () => {
     cy.readFile('cypress/downloads/My Map.geo.json').should('exist');
 
     cy.get('#menu-button').click();
-    cy.contains('Exit project').click();
+    cy.get('#menu-option-exit').click();
+    cy.location('pathname').should((path) => expect(path).to.include('/home'));
+
     cy.reload();
     cy.get('#download-count').then(($cnt) => {
       const download = Number($cnt.text());

@@ -1,12 +1,14 @@
 import { MenuList, MenuItem, Menu, MenuHandler } from '@material-tailwind/react';
 import { useSelector } from 'react-redux';
 import { RootState, store } from '../models';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { saveAs } from 'file-saver';
 import axios from 'axios';
 import { handlePublish, handleUnpublish } from './dialogs/ShareMapDialog';
+import domtoimage from 'dom-to-image';
+import L from 'leaflet';
 
-const ProjectMenu = () => {
+const ProjectMenu = ({ leafletMap }: { leafletMap: L.Map | null }) => {
   const user = useSelector((state: RootState) => state.user.currentUser);
   const map = useSelector((state: RootState) => state.mapStore.currentMap);
   const { mapStore, error } = store.dispatch;
@@ -57,6 +59,50 @@ const ProjectMenu = () => {
     const id = await mapStore.forkMap(map?._id as unknown as string);
 
     if (id) navigate(`/project/${id}`);
+  };
+
+  const handleExitProject = () => {
+    //Take and save the screenshot of the map right before leaving
+    if (!leafletMap || !user) {
+      navigate(user ? '/home' : '/discover');
+      return;
+    }
+
+    const mapId = map?._id;
+
+    leafletMap.setView(leafletMap.getCenter(), 4);
+    leafletMap.pm.removeControls();
+    leafletMap.removeControl(leafletMap.zoomControl);
+    leafletMap.removeControl(leafletMap.attributionControl);
+
+    console.log(leafletMap);
+
+    // Need timeout to ensure map is reset w/controls removed first
+    setTimeout(() => {
+      const container = leafletMap.getContainer();
+      const dimensions = leafletMap.getSize();
+
+      domtoimage
+        .toBlob(container, { height: dimensions.y, width: dimensions.x })
+        .then(async (blob) => {
+          //Storing preview as base 64 string in backend
+          const blobToDataUrl = () => {
+            return new Promise((r) => {
+              let a = new FileReader();
+              a.onload = r;
+              a.readAsDataURL(blob);
+            }).then((e: any) => e.target.result);
+          };
+
+          const img = await blobToDataUrl();
+          await mapStore.updateMap({ _id: mapId, preview: img });
+          navigate(user ? '/home' : '/discover');
+        })
+        .catch((err) => {
+          console.log(err);
+          navigate(user ? '/home' : '/discover');
+        });
+    }, 1000);
   };
 
   return (
@@ -116,9 +162,13 @@ const ProjectMenu = () => {
       }
       <MenuItem className="hover:bg-sort-hover">Share</MenuItem>
 
-      <Link to={user ? '/home' : '/discover'} className="hover:bg-sort-hover hover:outline-none">
-        <MenuItem id="menu-option-exit">Exit project</MenuItem>
-      </Link>
+      <MenuItem
+        className="hover:bg-sort-hover"
+        id="menu-option-exit"
+        onClick={() => handleExitProject()}
+      >
+        Exit project
+      </MenuItem>
 
       <MenuItem className="hover:bg-sort-hover text-red-400" onClick={() => openDeleteDialog()}>
         Delete map

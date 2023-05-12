@@ -19,6 +19,8 @@ export const MainNavbar = () => {
 
   const openAddDialog = () => mapStore.setAddDialog(true);
 
+  const showSearchBar = () => ['/home', '/discover'].includes(location.pathname);
+
   const handleCreateMap = async () => {
     const id = await mapStore.createNewMap({
       mapName: 'My Map',
@@ -58,7 +60,7 @@ export const MainNavbar = () => {
 
                     {
                       // Render search textfield for discover page only
-                      location.pathname !== '/' && (
+                      showSearchBar() && (
                         <div id="search-field" className="w-72">
                           <div className="relative flex w-full max-w-[24rem] text-white">
                             <Input

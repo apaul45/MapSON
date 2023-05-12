@@ -76,6 +76,7 @@ export interface Map {
   properties: Record<string, any>;
   updatedAt?: string;
   userAccess: Array<string>;
+  preview?: string | ArrayBuffer | null;
 }
 
 export interface Cursor {

@@ -494,3 +494,23 @@ describe('Delete Map Test', () => {
     expect(res.body.errorMessage).toBe('invalid session');
   });
 });
+
+describe('Edit Description Test', () => {
+  it('should edit the description of the created map', async () => {
+    const res = await request(app)
+      .put(`/maps/map/${createdMapId}`)
+      .set('Cookie', loginCookie)
+      .send({ changes: { description: 'Jest Map' } });
+
+    expect(res.statusCode).toBe(201);
+  });
+
+  it('should fail if no authentication', async () => {
+    const res = await request(app)
+      .put(`/maps/map/${createdMapId}`)
+      .send({ changes: { description: 'Jest Map' } });
+
+    expect(res.statusCode).toBe(401);
+    expect(res.body.error).toBeTruthy();
+  });
+});
