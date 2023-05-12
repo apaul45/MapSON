@@ -1,6 +1,6 @@
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useCallback, useRef, useLayoutEffect } from 'react';
 
-import { GeoJSON, MapContainer, TileLayer } from 'react-leaflet';
+import { GeoJSON, MapContainer, TileLayer, useMap } from 'react-leaflet';
 
 import * as L from 'leaflet';
 // @ts-ignore
@@ -28,6 +28,8 @@ import { MergeFeatures } from '../../transactions/map/MergeFeatures';
 import { cloneDeep } from 'lodash';
 import { SplitFeature } from '../../transactions/map/SplitFeature';
 import { InputAddedLayer } from '../../transactions/map/CreateAndRemoveMultipleFeatures';
+import FileSaver from 'file-saver';
+import domtoimage from 'dom-to-image';
 
 export type SelectedFeature = { layer: LGeoJsonExt; id: any };
 
@@ -104,7 +106,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
       console.log('reached connection');
       connect();
       //@ts-ignore
-      joinRoom(username, id);
+      joinRoom(username, id); //joinRoom will send empty username for guest
     };
 
     checkLoggedIn();
@@ -131,6 +133,36 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
   const selectedFeatures = useRef<SelectedFeature[]>([]);
 
   const editLayer = useRef<SelectedFeature | null>(null);
+
+  const saveScreenshot = () => {
+    if (!leafletMap.current) return;
+
+    const lMap = leafletMap.current;
+    //const currentZoom = lMap.getZoom();
+
+    //WIP: Need to make this occur way before everything after this line
+    //WIP: Need to set the location and zoom back to where it was beforehand
+    lMap.fitBounds(bounds);
+
+    lMap.pm.removeControls();
+    lMap.removeControl(lMap.zoomControl);
+    lMap.removeControl(lMap.attributionControl);
+
+    console.log(lMap);
+
+    const container = lMap.getContainer();
+    const dimensions = lMap.getSize();
+    domtoimage
+      .toBlob(container, { height: dimensions.y, width: dimensions.x })
+      .then((dataUrl) => FileSaver.saveAs(dataUrl, 'ss.png'))
+      .catch((err) => console.log(err));
+
+    //lMap.fitBounds(currentBounds);
+    //lMap.setZoom(currentZoom);
+    lMap.pm.addControls();
+    lMap.addControl(lMap.zoomControl);
+    lMap.addControl(lMap.attributionControl);
+  };
 
   const isSelected = (id: any) => {
     return selectedFeatures.current.some((f) => f.id === id);
@@ -276,7 +308,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
     [canEdit]
   );
 
-  let bounds = undefined;
+  let bounds: any = undefined;
   if (geoJSON.features.length > 0) {
     const extent = bbox(geoJSON);
     bounds = [
@@ -343,12 +375,15 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
     getFeatureById,
     getFeatureByIndex,
     getGeoJSONLayer,
-    onCreate: async (e) =>
+    onCreate: async (e) => {
       await transactions.current.addTransaction(
         new CreateFeature(e.layer as LGeoJsonExt),
         leafletMap.current!,
         callbacks
-      ),
+      );
+
+      saveScreenshot();
+    },
     onEdit: async (e) => {
       const { layer, affectedLayers } = e as typeof e & { affectedLayers: [L.Layer, L.LatLng][] };
       // case for vertex pinning
