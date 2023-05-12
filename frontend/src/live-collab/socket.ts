@@ -43,8 +43,6 @@ export const emitMousePosition = (
 };
 
 socket.on('cursorUpdate', (roomId: string, username: string, position: L.LatLngExpression) => {
-  const { roomList } = store.getState().mapStore;
-  console.log({ username, position, roomList });
   mapStore.updateCursor({ username, position });
 });
 
@@ -53,10 +51,9 @@ socket.on('sendClientList', (clients) => {
   console.log(clients);
   const createMarkerFn = (username: string, bgColor: string): L.CircleMarker => {
     if (!socket.map) {
-      throw new Error('SOCKET CANNOT READ LEAFLET MAP');
+      throw new Error('SOCKET CANNOT READ LEAFLET MAP.');
     }
 
-    console.log(bgColor);
     const cursor = L.circleMarker([0, 0], {
       radius: 5,
       fillOpacity: 1,
@@ -65,7 +62,9 @@ socket.on('sendClientList', (clients) => {
       weight: 1,
     });
     cursor.bindTooltip(username, { permanent: true, className: 'labels', offset: [0, 0] });
-    // cursor.pm.disable()
+    try {
+      cursor.pm.disable();
+    } catch {}
     cursor.addTo(socket.map.current);
     return cursor;
   };
