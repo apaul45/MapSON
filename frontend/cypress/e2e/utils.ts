@@ -1,4 +1,6 @@
-import { User } from '../../src/types';
+import { User as UserType } from '../../src/types';
+
+type User = Omit<UserType, 'bgColor'>;
 
 const cypressUser: User = {
   username: 'cypressUser',

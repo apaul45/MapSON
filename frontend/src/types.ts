@@ -1,4 +1,4 @@
-import { Feature, FeatureCollection, Geometry } from 'geojson';
+import { Feature, Geometry } from 'geojson';
 
 export interface User {
   email?: string;

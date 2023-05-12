@@ -4,7 +4,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { RootState, store } from '../models';
 import AccountCircle from './AccountCircle';
 import { useSelector } from 'react-redux';
-import { Button, Input, Menu, MenuHandler, MenuItem, MenuList } from '@material-tailwind/react';
+import { Input, Menu, MenuHandler, MenuItem, MenuList } from '@material-tailwind/react';
 
 export const MainNavbar = () => {
   const location = useLocation();
@@ -122,7 +122,7 @@ export const MainNavbar = () => {
                           <MenuItem onClick={() => handleCreateMap()}>Create new Map</MenuItem>
                         </MenuList>
                       </Menu>
-                      <AccountCircle username={user.username} />
+                      <AccountCircle username={user.username} bgColor={user.bgColor} />
                     </>
                   ) : (
                     <>
