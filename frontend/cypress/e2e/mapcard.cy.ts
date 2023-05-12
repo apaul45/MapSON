@@ -104,7 +104,7 @@ describe('Standalone Download Map Test', () => {
 
     cy.get('#menu-button').click();
     cy.contains('Download as').invoke('show').click({ force: true }).click();
-    cy.contains('GeoJSON').should('exist').click();
+    cy.contains('GeoJSON').should('exist').click().wait(500);
     cy.readFile('cypress/downloads/My Map.geo.json').should('exist');
 
     cy.get('#menu-button').click();
