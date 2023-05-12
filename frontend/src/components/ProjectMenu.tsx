@@ -7,11 +7,11 @@ import axios from 'axios';
 import { handlePublish, handleUnpublish } from './dialogs/ShareMapDialog';
 import domtoimage from 'dom-to-image';
 import FileSaver from 'file-saver';
+import L from 'leaflet';
 
-const ProjectMenu = () => {
+const ProjectMenu = ({ leafletMap }: { leafletMap: L.Map | null }) => {
   const user = useSelector((state: RootState) => state.user.currentUser);
   const map = useSelector((state: RootState) => state.mapStore.currentMap);
-  const leafletMap = useSelector((state: RootState) => state.mapStore.leafletMap);
   const { mapStore, error } = store.dispatch;
 
   const navigate = useNavigate();
@@ -63,6 +63,7 @@ const ProjectMenu = () => {
   };
 
   const handleExitProject = () => {
+    //Take and save the screenshot of the map right before leaving
     const saveScreenshot = () => {
       if (!leafletMap) return;
 
@@ -86,7 +87,6 @@ const ProjectMenu = () => {
     };
 
     saveScreenshot();
-
     setTimeout(() => navigate(user ? '/home' : '/discover'), 1000);
   };
 

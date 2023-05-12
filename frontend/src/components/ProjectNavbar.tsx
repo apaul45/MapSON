@@ -15,6 +15,8 @@ interface Props {
 
   sidePanelToggle: boolean;
   setSidePanelToggle: Function;
+
+  leafletMap: L.Map | null; //For use in project menu
 }
 
 export const ProjectNavbar = ({
@@ -25,6 +27,7 @@ export const ProjectNavbar = ({
   setMapName,
   sidePanelToggle,
   setSidePanelToggle,
+  leafletMap,
 }: Props) => {
   const [isEditNameActive, setEditNameActive] = useState(false);
 
@@ -61,7 +64,7 @@ export const ProjectNavbar = ({
                 </svg>
               </button>
             </MenuHandler>
-            <ProjectMenu />
+            <ProjectMenu leafletMap={leafletMap} />
           </Menu>
 
           <div className="text-center">

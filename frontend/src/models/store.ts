@@ -59,9 +59,6 @@ export const mapStore = createModel<RootModel>()({
       }
       return state;
     },
-    setLeafletMap: (state, payload: L.Map) => {
-      return { ...state, leafletMap: payload };
-    },
   },
 
   //Effects are (possibly async) functions that take in the store's state and payload, and return anything

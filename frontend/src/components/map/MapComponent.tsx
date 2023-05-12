@@ -68,12 +68,13 @@ const getCurrentColor = (feature: FeatureExt) =>
 
 const position: L.LatLngTuple = [37.335556, -122.009167];
 
-interface IMapComponent extends Map {
+interface Props extends Map {
   canEdit: boolean;
   setSelectedFeature: Function;
+  setLeafletMap: Function;
 }
 
-const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapComponent) => {
+const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafletMap }: Props) => {
   const username = useSelector((state: RootState) => state.user.currentUser?.username);
   const map = useSelector((state: RootState) => state.mapStore.currentMap);
 
@@ -130,7 +131,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
   }, [geoJSON]);
 
   useLayoutEffect(() => {
-    store.dispatch.mapStore.setLeafletMap(leafletMap.current);
+    setLeafletMap(leafletMap.current);
   }, [leafletMap.current]);
 
   //second one is the most recently selected
