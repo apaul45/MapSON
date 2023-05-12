@@ -111,7 +111,7 @@ mapRouter.delete('/map/:id', auth, async (req: Request, res: Response) => {
   //if the user is not the owner and doesnt have permission to delete the map
   //@ts-ignore
   // prettier-ignore
-  if (!user._id.equals(map.owner) && !map.userAccess.includes(emailOrUsername)) {
+  if (!user._id.equals(map.owner) && !map.userAccess.includes(req.session.username)) {
     return res.status(401).json({
       error: true,
       errorMessage: 'Unauthorized',
