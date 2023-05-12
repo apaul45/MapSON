@@ -58,7 +58,7 @@ export const MainNavbar = () => {
 
                     {
                       // Render search textfield for discover page only
-                      location.pathname === '/discover' && (
+                      location.pathname !== '/' && (
                         <div id="search-field" className="w-72">
                           <div className="relative flex w-full max-w-[24rem] text-white">
                             <Input

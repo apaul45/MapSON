@@ -1,10 +1,33 @@
 import { useSelector } from 'react-redux';
 import { AddMapDialog } from '../dialogs/AddMapDialog';
-import { RootState } from '../../models';
+import { RootState, store } from '../../models';
 import { MapCard } from '../map';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export const HomeScreen = () => {
-  const userMaps = useSelector((state: RootState) => state.user.currentUser?.maps);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkLoggedIn = async () => {
+      const username = await store.dispatch.user.check();
+
+      if (!username) {
+        navigate('/');
+      }
+    };
+
+    checkLoggedIn();
+  }, []);
+
+  const userMaps = useSelector((state: RootState) =>
+    state.mapStore.mapFilter
+      ? state.user.currentUser?.maps.filter(
+          //@ts-ignore
+          (map) => map.owner.username === state.mapStore.mapFilter
+        )
+      : state.user.currentUser?.maps
+  );
 
   return (
     <>

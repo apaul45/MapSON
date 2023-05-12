@@ -50,7 +50,7 @@ export const ProjectScreen = () => {
     setShareOpen(false);
   };
 
-  const setMapName = (name: string) => mapStore.updateCurrentMap({ name });
+  const setMapName = async (name: string) => await mapStore.updateCurrentMap({ name });
 
   const canEdit = (map && user && user.maps?.some((v) => v._id === map._id)) ?? false;
 
@@ -67,6 +67,7 @@ export const ProjectScreen = () => {
       <ProjectNavbar
         shareOpen={shareOpen}
         setShareOpen={setShareOpen}
+        canEditName={canEdit}
         mapName={map.name}
         setMapName={setMapName}
         setSidePanelToggle={setSidePanelToggle}

@@ -9,6 +9,7 @@ interface Props {
   shareOpen: boolean;
   setShareOpen: Function;
 
+  canEditName: boolean;
   mapName: string;
   setMapName: Function;
 
@@ -19,6 +20,7 @@ interface Props {
 export const ProjectNavbar = ({
   shareOpen,
   setShareOpen,
+  canEditName,
   mapName,
   setMapName,
   sidePanelToggle,
@@ -29,14 +31,12 @@ export const ProjectNavbar = ({
   const loggedInUser = useSelector((state: RootState) => state.user.currentUser?.username);
   const clientList = useSelector((state: RootState) => state.mapStore.roomList);
 
-  const handleNameClick = () => {
-    //TODO: Only editing the name active if this user owns the map, or is a collaborator
-    setEditNameActive(true);
-  };
-
   //TODO: Make this update the actual current map name (probably through a callback to project screen)
   const handleNameChange = (e: any) => {
-    setMapName(e.target.value);
+    if (e.code === 'Enter') {
+      setMapName(e.target.value);
+    }
+
     setEditNameActive(e.code !== 'Enter');
   };
 
@@ -69,7 +69,7 @@ export const ProjectNavbar = ({
               <u
                 id="project-name"
                 className="text-xl font-medium"
-                onDoubleClick={() => setEditNameActive(true)}
+                onDoubleClick={() => setEditNameActive(canEditName)}
               >
                 {' '}
                 {mapName}{' '}

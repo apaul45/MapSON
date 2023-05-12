@@ -72,6 +72,8 @@ export default function MapCard({
   };
 
   const upvoteMap = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    if (!user) return;
+
     console.log('upvote map');
     e.stopPropagation();
     if (downvoteClass === 'text-downvote') {
@@ -92,6 +94,8 @@ export default function MapCard({
   };
 
   const downvoteMap = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    if (!user) return;
+
     console.log('downvote map');
     e.stopPropagation();
     if (upvoteClass === 'text-upvote') {
