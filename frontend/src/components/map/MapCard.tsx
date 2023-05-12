@@ -12,6 +12,7 @@ interface IMapCardProps {
   downloadCount: number;
   description: string;
   date: string;
+  preview: string;
 }
 
 export default function MapCard({
@@ -23,6 +24,7 @@ export default function MapCard({
   downloadCount,
   description,
   date,
+  preview,
 }: IMapCardProps) {
   useEffect(() => {
     if (upvoteIndex >= 0 && upvoteClass === '') {
@@ -182,7 +184,7 @@ export default function MapCard({
         ) : (
           ''
         )}
-        <img className="w-full" src="/img/afgan.png" />
+        <img className="w-full h-72" src={preview ? preview : '/img/defaultpreviewimg.png'} />
       </div>
 
       <div className="py-3 px-3">

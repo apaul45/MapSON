@@ -6,7 +6,6 @@ import { saveAs } from 'file-saver';
 import axios from 'axios';
 import { handlePublish, handleUnpublish } from './dialogs/ShareMapDialog';
 import domtoimage from 'dom-to-image';
-import FileSaver from 'file-saver';
 import L from 'leaflet';
 
 const ProjectMenu = ({ leafletMap }: { leafletMap: L.Map | null }) => {
@@ -64,30 +63,48 @@ const ProjectMenu = ({ leafletMap }: { leafletMap: L.Map | null }) => {
 
   const handleExitProject = () => {
     //Take and save the screenshot of the map right before leaving
-    const saveScreenshot = () => {
-      if (!leafletMap) return;
+    if (!leafletMap || !user) {
+      navigate(user ? '/home' : '/discover');
+      return;
+    }
 
-      //WIP: Need to make this occur way before everything after this line
-      //WIP: Need to set the location and zoom back to where it was beforehand
-      leafletMap.setView(leafletMap.getCenter(), 4);
-      leafletMap.pm.removeControls();
-      leafletMap.removeControl(leafletMap.zoomControl);
-      leafletMap.removeControl(leafletMap.attributionControl);
+    const mapId = map?._id;
 
-      console.log(leafletMap);
+    //WIP: Need to make this occur way before everything after this line
+    //WIP: Need to set the location and zoom back to where it was beforehand
+    leafletMap.setView(leafletMap.getCenter(), 4);
+    leafletMap.pm.removeControls();
+    leafletMap.removeControl(leafletMap.zoomControl);
+    leafletMap.removeControl(leafletMap.attributionControl);
 
-      setTimeout(() => {
-        const container = leafletMap.getContainer();
-        const dimensions = leafletMap.getSize();
-        domtoimage
-          .toBlob(container, { height: dimensions.y, width: dimensions.x })
-          .then((dataUrl) => FileSaver.saveAs(dataUrl, 'ss.png'))
-          .catch((err) => console.log(err));
-      }, 1000);
-    };
+    console.log(leafletMap);
 
-    saveScreenshot();
-    setTimeout(() => navigate(user ? '/home' : '/discover'), 1000);
+    // Need timeout to ensure map is reset w/controls removed
+    setTimeout(() => {
+      const container = leafletMap.getContainer();
+      const dimensions = leafletMap.getSize();
+
+      domtoimage
+        .toBlob(container, { height: dimensions.y, width: dimensions.x })
+        .then(async (blob) => {
+          //Storing preview as base 64 string in backend
+          const blobToDataUrl = () => {
+            return new Promise((r) => {
+              let a = new FileReader();
+              a.onload = r;
+              a.readAsDataURL(blob);
+            }).then((e: any) => e.target.result);
+          };
+
+          const img = await blobToDataUrl();
+          await mapStore.updateMap({ _id: mapId, preview: img });
+          navigate(user ? '/home' : '/discover');
+        })
+        .catch((err) => {
+          console.log(err);
+          navigate(user ? '/home' : '/discover');
+        });
+    }, 1000);
   };
 
   return (
@@ -147,7 +164,11 @@ const ProjectMenu = ({ leafletMap }: { leafletMap: L.Map | null }) => {
       }
       <MenuItem className="hover:bg-sort-hover">Share</MenuItem>
 
-      <MenuItem id="hover:bg-sort-hover menu-option-exit" onClick={() => handleExitProject()}>
+      <MenuItem
+        className="hover:bg-sort-hover"
+        id="menu-option-exit"
+        onClick={() => handleExitProject()}
+      >
         Exit project
       </MenuItem>
 
