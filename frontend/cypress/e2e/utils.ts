@@ -19,7 +19,7 @@ export const register = (user: User = cypressUser) => {
 export const login = (user: User = cypressUser) => {
   register(user);
 
-  cy.visit('http://localhost:5173/login');
+  cy.visit('http://127.0.0.1:5173/login');
   cy.get('#username').type(user.username);
   cy.get('#password').type(user.password);
 
