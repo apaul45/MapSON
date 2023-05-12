@@ -14,7 +14,14 @@ import 'leaflet-draw/dist/leaflet.draw.css';
 
 import { RootState, store } from '../../models';
 
-import { connect, disconnect, joinRoom, leaveRoom, socket } from '../../live-collab/socket';
+import {
+  connect,
+  disconnect,
+  emitMousePosition,
+  joinRoom,
+  leaveRoom,
+  socket,
+} from '../../live-collab/socket';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { MapComponentCallbacks } from '../../transactions/map/common';
@@ -104,7 +111,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
       console.log('reached connection');
       connect();
       //@ts-ignore
-      joinRoom(username, id);
+      joinRoom(username, id, leafletMap);
     };
 
     checkLoggedIn();
@@ -426,6 +433,12 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
     );
   };
 
+  const onMouseMove: L.LeafletMouseEventHandlerFn = (e) => {
+    if (id && username) {
+      emitMousePosition(id, username, { lat: e.latlng.lat, lng: e.latlng.lng });
+    }
+  };
+
   const undo = () => {
     transactions.current.undoTransaction();
   };
@@ -505,6 +518,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
             onMerge={onMerge}
             onSplit={onSplit}
             canEdit={canEdit}
+            onMouseMove={onMouseMove}
           />
         </GeoJSON>
       </MapContainer>

@@ -5,6 +5,7 @@ export interface User {
   username: string;
   password: string;
   maps: Map[];
+  bgColor: string;
 }
 
 export interface Published {
@@ -77,6 +78,20 @@ export interface Map {
   userAccess: Array<string>;
 }
 
+export interface Cursor {
+  marker: L.CircleMarker;
+}
+
+export interface RoomList {
+  [key: string]: RoomMember;
+}
+
+export interface RoomMember {
+  username: string;
+  cursor: Cursor;
+  bgColor: string;
+}
+
 export interface Store {
   currentMap: Map | null;
   maps: Map[];
@@ -88,7 +103,7 @@ export interface Store {
 
   //For live collab
   // TODO: Make this a dictionary, so that user can join and track multiple rooms
-  roomList: string[];
+  roomList: RoomList;
 }
 
 export interface UserModel {

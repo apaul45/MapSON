@@ -3,6 +3,7 @@ import { Map, User, UserModel } from '../types';
 import { RootModel } from '.';
 import { auth } from '../api';
 import { AxiosError } from 'axios';
+import tinycolor from 'tinycolor2';
 
 export const user = createModel<RootModel>()({
   state: { currentUser: null } as UserModel,
@@ -10,7 +11,8 @@ export const user = createModel<RootModel>()({
   //Pure reducer functions
   reducers: {
     setCurrentUser: (state, payload: User | null) => {
-      return { ...state, currentUser: payload };
+      const pl = { ...payload, bgColor: tinycolor.random().darken(30).toHexString() } as User;
+      return { ...state, currentUser: pl };
     },
     addUserMap: (state, payload: Map) => {
       const user = state.currentUser;

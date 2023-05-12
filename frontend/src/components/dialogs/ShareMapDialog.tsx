@@ -2,7 +2,6 @@ import { Fragment, useState } from 'react';
 import { Dialog, DialogBody, DialogFooter, DialogHeader, Input } from '@material-tailwind/react';
 import { RootState, store } from '../../models';
 import { useSelector } from 'react-redux';
-import { bgColor } from '../AccountCircle';
 import tinycolor from 'tinycolor2';
 
 interface Props {
@@ -88,7 +87,7 @@ const ShareMapDialog = ({ isOpen, closeDialog }: Props) => {
                         style={{
                           backgroundColor:
                             username === currentUser?.username
-                              ? bgColor
+                              ? currentUser.bgColor
                               : tinycolor.random().darken(30).toHexString(),
                         }}
                       >

@@ -29,6 +29,7 @@ export const ProjectNavbar = ({
   const [isEditNameActive, setEditNameActive] = useState(false);
 
   const loggedInUser = useSelector((state: RootState) => state.user.currentUser?.username);
+  const loggedInUserBgColor = useSelector((state: RootState) => state.user.currentUser?.bgColor);
   const clientList = useSelector((state: RootState) => state.mapStore.roomList);
 
   //TODO: Make this update the actual current map name (probably through a callback to project screen)
@@ -88,11 +89,11 @@ export const ProjectNavbar = ({
             {
               //Render other users to the left of the two panel buttons
               // TODO: Make this so that clientList is dictionary, and circles for users in currentMap room are rendered
-              clientList
-                .filter((user) => user !== loggedInUser)
+              Object.values(clientList)
+                .filter((user) => user.username !== loggedInUser)
                 .map((user) => (
-                  <div className="mr-2">
-                    <AccountCircle username={user} />
+                  <div className="mr-2" key={user.username}>
+                    <AccountCircle username={user.username} bgColor={user.bgColor} />
                   </div>
                 ))
             }
@@ -163,7 +164,9 @@ export const ProjectNavbar = ({
             >
               Share
             </button>
-            {loggedInUser && <AccountCircle username={loggedInUser} />}
+            {loggedInUser && (
+              <AccountCircle username={loggedInUser} bgColor={loggedInUserBgColor!} />
+            )}
           </div>
         </div>
       </div>

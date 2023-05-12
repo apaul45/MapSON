@@ -1,17 +1,11 @@
 import { useRef } from 'react';
 import { RootState, store } from '../models';
 import { useSelector } from 'react-redux';
-import tinycolor from 'tinycolor2';
 import { useNavigate } from 'react-router-dom';
 import { Menu, MenuHandler, MenuItem, MenuList } from '@material-tailwind/react';
 import { leaveAllRooms } from '../live-collab/socket';
 
-export const bgColor = tinycolor.random().darken(30).toHexString();
-
-const AccountCircle = ({ username }: { username: string }) => {
-  //Generate and darken random color
-  const backgroundColor = useRef(bgColor);
-
+const AccountCircle = ({ username, bgColor }: { username: string; bgColor: string }) => {
   //If this is the circle being rendered for the logged in user, render logout button
   const isLoggedIn = useSelector(
     (state: RootState) => state.user.currentUser?.username === username
@@ -34,14 +28,14 @@ const AccountCircle = ({ username }: { username: string }) => {
             isLoggedIn ? (
               <button
                 className={`text-white flex w-10 h-10 justify-center place-items-center rounded-full focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800`}
-                style={{ backgroundColor: backgroundColor.current }}
+                style={{ backgroundColor: bgColor }}
               >
                 {username?.charAt(0)}
               </button>
             ) : (
               <div
                 className={`text-white flex w-10 h-10 justify-center place-items-center rounded-full focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800`}
-                style={{ backgroundColor: tinycolor.random().darken(30).toHexString() }}
+                style={{ backgroundColor: bgColor }}
               >
                 {username?.charAt(0)}
               </div>

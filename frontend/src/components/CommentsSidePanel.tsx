@@ -5,12 +5,12 @@ import { RootState, store } from '../models';
 import { useSelector } from 'react-redux';
 import { addComment } from '../live-collab/socket';
 import tinycolor from 'tinycolor2';
-import { bgColor } from './AccountCircle';
 
 const CommentsSidePanel = () => {
   const canComment: boolean = useSelector((state: RootState) => !!state.user.currentUser);
   const currentMap = useSelector((state: RootState) => state.mapStore.currentMap);
   const username = useSelector((state: RootState) => state.user.currentUser?.username);
+  const bgColor = useSelector((state: RootState) => state.user.currentUser?.bgColor);
 
   const [comment, setComment] = useState<string>('');
   const colors = useRef<Record<string, string>>({});
@@ -19,8 +19,8 @@ const CommentsSidePanel = () => {
   const generateColors = () => {
     currentMap?.comments.map((comment) => {
       if (!colors.current[comment.username]) {
-        const color = tinycolor.random().darken(10).toHexString();
-        colors.current[comment.username] = comment.username === username ? bgColor : color;
+        colors.current[comment.username] =
+          comment.username === username ? bgColor! : tinycolor.random().darken(10).toHexString();
       }
     });
     return colors.current;
@@ -41,9 +41,9 @@ const CommentsSidePanel = () => {
       style={{ minWidth: '20vw' }}
     >
       <div className="overflow-y-scroll h-[92%]">
-        {currentMap?.comments?.map((comment) => (
+        {currentMap?.comments?.map((comment, index) => (
           <>
-            <CommentCard comment={comment} color={generateColors()[comment.username]} />
+            <CommentCard comment={comment} color={generateColors()[comment.username]} key={index} />
           </>
         ))}
       </div>

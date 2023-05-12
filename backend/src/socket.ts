@@ -2,6 +2,7 @@ import http from 'http';
 import { Server } from 'socket.io';
 import app from './app';
 import Map from './models/map-model';
+import { LatLngExpression } from 'leaflet';
 
 export const server = http.createServer(app);
 export const io = new Server(server, {
@@ -30,7 +31,7 @@ io.on('connection', (socket) => {
       console.log(`clientList after adding: ${rooms[roomId]}`);
 
       //Broadcast this list so that everyone can save it
-      io.to(roomId).emit('sendClientList', rooms[roomId]);
+      io.to(roomId).emit('sendClientList', rooms[roomId], roomId);
     }
   });
 
@@ -41,7 +42,7 @@ io.on('connection', (socket) => {
     console.log(`list of users left in room ${roomId}: ${rooms[roomId]}`);
 
     //Broadcast this list so that everyone can save it
-    io.to(roomId).emit('sendClientList', rooms[roomId]);
+    io.to(roomId).emit('sendClientList', rooms[roomId], roomId);
   });
 
   //For when a user logs out
@@ -50,13 +51,17 @@ io.on('connection', (socket) => {
       rooms[roomId] = rooms[roomId].filter((client) => client !== username);
 
       //Broadcast this list so that everyone can save it
-      io.to(roomId).emit('sendClientList', rooms[roomId]);
+      io.to(roomId).emit('sendClientList', rooms[roomId], roomId);
     }
   });
 
   socket.on('addComment', (roomId: string, comment: any) => {
     console.log(comment);
     io.to(roomId).emit('updateComments', comment);
+  });
+
+  socket.on('cursorUpdate', (roomId: string, username: string, mousePosition: LatLngExpression) => {
+    socket.broadcast.to(roomId).emit('cursorUpdate', roomId, username, mousePosition);
   });
 
   socket.on('disconnect', () => console.log('disconnected!'));
