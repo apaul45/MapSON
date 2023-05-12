@@ -1,10 +1,11 @@
-import { Feature, FeatureCollection, Geometry } from 'geojson';
+import { Feature, Geometry } from 'geojson';
 
 export interface User {
   email?: string;
   username: string;
   password: string;
   maps: Map[];
+  bgColor: string;
 }
 
 export interface Published {
@@ -78,6 +79,20 @@ export interface Map {
   preview?: string | ArrayBuffer | null;
 }
 
+export interface Cursor {
+  marker: L.CircleMarker;
+}
+
+export interface RoomList {
+  [key: string]: RoomMember;
+}
+
+export interface RoomMember {
+  username: string;
+  cursor: Cursor;
+  bgColor: string;
+}
+
 export interface Store {
   currentMap: Map | null;
   maps: Map[];
@@ -89,7 +104,7 @@ export interface Store {
 
   //For live collab
   // TODO: Make this a dictionary, so that user can join and track multiple rooms
-  roomList: string[];
+  roomList: RoomList;
 }
 
 export interface UserModel {

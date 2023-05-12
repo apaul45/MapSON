@@ -60,6 +60,7 @@ interface IMapControls {
   onRemove: PM.RemoveEventHandler;
   onMerge: PM.MergeEventHandler;
   onSplit: PM.SplitEventHandler;
+  onMouseMove: L.LeafletMouseEventHandlerFn;
   canEdit: boolean;
   getSelectedFeatures: () => SelectedFeature[];
 }
@@ -90,6 +91,7 @@ const MapControls = ({
   getSelectedFeatures,
   onMerge,
   onSplit,
+  onMouseMove,
 }: IMapControls) => {
   const map = useMap();
 
@@ -304,12 +306,14 @@ const MapControls = ({
   useEffect(() => {
     map.on('pm:merge', onMerge);
     map.on('pm:split', onSplit);
+    map.on('mousemove', onMouseMove);
 
     return () => {
       map.off('pm:merge', onMerge);
       map.off('pm:split', onSplit);
+      map.off('mousemove', onMouseMove);
     };
-  }, [onMerge, onSplit]);
+  }, [onMerge, onSplit, onMouseMove]);
 
   return (
     <GeomanControls

@@ -1,6 +1,6 @@
 import { createModel } from '@rematch/core';
 import { RootModel } from '.';
-import { Store, Map, FeatureExt, Comment } from '../types';
+import { Store, Map, FeatureExt, Comment, Cursor, RoomList } from '../types';
 import { map } from '../api';
 import { AxiosError } from 'axios';
 import { Feature } from '@turf/turf';
@@ -8,6 +8,7 @@ import { Geometry } from 'geojson';
 import { AllMapsRequest, CreateMapRequest } from '../api/types';
 import { cloneDeep } from 'lodash';
 import L from 'leaflet';
+import tinycolor from 'tinycolor2';
 
 const initialState: Store = {
   currentMap: null,
@@ -18,7 +19,7 @@ const initialState: Store = {
   addDialog: false,
   mapMarkedForDeletion: null,
   // TODO: Make this a dictionary, so that user can join and track multiple rooms
-  roomList: [],
+  roomList: {},
 };
 
 export const mapStore = createModel<RootModel>()({
@@ -47,7 +48,7 @@ export const mapStore = createModel<RootModel>()({
     setMapFilter: (state, payload: string) => {
       return { ...state, mapFilter: payload };
     },
-    setRoomList: (state, payload: string[]) => {
+    setRoomList: (state, payload: RoomList) => {
       return { ...state, roomList: payload };
     },
     setComments: (state, payload: Comment) => {
@@ -272,6 +273,35 @@ export const mapStore = createModel<RootModel>()({
       } catch (e: any) {
         dispatch.error.setError(e.response?.data.errorMessage ?? 'Unexpected error');
       }
+    },
+    updateCursor(payload: { username: string; position: L.LatLngExpression }, state) {
+      state.mapStore.roomList[payload.username].cursor.marker.setLatLng(payload.position);
+    },
+    updateRoomList(
+      payload: {
+        usernames: string[];
+        createMarkerFn: (username: string, bgColor: string) => L.CircleMarker;
+      },
+      state
+    ) {
+      //remove duplicates and self from usernames
+      const usernames = [...new Set(payload.usernames)].filter(
+        (u) => u != state.user.currentUser?.username
+      );
+
+      const newList = usernames.map((u) => {
+        if (u in state.mapStore.roomList) {
+          return [u, state.mapStore.roomList[u]];
+        } else {
+          const bgColor = tinycolor.random().darken(30).toHexString();
+          return [
+            u,
+            { cursor: { marker: payload.createMarkerFn(u, bgColor) }, username: u, bgColor },
+          ];
+        }
+      });
+
+      dispatch.mapStore.setRoomList(Object.fromEntries(newList));
     },
   }),
 });

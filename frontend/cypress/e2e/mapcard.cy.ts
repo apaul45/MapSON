@@ -102,7 +102,7 @@ describe('Map Card Tests', () => {
 
 describe('Standalone Download Map Test', () => {
   it('should download a map and update map counter', () => {
-    const user: User = {
+    const user = {
       email: 'downloadUser@email.com',
       username: 'downloadUser',
       password: 'password',

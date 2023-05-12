@@ -3,14 +3,16 @@ import { Map, User, UserModel } from '../types';
 import { RootModel } from '.';
 import { auth } from '../api';
 import { AxiosError } from 'axios';
+import tinycolor from 'tinycolor2';
 
 export const user = createModel<RootModel>()({
   state: { currentUser: null } as UserModel,
 
   //Pure reducer functions
   reducers: {
-    setCurrentUser: (state, payload: User | null) => {
-      return { ...state, currentUser: payload };
+    setCurrentUser: (state, payload: Omit<User, 'bgColor'> | null) => {
+      const pl = { ...payload, bgColor: tinycolor.random().darken(30).toHexString() } as User;
+      return { ...state, currentUser: pl };
     },
     addUserMap: (state, payload: Map) => {
       const user = state.currentUser;
@@ -22,7 +24,7 @@ export const user = createModel<RootModel>()({
       return { ...state, currentUser: user };
     },
     setUserMaps: (state, payload: Map[]) => {
-      const user: User = state.currentUser as unknown as User;
+      const user = state.currentUser!;
       user.maps = payload;
       console.log(user);
       return { ...state, currentUser: user };
@@ -32,7 +34,7 @@ export const user = createModel<RootModel>()({
   //Effects are (possibly async) functions that take in the store's state    and payload, and return anything
 
   effects: (dispatch) => ({
-    async register(payload: User, state) {
+    async register(payload: Omit<User, 'bgColor'>, state) {
       try {
         const response = await auth.register(payload);
         // @ts-ignore

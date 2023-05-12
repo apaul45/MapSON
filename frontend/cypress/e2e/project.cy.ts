@@ -68,7 +68,7 @@ describe('Project Nav Bar Tests', () => {
 });
 
 describe('Project Invitation Tests', () => {
-  const user: User = {
+  const user = {
     email: '10',
     username: '20',
     password: '30',

@@ -18,7 +18,7 @@ export const RegisterScreen = () => {
       return;
     }
 
-    const payload: User = {
+    const payload = {
       email: email,
       username: username,
       password: password,

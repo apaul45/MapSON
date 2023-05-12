@@ -124,7 +124,7 @@ export const MainNavbar = () => {
                           <MenuItem onClick={() => handleCreateMap()}>Create new Map</MenuItem>
                         </MenuList>
                       </Menu>
-                      <AccountCircle username={user.username} />
+                      <AccountCircle username={user.username} bgColor={user.bgColor} />
                     </>
                   ) : (
                     <>
