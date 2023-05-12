@@ -86,6 +86,8 @@ export interface Store {
   addDialog: boolean;
   mapMarkedForDeletion: string | null;
 
+  leafletMap?: L.Map;
+
   //For live collab
   // TODO: Make this a dictionary, so that user can join and track multiple rooms
   roomList: string[];

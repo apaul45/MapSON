@@ -129,40 +129,14 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
     mapRef.current = geoJSON;
   }, [geoJSON]);
 
+  useLayoutEffect(() => {
+    store.dispatch.mapStore.setLeafletMap(leafletMap.current);
+  }, [leafletMap.current]);
+
   //second one is the most recently selected
   const selectedFeatures = useRef<SelectedFeature[]>([]);
 
   const editLayer = useRef<SelectedFeature | null>(null);
-
-  const saveScreenshot = () => {
-    if (!leafletMap.current) return;
-
-    const lMap = leafletMap.current;
-    //const currentZoom = lMap.getZoom();
-
-    //WIP: Need to make this occur way before everything after this line
-    //WIP: Need to set the location and zoom back to where it was beforehand
-    lMap.fitBounds(bounds);
-
-    lMap.pm.removeControls();
-    lMap.removeControl(lMap.zoomControl);
-    lMap.removeControl(lMap.attributionControl);
-
-    console.log(lMap);
-
-    const container = lMap.getContainer();
-    const dimensions = lMap.getSize();
-    domtoimage
-      .toBlob(container, { height: dimensions.y, width: dimensions.x })
-      .then((dataUrl) => FileSaver.saveAs(dataUrl, 'ss.png'))
-      .catch((err) => console.log(err));
-
-    //lMap.fitBounds(currentBounds);
-    //lMap.setZoom(currentZoom);
-    lMap.pm.addControls();
-    lMap.addControl(lMap.zoomControl);
-    lMap.addControl(lMap.attributionControl);
-  };
 
   const isSelected = (id: any) => {
     return selectedFeatures.current.some((f) => f.id === id);
@@ -382,7 +356,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
         callbacks
       );
 
-      saveScreenshot();
+      //saveScreenshot();
     },
     onEdit: async (e) => {
       const { layer, affectedLayers } = e as typeof e & { affectedLayers: [L.Layer, L.LatLng][] };
@@ -497,53 +471,56 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature }: IMapCo
   });
 
   return (
-    <div className="w-screen h-[calc(100vh-64px)]">
-      <MapContainer
-        style={{ width: '100%', minHeight: '100%', height: '100%', zIndex: 0 }}
-        zoom={4}
-        markerZoomAnimation={false}
-        center={bounds === undefined ? position : undefined}
-        doubleClickZoom={false}
-        id="map-container"
-        //TODO: dynamically check if we need to use L.SVG vs L.Canvas depending on browser
-        renderer={new L.SVG({ tolerance: 3 })}
-        //@ts-ignore
-        bounds={bounds}
-        ref={leafletMap}
-      >
-        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-
-        <GeoJSON
-          data={geoJSON}
-          style={(f) => {
-            const feat = f as FeatureExt;
-            let base;
-
-            if (isSelected(feat?._id)) {
-              base = SELECTED;
-            } else {
-              base = getCurrentColor(feat);
-            }
-
-            return { ...base, weight: 2 };
-          }}
-          /* @ts-ignore */
-          // Fine to ignore since we are guaranteeing the extensions to L.GeoJSON
-          onEachFeature={onEachFeature}
-          ref={geojsonLayer}
+    <>
+      <div className="w-screen h-[calc(100vh-64px)]">
+        <MapContainer
+          style={{ width: '100%', minHeight: '100%', height: '100%', zIndex: 0 }}
+          zoom={4}
+          markerZoomAnimation={false}
+          center={bounds === undefined ? position : undefined}
+          doubleClickZoom={false}
+          id="map-container"
+          //TODO: dynamically check if we need to use L.SVG vs L.Canvas depending on browser
+          renderer={new L.SVG({ tolerance: 3 })}
+          //@ts-ignore
+          bounds={bounds}
+          ref={leafletMap}
         >
-          <MapControls
-            onCreate={onCreate}
-            onEdit={onEdit}
-            onRemove={onRemove}
-            getSelectedFeatures={getSelectedFeatures}
-            onMerge={onMerge}
-            onSplit={onSplit}
-            canEdit={canEdit}
-          />
-        </GeoJSON>
-      </MapContainer>
-    </div>
+          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+
+          <GeoJSON
+            data={geoJSON}
+            style={(f) => {
+              const feat = f as FeatureExt;
+              let base;
+
+              if (isSelected(feat?._id)) {
+                base = SELECTED;
+              } else {
+                base = getCurrentColor(feat);
+              }
+
+              return { ...base, weight: 2 };
+            }}
+            /* @ts-ignore */
+            // Fine to ignore since we are guaranteeing the extensions to L.GeoJSON
+            onEachFeature={onEachFeature}
+            ref={geojsonLayer}
+          >
+            <MapControls
+              onCreate={onCreate}
+              onEdit={onEdit}
+              onRemove={onRemove}
+              getSelectedFeatures={getSelectedFeatures}
+              onMerge={onMerge}
+              onSplit={onSplit}
+              canEdit={canEdit}
+            />
+          </GeoJSON>
+        </MapContainer>
+      </div>
+      <div id="screenshot-map"></div>
+    </>
   );
 };
 

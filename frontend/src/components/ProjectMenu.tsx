@@ -1,14 +1,17 @@
 import { MenuList, MenuItem, Menu, MenuHandler } from '@material-tailwind/react';
 import { useSelector } from 'react-redux';
 import { RootState, store } from '../models';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { saveAs } from 'file-saver';
 import axios from 'axios';
 import { handlePublish, handleUnpublish } from './dialogs/ShareMapDialog';
+import domtoimage from 'dom-to-image';
+import FileSaver from 'file-saver';
 
 const ProjectMenu = () => {
   const user = useSelector((state: RootState) => state.user.currentUser);
   const map = useSelector((state: RootState) => state.mapStore.currentMap);
+  const leafletMap = useSelector((state: RootState) => state.mapStore.leafletMap);
   const { mapStore, error } = store.dispatch;
 
   const navigate = useNavigate();
@@ -57,6 +60,34 @@ const ProjectMenu = () => {
     const id = await mapStore.forkMap(map?._id as unknown as string);
 
     if (id) navigate(`/project/${id}`);
+  };
+
+  const handleExitProject = () => {
+    const saveScreenshot = () => {
+      if (!leafletMap) return;
+
+      //WIP: Need to make this occur way before everything after this line
+      //WIP: Need to set the location and zoom back to where it was beforehand
+      leafletMap.setView(leafletMap.getCenter(), 4);
+      leafletMap.pm.removeControls();
+      leafletMap.removeControl(leafletMap.zoomControl);
+      leafletMap.removeControl(leafletMap.attributionControl);
+
+      console.log(leafletMap);
+
+      setTimeout(() => {
+        const container = leafletMap.getContainer();
+        const dimensions = leafletMap.getSize();
+        domtoimage
+          .toBlob(container, { height: dimensions.y, width: dimensions.x })
+          .then((dataUrl) => FileSaver.saveAs(dataUrl, 'ss.png'))
+          .catch((err) => console.log(err));
+      }, 1000);
+    };
+
+    saveScreenshot();
+
+    setTimeout(() => navigate(user ? '/home' : '/discover'), 1000);
   };
 
   return (
@@ -116,9 +147,9 @@ const ProjectMenu = () => {
       }
       <MenuItem className="hover:bg-sort-hover">Share</MenuItem>
 
-      <Link to={user ? '/home' : '/discover'} className="hover:bg-sort-hover hover:outline-none">
-        <MenuItem id="menu-option-exit">Exit project</MenuItem>
-      </Link>
+      <MenuItem id="hover:bg-sort-hover menu-option-exit" onClick={() => handleExitProject()}>
+        Exit project
+      </MenuItem>
 
       <MenuItem className="hover:bg-sort-hover text-red-400" onClick={() => openDeleteDialog()}>
         Delete map
