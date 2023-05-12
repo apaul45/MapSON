@@ -129,7 +129,7 @@ describe('Edit description test', () => {
   it('should edit the description', () => {
     cy.get('#expand-collapse-button').should('exist').click();
     cy.get('#description').should('exist').dblclick();
-    cy.get('#description-field').type('{ctrl+a}Cypress Map{enter');
+    cy.get('#description-field').type('{ctrl+a}Cypress Map{enter}');
     cy.get('#description').should('exist');
   });
 })
