@@ -108,7 +108,9 @@ describe('Standalone Download Map Test', () => {
     cy.readFile('cypress/downloads/My Map.geo.json').should('exist');
 
     cy.get('#menu-button').click();
-    cy.contains('Exit project').click();
+    cy.get('#menu-option-exit').click();
+    cy.location('pathname').should((path) => expect(path).to.include('/home'));
+
     cy.reload();
     cy.get('#download-count').then(($cnt) => {
       const download = Number($cnt.text());

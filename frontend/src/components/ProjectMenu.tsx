@@ -70,8 +70,6 @@ const ProjectMenu = ({ leafletMap }: { leafletMap: L.Map | null }) => {
 
     const mapId = map?._id;
 
-    //WIP: Need to make this occur way before everything after this line
-    //WIP: Need to set the location and zoom back to where it was beforehand
     leafletMap.setView(leafletMap.getCenter(), 4);
     leafletMap.pm.removeControls();
     leafletMap.removeControl(leafletMap.zoomControl);
@@ -79,7 +77,7 @@ const ProjectMenu = ({ leafletMap }: { leafletMap: L.Map | null }) => {
 
     console.log(leafletMap);
 
-    // Need timeout to ensure map is reset w/controls removed
+    // Need timeout to ensure map is reset w/controls removed first
     setTimeout(() => {
       const container = leafletMap.getContainer();
       const dimensions = leafletMap.getSize();
