@@ -13,7 +13,18 @@ const { mapStore } = store.dispatch;
 declare module 'socket.io-client' {
   class Socket {
     map?: MutableRefObject<L.Map>;
+    createMarker?: (username: string, bgColor: string) => L.CircleMarker;
   }
+}
+
+export interface Member {
+  username: string;
+  socket_id: string;
+  // position: LatLngLiteral
+}
+
+export interface Room {
+  [key: string]: Member;
 }
 
 //Emitters
@@ -21,12 +32,39 @@ export const connect = () => socket.connect();
 export const disconnect = () => socket.disconnect();
 
 export const joinRoom = (username: string, room: string, map: MutableRefObject<L.Map>) => {
-  socket.emit('joinRoom', username, room);
   socket.map = map;
+  socket.emit('joinRoom', username, room);
+
+  socket.createMarker = (username, bgColor, position: L.LatLngExpression = [0, 0]) => {
+    if (!map.current) {
+      throw new Error('SOCKET CANNOT READ LEAFLET MAP.');
+    }
+
+    const cursor = L.circleMarker(position, {
+      radius: 5,
+      fillOpacity: 1,
+      color: bgColor,
+      fillColor: bgColor,
+      weight: 1,
+      // important since we dont to have this affect snapping or any other things with geoman
+      pmIgnore: true,
+    });
+
+    cursor.bindTooltip(username, {
+      permanent: true,
+      className: 'labels',
+      offset: [0, 0],
+      direction: 'bottom',
+      opacity: 0.75,
+    });
+    cursor.addTo(map.current);
+    return cursor;
+  };
 };
-export const leaveRoom = (username: string, roomId: string) => {
-  socket.emit('leaveRoom', username, roomId);
+export const leaveRoom = (roomId: string) => {
+  socket.emit('leaveRoom', roomId);
   delete socket.map;
+  socket.createMarker = undefined!;
 };
 
 export const leaveAllRooms = (username: string) => socket.emit('leaveAllRooms', username);
@@ -34,41 +72,29 @@ export const leaveAllRooms = (username: string) => socket.emit('leaveAllRooms', 
 export const addComment = (roomId: string | undefined, comment: Comment) =>
   socket.emit('addComment', roomId, comment);
 
-export const emitMousePosition = (
-  roomId: string,
-  username: string,
-  mousePosition: L.LatLngExpression
-) => {
-  socket.emit('cursorUpdate', roomId, username, mousePosition);
+export const emitMousePosition = (roomId: string, mousePosition: L.LatLngExpression) => {
+  socket.emit('cursorUpdate', roomId, mousePosition);
 };
 
-socket.on('cursorUpdate', (roomId: string, username: string, position: L.LatLngExpression) => {
-  mapStore.updateCursor({ username, position });
+socket.on('cursorUpdate', (roomId: string, position: L.LatLngExpression, socket_id: string) => {
+  mapStore.updateCursor({ socket_id, position });
 });
 
 //Event handlers
-socket.on('sendClientList', (clients) => {
-  console.log(clients);
-  const createMarkerFn = (username: string, bgColor: string): L.CircleMarker => {
-    if (!socket.map) {
-      throw new Error('SOCKET CANNOT READ LEAFLET MAP.');
-    }
+socket.on('initClientList', (roomId: string, clients: Room) => {
+  console.log({ type: 'Init clients', clients });
+  mapStore.initRoomList({ clients, createMarkerFn: socket.createMarker! });
+});
 
-    const cursor = L.circleMarker([0, 0], {
-      radius: 5,
-      fillOpacity: 1,
-      color: bgColor,
-      fillColor: bgColor,
-      weight: 1,
-    });
-    cursor.bindTooltip(username, { permanent: true, className: 'labels', offset: [0, 0] });
-    try {
-      cursor.pm.disable();
-    } catch {}
-    cursor.addTo(socket.map.current);
-    return cursor;
-  };
-  mapStore.updateRoomList({ usernames: clients, createMarkerFn });
+socket.on('joinRoom', (roomId: string, member: Member) => {
+  console.log({ type: 'Member added', member });
+  mapStore.addClient({ member, createMarkerFn: socket.createMarker! });
+});
+
+socket.on('leaveRoom', (roomId: string, socket_id: string) => {
+  console.log({ type: 'Member left', socket_id });
+
+  mapStore.removeClient(socket_id);
 });
 
 socket.on('updateComments', (comment: Comment) => mapStore.setComments(comment));

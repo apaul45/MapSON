@@ -89,6 +89,7 @@ export interface RoomList {
 
 export interface RoomMember {
   username: string;
+  socket_id: string;
   cursor: Cursor;
   bgColor: string;
 }

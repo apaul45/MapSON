@@ -42,9 +42,11 @@ const CommentsSidePanel = () => {
     >
       <div className="overflow-y-scroll h-[92%]">
         {currentMap?.comments?.map((comment, index) => (
-          <>
-            <CommentCard comment={comment} color={generateColors()[comment.username]} key={index} />
-          </>
+          <CommentCard
+            comment={comment}
+            color={generateColors()[comment.username]}
+            key={comment.comment + comment.username}
+          />
         ))}
       </div>
 

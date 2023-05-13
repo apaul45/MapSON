@@ -113,8 +113,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafl
 
       console.log('reached connection');
       connect();
-      //@ts-ignore
-      joinRoom(username, id, leafletMap); //joinRoom will send empty username for guest
+      joinRoom(username, id!, leafletMap); //joinRoom will send empty username for guest
     };
 
     checkLoggedIn();
@@ -128,7 +127,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafl
           return;
         }
 
-        leaveRoom(username, id as unknown as string);
+        leaveRoom(id!);
       }
     };
   }, [username]);
@@ -445,7 +444,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafl
 
   const onMouseMove: L.LeafletMouseEventHandlerFn = (e) => {
     if (id && username) {
-      emitMousePosition(id, username, { lat: e.latlng.lat, lng: e.latlng.lng });
+      emitMousePosition(id, { lat: e.latlng.lat, lng: e.latlng.lng });
     }
   };
 

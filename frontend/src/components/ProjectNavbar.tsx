@@ -95,7 +95,7 @@ export const ProjectNavbar = ({
               Object.values(clientList)
                 .filter((user) => user.username !== loggedInUser)
                 .map((user) => (
-                  <div className="mr-2" key={user.username}>
+                  <div className="mr-2" key={user.socket_id}>
                     <AccountCircle username={user.username} bgColor={user.bgColor} />
                   </div>
                 ))
