@@ -38,7 +38,7 @@ io.on('connection', (socket) => {
     //broadcast current clientList to caller
     socket.emit('initClientList', roomId, rooms[roomId]);
 
-    console.log(`joining room ${roomId}!`);
+    console.log(`${username}(${socket.id}) joining room ${roomId}!`);
 
     //Add user to this room, if it's a logged in user
     if (username) {
@@ -78,6 +78,7 @@ io.on('connection', (socket) => {
       rooms[roomId] = Object.fromEntries(
         Object.entries(rooms[roomId]).filter(([k, v]) => {
           if (username === v.username) {
+            console.log(`${username}: left room ${roomId}`);
             io.to(roomId).emit('leaveRoom', roomId, v.socket_id);
             return false;
           }
@@ -89,10 +90,12 @@ io.on('connection', (socket) => {
   });
 
   socket.on('addComment', (roomId: string, comment: any) => {
+    console.log(`${socket.id}: added comment ${JSON.stringify(comment)} in room ${roomId}`);
     socket.broadcast.to(roomId).emit('updateComments', comment);
   });
 
   socket.on('cursorUpdate', (roomId: string, mousePosition: LatLngLiteral) => {
+    console.log(`${socket.id}: updated cursor ${JSON.stringify(mousePosition)} in room ${roomId}`);
     socket.broadcast.to(roomId).emit('cursorUpdate', roomId, mousePosition, socket.id);
   });
 
@@ -102,6 +105,7 @@ io.on('connection', (socket) => {
         Object.entries(rooms[roomId]).filter(([k, v]) => {
           if (socket.id === v.socket_id) {
             socket.broadcast.to(roomId).emit('leaveRoom', roomId, v.socket_id);
+            console.log(`${socket.id} left ${roomId}`);
             return false;
           }
 
