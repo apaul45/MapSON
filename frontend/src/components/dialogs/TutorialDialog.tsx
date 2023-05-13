@@ -101,7 +101,7 @@ export default function TutorialDialog({ isOpen, closeDialog }: ITutorialDialog)
 
   return (
     <Dialog open={isOpen} handler={() => closeDialog()} size="xl" className="bg-gray block">
-      <DialogHeader className="text-white">Tutorial</DialogHeader>
+      <DialogHeader className="text-white flex flex-col">Tutorial</DialogHeader>
       <DialogBody className=" max-h-[55rem] overflow-scroll">
         <List>
           {itemList.map((item, index) => (
