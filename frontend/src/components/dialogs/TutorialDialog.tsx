@@ -48,7 +48,7 @@ export default function TutorialDialog({ isOpen, closeDialog }: ITutorialDialog)
     {
       name: 'Add Custom Region Properties',
       src: '/tutorial/addProp.gif',
-      description: '',
+      description: 'Note duplicate property key will not work',
     },
     {
       name: 'Enter Vertices Editing Mode',
@@ -91,6 +91,11 @@ export default function TutorialDialog({ isOpen, closeDialog }: ITutorialDialog)
       name: 'Simplify Regions',
       src: '/img/defaultpreviewimg.png',
       description: '',
+    },
+    {
+      name: 'Save Thumbnail',
+      src: '/tutorial/saveThumbnail.gif',
+      description: 'Click Exit project to save map thumbnail',
     },
   ];
 
