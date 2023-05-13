@@ -116,12 +116,10 @@ const ProjectMenu = ({ leafletMap }: { leafletMap: L.Map | null }) => {
     <Fragment>
       <MenuList id="project-menu" className="bg-gray text-white p-0 font-sans text-base">
         <MenuItem className="text-sort-by mb-0.5 text-lg pointer-events-none"> File </MenuItem>
-        {user ? (
-          <Fragment>
-            <MenuItem className="hover:bg-sort-hover">Save</MenuItem>
-            <MenuItem className="hover:bg-sort-hover">Import</MenuItem>
-          </Fragment>
-        ) : null}
+
+        {user ? <MenuItem className="hover:bg-sort-hover">Save</MenuItem> : null}
+        {user ? <MenuItem className="hover:bg-sort-hover">Import</MenuItem> : null}
+
         <Menu placement="right-start">
           <MenuHandler>
             <MenuItem>Download as</MenuItem>
@@ -156,19 +154,17 @@ const ProjectMenu = ({ leafletMap }: { leafletMap: L.Map | null }) => {
         <hr className="my-2 border-blue-gray-50 outline-none" />
 
         {user ? (
-          <Fragment>
-            <MenuItem className="text-sort-by text-lg pt-0 pointer-events-none"> Edit </MenuItem>
-            <MenuItem className="hover:bg-sort-hover">Undo</MenuItem>
-            <MenuItem className="hover:bg-sort-hover">Redo</MenuItem>
-            <hr className="my-2 border-blue-gray-50 outline-none" />
-          </Fragment>
+          <MenuItem className="text-sort-by text-lg pt-0 pointer-events-none"> Edit </MenuItem>
         ) : null}
+        {user ? <MenuItem className="hover:bg-sort-hover">Undo</MenuItem> : null}
+        {user ? <MenuItem className="hover:bg-sort-hover">Redo</MenuItem> : null}
+        {user ? <hr className="my-2 border-blue-gray-50 outline-none" /> : null}
 
-        {user === null ? null : (
+        {user ? (
           <MenuItem className="hover:bg-sort-hover" onClick={() => setTutoOpen(true)}>
             Tutorial
           </MenuItem>
-        )}
+        ) : null}
 
         {
           // @ts-ignore
