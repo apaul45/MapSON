@@ -49,6 +49,7 @@ export const HomeScreen = () => {
                   date={map.updatedAt!}
                   preview={map.preview ? (map.preview as string) : ''}
                   published={map.published.isPublished}
+                  userAccess={map.userAccess.length}
                 />
               </div>
             ))

@@ -110,6 +110,7 @@ export const DiscoverScreen = () => {
               date={map.published.publishedDate?.toString()!}
               preview={map.preview ? (map.preview as string) : ''}
               published={map.published.isPublished} //this is only here to avoid type errors
+              userAccess={map.userAccess.length}
             />
           </div>
         ))}
