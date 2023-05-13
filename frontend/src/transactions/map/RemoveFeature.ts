@@ -24,19 +24,15 @@ export class RemoveFeature extends MapTransaction<RemoveFeatureSerialized> {
   async doTransaction(map: L.Map, callbacks: MapComponentCallbacks) {
     // dont repeat network connection on peer for first run
     const id = callbacks.getFeatureByIndex(this.featureIndex!)?._id!;
-    if (!(this.firstRun && this.isPeer)) {
-      await store.dispatch.mapStore.deleteFeature(id);
-    }
 
-    if (this.layer?._id !== id) {
-      this.layer = callbacks.getLayerById(id) as LGeoJsonExt;
-    }
+    await store.dispatch.mapStore.deleteFeature({
+      featureid: id,
+      doNetwork: this.shouldDoNetwork(),
+    });
 
-    // remove layer
-    this.layer?.remove();
+    RemoveFeature.deleteFeatureFrontend(callbacks, id, this.layer);
+
     this.layer = undefined;
-
-    callbacks.unselectFeature(id);
 
     this.firstRun = false;
   }
@@ -45,30 +41,10 @@ export class RemoveFeature extends MapTransaction<RemoveFeatureSerialized> {
     const { id } = (await store.dispatch.mapStore.createFeature({
       feature: this.feature,
       featureIndex: this.featureIndex,
+      doNetwork: true,
     }))!;
     this.feature._id = id;
-
-    const geoJSONLayer = callbacks.getGeoJSONLayer();
-    const options: L.LayerOptions = { ...geoJSONLayer.options, pmIgnore: false };
-
-    const layer = L.GeoJSON.geometryToLayer(this.feature, options) as L.Layer & {
-      feature: Feature;
-      defaultOptions: L.LayerOptions;
-    };
-
-    layer.feature = L.GeoJSON.asFeature(this.feature);
-    layer.defaultOptions = layer.options;
-    geoJSONLayer.resetStyle(layer);
-    callbacks.onEachFeature(this.feature, layer as unknown as LGeoJsonExt);
-    geoJSONLayer.addLayer(layer);
-
-    layerEvents(
-      layer,
-      { onEdit: callbacks.onEdit, onLayerRemove: callbacks.onRemove, onCreate: callbacks.onCreate },
-      'on'
-    );
-
-    this.layer = layer as unknown as LGeoJsonExt;
+    this.layer = RemoveFeature.createFeatureFrontend(callbacks, this.feature);
   }
 
   serialize(): RemoveFeatureSerialized {

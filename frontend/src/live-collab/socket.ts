@@ -3,6 +3,7 @@ import { store } from '../models';
 import { Comment, Map } from '../types';
 import * as L from 'leaflet';
 import { MutableRefObject } from 'react';
+import { MapComponentCallbacks } from '../transactions/map/common';
 
 export const socket = io(import.meta.env.VITE_BACKEND_URL, {
   autoConnect: false, //Only connecting once in project,
@@ -13,6 +14,7 @@ const { mapStore } = store.dispatch;
 declare module 'socket.io-client' {
   class Socket {
     map?: MutableRefObject<L.Map>;
+    callbacks?: MutableRefObject<MapComponentCallbacks>;
     createMarker?: (username: string, bgColor: string) => L.CircleMarker;
   }
 }
@@ -31,8 +33,14 @@ export interface Room {
 export const connect = () => socket.connect();
 export const disconnect = () => socket.disconnect();
 
-export const joinRoom = (username: string, room: string, map: MutableRefObject<L.Map>) => {
+export const joinRoom = (
+  username: string,
+  room: string,
+  map: MutableRefObject<L.Map>,
+  callbacks: MutableRefObject<MapComponentCallbacks>
+) => {
   socket.map = map;
+  socket.callbacks = callbacks;
   socket.emit('joinRoom', username, room);
 
   socket.createMarker = (username, bgColor, position: L.LatLngExpression = [0, 0]) => {

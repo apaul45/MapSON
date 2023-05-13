@@ -1,5 +1,9 @@
 import { MutableRefObject } from 'react';
 import { MapComponentCallbacks } from '../transactions/map/common';
+import L from 'leaflet';
+import { Feature } from 'geojson';
+import { layerEvents } from 'react-leaflet-geoman-v2';
+import { FeatureExt, LGeoJsonExt } from '../types';
 
 /**
  * jsTPS_Transaction
@@ -39,6 +43,119 @@ export abstract class BaseTransaction<T> {
    * Deserialize transaction
    */
   abstract deserialize(i: T): this;
+
+  /* 
+          (isPeer, peerCalled, firstRun)
+                    Output
+          0	0	0	      T       (client does undo/redo)
+          0	0	1	      F       (init transaction originating from client)
+          0	1	0	      T       (peer does undo/redo and client recieves)
+          0	1	1	      !       (not possible (is origin but init data is from a peer?))
+          1	0	0	      T       (peer does undo/redo)
+          1	0	1       !       (not possible (peer inits transaction that originates from self, which wouldnt make them a peer))
+          1	1	0	      T       (another peer does undo/redo and peer recieves)
+          1	1	1	      T       (init transaction originating from peer)	
+  */
+
+  shouldPerformFrontendEdit(peerCalled = this.isPeer) {
+    const res = (this.isPeer && peerCalled) || !this.firstRun;
+
+    if (res) {
+      console.log('Should perform');
+    } else {
+      console.log('Should NOT perform');
+    }
+
+    return res;
+  }
+
+  /* 
+          (isPeer, peerCalled, firstRun)
+                    Output
+          0	0	0	      T       (client does undo/redo)
+          0	0	1	      T       (init transaction originating from client)
+          0	1	0	      F       (peer does undo/redo and client recieves)
+          0	1	1	      !       (not possible (is origin but init data is from a peer?))
+          1	0	0	      T       (peer does undo/redo)
+          1	0	1       !       (not possible (peer inits transaction that originates from self, which wouldnt make them a peer))
+          1	1	0	      F       (another peer does undo/redo and peer recieves)
+          1	1	1	      F       (init transaction originating from peer)	
+  */
+
+  shouldDoNetwork(peerCalled = this.firstRun && this.isPeer) {
+    return !peerCalled;
+  }
+
+  static createFeatureFrontend(callbacks: MapComponentCallbacks, feature: FeatureExt) {
+    const geoJSONLayer = callbacks.getGeoJSONLayer();
+    const options: L.LayerOptions = { ...geoJSONLayer.options, pmIgnore: false };
+    const layer = L.GeoJSON.geometryToLayer(feature, options) as L.Layer & {
+      feature: Feature;
+      defaultOptions: L.LayerOptions;
+    };
+    layer.feature = L.GeoJSON.asFeature(feature);
+    layer.defaultOptions = layer.options;
+    geoJSONLayer.resetStyle(layer);
+    geoJSONLayer.addLayer(layer);
+
+    layerEvents(
+      layer,
+      {
+        onEdit: callbacks.onEdit,
+        onLayerRemove: callbacks.onRemove,
+        onCreate: callbacks.onCreate,
+      },
+      'on'
+    );
+
+    return layer as unknown as LGeoJsonExt;
+  }
+
+  static deleteFeatureFrontend(
+    callbacks: MapComponentCallbacks,
+    id: string,
+    iLayer: LGeoJsonExt | undefined
+  ) {
+    let layer = iLayer;
+
+    if (layer?._id !== id) {
+      layer?.remove();
+      layer = callbacks.getLayerById(id) as LGeoJsonExt;
+    }
+
+    // remove layer
+    layer?.remove();
+
+    callbacks.unselectFeature(id);
+  }
+
+  static editFeatureFrontend(
+    feature: FeatureExt,
+    id: string | undefined,
+    callbacks: MapComponentCallbacks,
+    featureIndex: number | undefined
+  ) {
+    if (feature.geometry.type !== 'Polygon' && feature.geometry.type !== 'MultiPolygon') {
+      throw new Error('Cannot undo/redo edits features that is not a (multi)polygon');
+    }
+
+    const coords = feature.geometry.coordinates;
+
+    const latLngs = L.GeoJSON.coordsToLatLngs(coords, feature.geometry.type === 'Polygon' ? 1 : 2);
+
+    let layer = callbacks.getLayerById(id ?? callbacks.getFeatureByIndex(featureIndex!)?._id!);
+
+    if (!layer) {
+      console.error('Layer not found');
+    }
+
+    //@ts-ignore
+    layer?.setLatLngs ? layer?.setLatLngs(latLngs) : layer?._setLatLngs(latLngs);
+    if (layer?.pm.enabled()) {
+      //@ts-ignore
+      layer?.pm._initMarkers();
+    }
+  }
 }
 
 export abstract class MapTransaction<T> extends BaseTransaction<T> {

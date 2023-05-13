@@ -65,7 +65,7 @@ const SELECTED_AND_HOVERED = {
 };
 
 const getCurrentColor = (feature: FeatureExt) =>
-  feature.properties?.color
+  feature?.properties?.color
     ? {
         fillColor: feature.properties.color as string,
         fillOpacity: 0.2,
@@ -91,6 +91,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafl
   const geojsonLayer = useRef<L.GeoJSON>(null!);
   const transactions = useRef(new jsTPS(leafletMap));
   const mapRef = useRef(geoJSON);
+  const callbacks = useRef<MapComponentCallbacks>(null!);
 
   const { id } = useParams();
   const navigate = useNavigate();
@@ -113,7 +114,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafl
 
       console.log('reached connection');
       connect();
-      joinRoom(username, id!, leafletMap); //joinRoom will send empty username for guest
+      joinRoom(username, id!, leafletMap, callbacks); //joinRoom will send empty username for guest
     };
 
     checkLoggedIn();
@@ -344,7 +345,11 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafl
     return geojsonLayer.current;
   };
 
-  const callbacks: MapComponentCallbacks = {
+  const getTransactions = () => {
+    return transactions.current;
+  };
+
+  callbacks.current = {
     isSelected,
     selectFeature,
     unselectFeature,
@@ -356,11 +361,12 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafl
     getFeatureById,
     getFeatureByIndex,
     getGeoJSONLayer,
+    getTransactions,
     onCreate: async (e) => {
       await transactions.current.addTransaction(
         new CreateFeature(e.layer as LGeoJsonExt),
         leafletMap.current!,
-        callbacks
+        callbacks.current!
       );
 
       //saveScreenshot();
@@ -391,7 +397,11 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafl
           }),
         ]);
       }
-      await transactions.current.addTransaction(layerTransaction, leafletMap.current!, callbacks);
+      await transactions.current.addTransaction(
+        layerTransaction,
+        leafletMap.current!,
+        callbacks.current!
+      );
     },
 
     onRemove: async (e) => {
@@ -401,18 +411,18 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafl
       await transactions.current.addTransaction(
         new RemoveFeature(layer as LGeoJsonExt, feature, featureIndex),
         leafletMap.current!,
-        callbacks
+        callbacks.current!
       );
     },
   };
 
   // did it this way so handlers can be passed to transactions
 
-  const onCreate = callbacks.onCreate;
-  const onEdit = callbacks.onEdit;
-  const onRemove = callbacks.onRemove;
+  const onCreate = callbacks.current.onCreate;
+  const onEdit = callbacks.current.onEdit;
+  const onRemove = callbacks.current.onRemove;
 
-  transactions.current.callbacks = callbacks;
+  transactions.current.callbacks = callbacks.current;
 
   const onMerge: L.PM.MergeEventHandler = async (e) =>
     await transactions.current.addTransaction(
@@ -422,10 +432,10 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafl
           const { feature, featureIndex } = getFeatureById(ol.layer._id)!;
           return { feature, featureIndex, layer: ol.layer };
         }),
-        callbacks
+        callbacks.current!
       ),
       leafletMap.current!,
-      callbacks
+      callbacks.current!
     );
 
   const onSplit: L.PM.SplitEventHandler = async (e) => {
@@ -435,10 +445,10 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafl
       new SplitFeature(
         e.newFeatures as InputAddedLayer[],
         { feature, featureIndex, layer: e.oldLayer },
-        callbacks
+        callbacks.current!
       ),
       leafletMap.current!,
-      callbacks
+      callbacks.current!
     );
   };
 

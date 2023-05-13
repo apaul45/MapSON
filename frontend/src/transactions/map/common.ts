@@ -2,6 +2,7 @@ import { SelectedFeature } from '../../components/map/MapComponent';
 import { FeatureExt, LGeoJsonExt } from '../../types';
 
 import { PM } from 'leaflet';
+import jsTPS from '../../utils/jsTPS';
 
 export interface MapComponentCallbacks {
   isSelected: (id: any) => boolean;
@@ -15,6 +16,7 @@ export interface MapComponentCallbacks {
   getFeatureById: (id: string) => { featureIndex: number; feature: FeatureExt } | undefined;
   getFeatureByIndex: (idx: number) => FeatureExt | undefined;
   getGeoJSONLayer: () => L.GeoJSON;
+  getTransactions: () => jsTPS;
   onCreate: PM.CreateEventHandler;
   onEdit: PM.EditEventHandler;
   onRemove: PM.RemoveEventHandler;
