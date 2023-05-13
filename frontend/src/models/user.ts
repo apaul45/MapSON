@@ -11,7 +11,10 @@ export const user = createModel<RootModel>()({
   //Pure reducer functions
   reducers: {
     setCurrentUser: (state, payload: Omit<User, 'bgColor'> | null) => {
-      const pl = { ...payload, bgColor: tinycolor.random().darken(30).toHexString() } as User;
+      const pl =
+        payload === null
+          ? null
+          : ({ ...payload, bgColor: tinycolor.random().darken(30).toHexString() } as User);
       return { ...state, currentUser: pl };
     },
     addUserMap: (state, payload: Map) => {

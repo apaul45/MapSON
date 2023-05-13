@@ -65,6 +65,14 @@ describe('Project Nav Bar Tests', () => {
     cy.contains('Shapefile').should('exist').click();
     cy.readFile('cypress/downloads/test.geo.json').should('exist');
   });
+
+  it('should open the tutorial', () => {
+    cy.get('#menu-button').click();
+    cy.contains('Tutorial').should('exist').click();
+    cy.contains('Modify Region Name').should('exist').click();
+    cy.get('[src="/tutorial/addName.gif"]').should('be.visible');
+    cy.get('#root').click('right', { force: true });
+  });
 });
 
 describe('Project Invitation Tests', () => {
