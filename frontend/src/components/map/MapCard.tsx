@@ -226,7 +226,7 @@ export default function MapCard({
             src={
               published
                 ? '/img/icons/publishedicon.png'
-                : userAccess >= 1
+                : userAccess >= 2
                 ? '/img/icons/shared-icon.png'
                 : '/img/white-backgrnd.png'
             }
