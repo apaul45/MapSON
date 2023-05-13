@@ -22,14 +22,6 @@ import {
   leaveRoom,
   socket,
 } from '../../live-collab/socket';
-import {
-  connect,
-  disconnect,
-  emitMousePosition,
-  joinRoom,
-  leaveRoom,
-  socket,
-} from '../../live-collab/socket';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { MapComponentCallbacks } from '../../transactions/map/common';
