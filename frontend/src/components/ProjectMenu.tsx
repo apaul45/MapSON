@@ -7,6 +7,8 @@ import axios from 'axios';
 import { handlePublish, handleUnpublish } from './dialogs/ShareMapDialog';
 import domtoimage from 'dom-to-image';
 import L from 'leaflet';
+import { Fragment, useState } from 'react';
+import TutorialDialog from './dialogs/TutorialDialog';
 
 const ProjectMenu = ({ leafletMap }: { leafletMap: L.Map | null }) => {
   const user = useSelector((state: RootState) => state.user.currentUser);
@@ -14,6 +16,11 @@ const ProjectMenu = ({ leafletMap }: { leafletMap: L.Map | null }) => {
   const { mapStore, error } = store.dispatch;
 
   const navigate = useNavigate();
+
+  const [tutoOpen, setTutoOpen] = useState(false);
+  const closeTutoDialog = () => {
+    setTutoOpen(false);
+  };
 
   const exportGeojson = () => {
     if (!map?.features) {
@@ -106,74 +113,94 @@ const ProjectMenu = ({ leafletMap }: { leafletMap: L.Map | null }) => {
   };
 
   return (
-    <MenuList id="project-menu" className="bg-gray text-white p-0 font-sans text-base">
-      <MenuItem className="text-sort-by mb-0.5 text-lg pointer-events-none"> File </MenuItem>
+    <Fragment>
+      <MenuList id="project-menu" className="bg-gray text-white p-0 font-sans text-base">
+        <MenuItem className="text-sort-by mb-0.5 text-lg pointer-events-none"> File </MenuItem>
+        {user ? (
+          <Fragment>
+            <MenuItem className="hover:bg-sort-hover">Save</MenuItem>
+            <MenuItem className="hover:bg-sort-hover">Import</MenuItem>
+          </Fragment>
+        ) : null}
+        <Menu placement="right-start">
+          <MenuHandler>
+            <MenuItem>Download as</MenuItem>
+          </MenuHandler>
 
-      <MenuItem className="hover:bg-sort-hover">Save</MenuItem>
-      <MenuItem className="hover:bg-sort-hover">Import</MenuItem>
+          <MenuList className="bg-gray text-white p-0 font-sans text-base">
+            <MenuItem
+              className="hover:bg-sort-hover"
+              onClick={() => {
+                exportShapefile();
+              }}
+            >
+              Shapefile
+            </MenuItem>
+            <MenuItem
+              className="hover:bg-sort-hover"
+              onClick={() => {
+                exportGeojson();
+              }}
+            >
+              GeoJSON
+            </MenuItem>
+          </MenuList>
+        </Menu>
 
-      <Menu placement="right-start">
-        <MenuHandler>
-          <MenuItem>Download as</MenuItem>
-        </MenuHandler>
-
-        <MenuList className="bg-gray text-white p-0 font-sans text-base">
-          <MenuItem
-            className="hover:bg-sort-hover"
-            onClick={() => {
-              exportShapefile();
-            }}
-          >
-            Shapefile
+        {user?.email && (
+          <MenuItem onClick={handleForkMap} className="hover:bg-sort-hover">
+            Make a copy
           </MenuItem>
-          <MenuItem
-            className="hover:bg-sort-hover"
-            onClick={() => {
-              exportGeojson();
-            }}
-          >
-            GeoJSON
+        )}
+
+        <hr className="my-2 border-blue-gray-50 outline-none" />
+
+        {user ? (
+          <Fragment>
+            <MenuItem className="text-sort-by text-lg pt-0 pointer-events-none"> Edit </MenuItem>
+            <MenuItem className="hover:bg-sort-hover">Undo</MenuItem>
+            <MenuItem className="hover:bg-sort-hover">Redo</MenuItem>
+            <hr className="my-2 border-blue-gray-50 outline-none" />
+          </Fragment>
+        ) : null}
+
+        {user === null ? null : (
+          <MenuItem className="hover:bg-sort-hover" onClick={() => setTutoOpen(true)}>
+            Tutorial
           </MenuItem>
-        </MenuList>
-      </Menu>
+        )}
 
-      {user?.email && <MenuItem onClick={handleForkMap}>Make a copy</MenuItem>}
+        {
+          // @ts-ignore
+          map?.published.isPublished && map?.owner._id === user?._id ? (
+            <MenuItem className="hover:bg-sort-hover" onClick={() => handleUnpublish()}>
+              Unpublish
+            </MenuItem>
+          ) : //@ts-ignore
+          map?.owner._id === user?._id ? (
+            <MenuItem className="hover:bg-sort-hover" onClick={() => handlePublish()}>
+              Publish
+            </MenuItem>
+          ) : null
+        }
+        <MenuItem className="hover:bg-sort-hover">Share</MenuItem>
 
-      <hr className="my-2 border-blue-gray-50 outline-none" />
+        <MenuItem
+          className="hover:bg-sort-hover"
+          id="menu-option-exit"
+          onClick={() => handleExitProject()}
+        >
+          Exit project
+        </MenuItem>
 
-      <MenuItem className="text-sort-by text-lg pt-0 pointer-events-none"> Edit </MenuItem>
-      <MenuItem className="hover:bg-sort-hover">Undo</MenuItem>
-      <MenuItem className="hover:bg-sort-hover">Redo</MenuItem>
-
-      <hr className="my-2 border-blue-gray-50 outline-none" />
-
-      {
-        // @ts-ignore
-        map?.published.isPublished && map?.owner._id === user?._id ? (
-          <MenuItem className="hover:bg-sort-hover" onClick={() => handleUnpublish()}>
-            Unpublish
+        {user ? (
+          <MenuItem className="hover:bg-sort-hover text-red-400" onClick={() => openDeleteDialog()}>
+            Delete map
           </MenuItem>
-        ) : //@ts-ignore
-        map?.owner._id === user?._id ? (
-          <MenuItem className="hover:bg-sort-hover" onClick={() => handlePublish()}>
-            Publish
-          </MenuItem>
-        ) : null
-      }
-      <MenuItem className="hover:bg-sort-hover">Share</MenuItem>
-
-      <MenuItem
-        className="hover:bg-sort-hover"
-        id="menu-option-exit"
-        onClick={() => handleExitProject()}
-      >
-        Exit project
-      </MenuItem>
-
-      <MenuItem className="hover:bg-sort-hover text-red-400" onClick={() => openDeleteDialog()}>
-        Delete map
-      </MenuItem>
-    </MenuList>
+        ) : null}
+      </MenuList>
+      <TutorialDialog isOpen={tutoOpen} closeDialog={closeTutoDialog} />
+    </Fragment>
   );
 };
 
