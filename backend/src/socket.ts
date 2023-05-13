@@ -1,8 +1,7 @@
 import http from 'http';
 import { Server } from 'socket.io';
 import app from './app';
-import Map from './models/map-model';
-import { LatLngExpression } from 'leaflet';
+import { LatLngLiteral } from 'leaflet';
 
 export const server = http.createServer(app);
 export const io = new Server(server, {
@@ -11,58 +10,104 @@ export const io = new Server(server, {
   },
 });
 
-let rooms: Record<string, Array<string>> = {};
+interface Member {
+  username: string;
+  socket_id: string;
+  // position: LatLngLiteral
+}
+
+interface Room {
+  [key: string]: Member;
+}
+interface Rooms {
+  [key: string]: Room;
+}
+
+let rooms: Rooms = {};
 
 io.on('connection', (socket) => {
   console.log('connected!');
 
   socket.on('joinRoom', (username: string, roomId: string) => {
+    if (!rooms[roomId]) {
+      rooms[roomId] = {};
+    }
+
     socket.join(roomId);
+
+    //broadcast current clientList to caller
+    socket.emit('initClientList', roomId, rooms[roomId]);
+
     console.log(`joining room ${roomId}!`);
 
     //Add user to this room, if it's a logged in user
     if (username) {
-      let clientList = rooms[roomId];
+      console.log(`clientList before adding: ${JSON.stringify(rooms[roomId])}`);
 
-      console.log(`clientList before adding: ${clientList}`);
+      const member = {
+        username,
+        socket_id: socket.id,
+      };
 
-      rooms[roomId] = !clientList ? [username] : [...clientList, username];
+      rooms[roomId][socket.id] = member;
 
-      console.log(`clientList after adding: ${rooms[roomId]}`);
+      console.log(`clientList after adding: ${JSON.stringify(rooms[roomId])}`);
 
-      //Broadcast this list so that everyone can save it
-      io.to(roomId).emit('sendClientList', rooms[roomId], roomId);
+      //Broadcast new member
+      socket.broadcast.to(roomId).emit('joinRoom', roomId, member);
     }
   });
 
-  socket.on('leaveRoom', (username: string, roomId: string) => {
-    rooms[roomId] = rooms[roomId].filter((client) => client !== username);
+  socket.on('leaveRoom', (roomId: string) => {
+    let v = rooms[roomId]?.[socket.id];
+
+    if (v) {
+      console.log(`${v.username} has left room ${roomId}!`);
+      delete rooms[roomId][socket.id];
+    }
     socket.leave(roomId);
-    console.log(`${username} has left room ${roomId}!`);
-    console.log(`list of users left in room ${roomId}: ${rooms[roomId]}`);
+    console.log(`list of users left in room ${roomId}: ${JSON.stringify(rooms[roomId])}`);
 
     //Broadcast this list so that everyone can save it
-    io.to(roomId).emit('sendClientList', rooms[roomId], roomId);
+    socket.broadcast.to(roomId).emit('leaveRoom', roomId, socket.id);
   });
 
   //For when a user logs out
   socket.on('leaveAllRooms', (username: string) => {
     for (const roomId in rooms) {
-      rooms[roomId] = rooms[roomId].filter((client) => client !== username);
+      rooms[roomId] = Object.fromEntries(
+        Object.entries(rooms[roomId]).filter(([k, v]) => {
+          if (username === v.username) {
+            io.to(roomId).emit('leaveRoom', roomId, v.socket_id);
+            return false;
+          }
 
-      //Broadcast this list so that everyone can save it
-      io.to(roomId).emit('sendClientList', rooms[roomId], roomId);
+          return true;
+        })
+      );
     }
   });
 
   socket.on('addComment', (roomId: string, comment: any) => {
-    console.log(comment);
-    io.to(roomId).emit('updateComments', comment);
+    socket.broadcast.to(roomId).emit('updateComments', comment);
   });
 
-  socket.on('cursorUpdate', (roomId: string, username: string, mousePosition: LatLngExpression) => {
-    socket.broadcast.to(roomId).emit('cursorUpdate', roomId, username, mousePosition);
+  socket.on('cursorUpdate', (roomId: string, mousePosition: LatLngLiteral) => {
+    socket.broadcast.to(roomId).emit('cursorUpdate', roomId, mousePosition, socket.id);
   });
 
-  socket.on('disconnect', () => console.log('disconnected!'));
+  socket.on('disconnect', () => {
+    for (const roomId in rooms) {
+      rooms[roomId] = Object.fromEntries(
+        Object.entries(rooms[roomId]).filter(([k, v]) => {
+          if (socket.id === v.socket_id) {
+            socket.broadcast.to(roomId).emit('leaveRoom', roomId, v.socket_id);
+            return false;
+          }
+
+          return true;
+        })
+      );
+    }
+  });
 });

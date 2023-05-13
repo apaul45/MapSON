@@ -1,6 +1,6 @@
 import { createModel } from '@rematch/core';
 import { RootModel } from '.';
-import { Store, Map, FeatureExt, Comment, Cursor, RoomList } from '../types';
+import { Store, Map, FeatureExt, Comment, Cursor, RoomList, RoomMember } from '../types';
 import { map } from '../api';
 import { AxiosError } from 'axios';
 import { Feature } from '@turf/turf';
@@ -9,6 +9,7 @@ import { AllMapsRequest, CreateMapRequest } from '../api/types';
 import { cloneDeep } from 'lodash';
 import L from 'leaflet';
 import tinycolor from 'tinycolor2';
+import { Member, Room } from '../live-collab/socket';
 
 const initialState: Store = {
   currentMap: null,
@@ -270,38 +271,62 @@ export const mapStore = createModel<RootModel>()({
         await map.updateMap(currentMap._id, {
           comments: [...currentMap.comments, payload],
         });
+
+        dispatch.mapStore.setComments(payload);
       } catch (e: any) {
         dispatch.error.setError(e.response?.data.errorMessage ?? 'Unexpected error');
       }
     },
-    updateCursor(payload: { username: string; position: L.LatLngExpression }, state) {
-      state.mapStore.roomList[payload.username].cursor.marker.setLatLng(payload.position);
+    updateCursor(payload: { socket_id: string; position: L.LatLngExpression }, state) {
+      state.mapStore.roomList[payload.socket_id]?.cursor.marker.setLatLng(payload.position);
     },
-    updateRoomList(
+    initRoomList(
       payload: {
-        usernames: string[];
+        clients: Room;
         createMarkerFn: (username: string, bgColor: string) => L.CircleMarker;
       },
       state
     ) {
-      //remove duplicates and self from usernames
-      const usernames = [...new Set(payload.usernames)].filter(
-        (u) => u != state.user.currentUser?.username
+      //remove old cursors
+      Object.values(state.mapStore.roomList).forEach((v) => v.cursor.marker.remove());
+
+      //new cursors
+      const newRoomList: RoomList = Object.fromEntries(
+        Object.entries(payload.clients).map(([k, v]) => {
+          const bgColor = tinycolor.random().darken(30).toHexString();
+          const marker = payload.createMarkerFn(v.username, bgColor);
+
+          return [k, { ...v, bgColor, cursor: { marker } }];
+        })
       );
 
-      const newList = usernames.map((u) => {
-        if (u in state.mapStore.roomList) {
-          return [u, state.mapStore.roomList[u]];
-        } else {
-          const bgColor = tinycolor.random().darken(30).toHexString();
-          return [
-            u,
-            { cursor: { marker: payload.createMarkerFn(u, bgColor) }, username: u, bgColor },
-          ];
-        }
-      });
+      dispatch.mapStore.setRoomList(newRoomList);
+    },
+    addClient(
+      payload: {
+        member: Member;
+        createMarkerFn: (username: string, bgColor: string) => L.CircleMarker;
+      },
+      state
+    ) {
+      if (payload.member.socket_id in state.mapStore.roomList) {
+        //clear previous marker
+        state.mapStore.roomList[payload.member.socket_id].cursor.marker.remove();
+      }
 
-      dispatch.mapStore.setRoomList(Object.fromEntries(newList));
+      const bgColor = tinycolor.random().darken(30).toHexString();
+      const marker = payload.createMarkerFn(payload.member.username, bgColor);
+      const client = { ...payload.member, bgColor, cursor: { marker } };
+
+      dispatch.mapStore.setRoomList({
+        ...state.mapStore.roomList,
+        [payload.member.socket_id]: client,
+      });
+    },
+    removeClient(payload: string, state) {
+      const { [payload]: removedClient, ...rest } = state.mapStore.roomList;
+      removedClient?.cursor.marker.remove();
+      dispatch.mapStore.setRoomList(rest);
     },
   }),
 });
