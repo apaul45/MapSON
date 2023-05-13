@@ -42,6 +42,7 @@
     "react-leaflet-geoman-v2": "^0.2.2",
     "react-redux": "^8.0.5",
     "react-router-dom": "^6.10.0",
+    "react-spinners": "^0.13.8",
     "reactjs-popup": "^2.0.5",
     "shpjs": "^4.0.4",
     "socket.io": "^4.6.1",
