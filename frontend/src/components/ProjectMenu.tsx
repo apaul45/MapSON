@@ -18,7 +18,7 @@ const ProjectMenu = ({ leafletMap }: { leafletMap: L.Map | null }) => {
   const navigate = useNavigate();
 
   const open =
-    import.meta.env.MODE === 'development' && localStorage.getItem('opened') === 'true'
+    import.meta.env.MODE === 'development' || localStorage.getItem('opened') === 'true'
       ? false
       : user && user?.maps.length === 1
       ? true
