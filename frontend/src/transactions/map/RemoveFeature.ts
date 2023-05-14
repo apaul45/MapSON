@@ -31,7 +31,6 @@ export class RemoveFeature extends MapTransaction<RemoveFeatureSerialized> {
   }
 
   async doTransaction(map: L.Map, callbacks: MapComponentCallbacks, fromSocket: boolean) {
-    // dont repeat network connection on peer for first run
     const id = callbacks.getFeatureByIndex(this.featureIndex!)?._id!;
 
     await store.dispatch.mapStore.deleteFeature({

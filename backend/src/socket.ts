@@ -95,7 +95,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('cursorUpdate', (roomId: string, mousePosition: LatLngLiteral) => {
-    console.log(`${socket.id}: updated cursor ${JSON.stringify(mousePosition)} in room ${roomId}`);
+    // console.log(`${socket.id}: updated cursor ${JSON.stringify(mousePosition)} in room ${roomId}`);
     socket.broadcast.to(roomId).emit('cursorUpdate', roomId, mousePosition, socket.id);
   });
 

@@ -267,8 +267,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafl
 
     const dblclick: L.LeafletMouseEventHandlerFn = (e) => {
       //ignore if meta is pressed with it or if we cant edit
-      if (e.originalEvent.metaKey || !leafletMap.current.canEdit) {
-        console.log('CANT TOGGLE');
+      if (e.originalEvent.metaKey) {
         return;
       }
 
@@ -292,7 +291,9 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafl
     layer.on('mouseover', mouseover);
     layer.on('mouseout', mouseout);
     layer.on('click', click);
-    layer.on('dblclick', dblclick);
+    if (canEdit) {
+      layer.on('dblclick', dblclick);
+    }
 
     layer._isConfigured = true;
 
@@ -362,7 +363,8 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafl
     transactions.current.addTransaction(
       deserializer(t, callbacks.current),
       leafletMap.current,
-      callbacks.current
+      callbacks.current,
+      true
     );
   };
 

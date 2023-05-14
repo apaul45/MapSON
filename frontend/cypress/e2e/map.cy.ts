@@ -38,11 +38,7 @@ describe('Polygon tests', () => {
   it('should draw a polygon with proper hover change states', () => {
     drawPolygon();
 
-    doubleClickRegion(300, 300);
-
-    cy.hasVertexMarkers(4);
-
-    doubleClickRegion(300, 300);
+    cy.hasLayers(1);
 
     // ONLY WORKS WITH SVG RENDERER
     cy.get('.leaflet-interactive[fill="blue"]')

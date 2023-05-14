@@ -62,9 +62,14 @@ export abstract class BaseTransaction<T> {
     return res;
   }
 
+  /*
+    if transaction was made by peer   and the current action is from socket =>  NO
+    if transaction was made by client and the current action is from socket =>  NO 
+    if transaction was made by peer   and the current action is from client =>  YES
+    if transaction was made by client and the current action is from client =>  YES 
+  */
   shouldDoNetwork(fromSocket: boolean) {
-    const peerInit = this.firstRun && this.isPeer;
-    return !peerInit || !fromSocket;
+    return !fromSocket;
   }
 
   static createFeatureFrontend(callbacks: MapComponentCallbacks, feature: FeatureExt) {
@@ -99,8 +104,8 @@ export abstract class BaseTransaction<T> {
   ) {
     let layer = iLayer;
 
-    if (layer?._id !== id) {
-      layer?.remove();
+    if (!layer || layer._id !== id) {
+      layer && layer.remove();
       layer = callbacks.getLayerById(id) as LGeoJsonExt;
     }
 
@@ -277,7 +282,12 @@ export default class jsTPS {
    *
    * @param {jsTPS_Transaction} transaction Transaction to add to the stack and do.
    */
-  async addTransaction(transaction: Transaction, map: L.Map, callbacks: MapComponentCallbacks) {
+  async addTransaction(
+    transaction: Transaction,
+    map: L.Map,
+    callbacks: MapComponentCallbacks,
+    fromSocket: boolean = false
+  ) {
     // ARE WE BRANCHING?
     if (
       this.mostRecentTransaction < 0 ||
@@ -295,7 +305,7 @@ export default class jsTPS {
     this.transactions[this.mostRecentTransaction + 1] = transaction;
 
     // AND EXECUTE IT
-    await this.doTransaction();
+    await this.doTransaction(fromSocket);
   }
 
   /**

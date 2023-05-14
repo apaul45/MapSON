@@ -55,11 +55,15 @@ export class CreateFeature extends MapTransaction<CreateFeatureSerialized> {
 
   async undoTransaction(map: L.Map, callbacks: MapComponentCallbacks, fromSocket: boolean) {
     const id = callbacks.getFeatureByIndex(this.featureIndex!)?._id!;
+
     await store.dispatch.mapStore.deleteFeature({
       featureid: id,
       doNetwork: this.shouldDoNetwork(fromSocket),
     });
+
     CreateFeature.deleteFeatureFrontend(callbacks, id, this.layer);
+
+    this.layer = undefined;
   }
 
   serialize(): CreateFeatureSerialized {
