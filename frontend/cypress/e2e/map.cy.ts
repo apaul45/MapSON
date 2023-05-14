@@ -234,7 +234,8 @@ describe('Region Properties Tests', () => {
     cy.get("input[placeholder='color value']").should('exist').type('pink');
     cy.get('#' + type + '-save-button')
       .should('exist')
-      .click();
+      .click()
+      .wait(1000);
 
     clickRegions(1);
 
@@ -244,7 +245,8 @@ describe('Region Properties Tests', () => {
     cy.get("input[placeholder='color value']").clear().type('yellow');
     cy.get('#' + type + '-save-button')
       .should('exist')
-      .click();
+      .click()
+      .wait(1000);
 
     clickRegions(1);
     cy.get('.leaflet-interactive[fill="yellow"]', { timeout: 10000 }).should('exist');
