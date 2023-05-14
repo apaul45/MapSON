@@ -134,3 +134,10 @@ socket.on('undo', async (roomId: string, peerArtifacts: Object | undefined = und
 socket.on('redo', async (roomId: string, peerArtifacts: Object | undefined = undefined) => {
   await socket.callbacks?.current.redo(true, peerArtifacts);
 });
+
+export const clientRedo = async () => {
+  await socket.callbacks?.current.redo(false);
+};
+export const clientUndo = async () => {
+  await socket.callbacks?.current.undo(false);
+};
