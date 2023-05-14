@@ -54,24 +54,28 @@ const HOVERED = {
   fillColor: 'green',
   fillOpacity: 0.2,
   color: 'blue',
+  weight: 2,
 };
 
 const IDLE = {
   fillColor: 'blue',
   fillOpacity: 0.2,
   color: 'blue',
+  weight: 2,
 };
 
 export const SELECTED = {
   fillColor: 'red',
   fillOpacity: 0.5,
   color: 'black',
+  weight: 2,
 };
 
 const SELECTED_AND_HOVERED = {
   fillColor: 'teal',
   fillOpacity: 0.5,
   color: 'black',
+  weight: 2,
 };
 
 const getCurrentColor = (feature: FeatureExt) =>
@@ -80,6 +84,7 @@ const getCurrentColor = (feature: FeatureExt) =>
         fillColor: feature.properties.color as string,
         fillOpacity: 0.2,
         color: feature.properties.color as string,
+        weight: 2,
       }
     : IDLE;
 
@@ -223,6 +228,8 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafl
     feature.properties?.name && layer.bindPopup(feature.properties?.name, { keepInView: false });
 
     layer.pm.disable();
+
+    layer.setStyle(getCurrentColor(layer.feature));
 
     const mouseover: L.LeafletMouseEventHandlerFn = (e) => {
       const id = getLayerID(layer)!;
