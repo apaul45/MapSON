@@ -97,6 +97,11 @@ export default function TutorialDialog({ isOpen, closeDialog }: ITutorialDialog)
       src: '/tutorial/saveThumbnail.gif',
       description: 'Click Exit project to save map thumbnail',
     },
+    {
+      name: 'Inivte a User to Edit',
+      src: '/tutorial/invite.gif',
+      description: 'The share dialog can be displayed from the project menu or from the nav bar',
+    },
   ];
 
   return (
