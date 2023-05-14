@@ -65,7 +65,11 @@ export const ProjectNavbar = ({
                 </svg>
               </button>
             </MenuHandler>
-            <ProjectMenu leafletMap={leafletMap} />
+            <ProjectMenu
+              leafletMap={leafletMap}
+              shareOpen={shareOpen}
+              setShareOpen={setShareOpen}
+            />
           </Menu>
 
           <div className="text-center">
