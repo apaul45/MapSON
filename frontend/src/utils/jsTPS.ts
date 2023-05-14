@@ -24,6 +24,10 @@ export type TransactionType =
   | 'Split'
   | 'CreateAndRemoveMultipleFeature';
 
+export interface CommonSerialization {
+  type: TransactionType;
+}
+
 export abstract class BaseTransaction<T> {
   abstract readonly type: TransactionType;
   firstRun: boolean;
@@ -42,23 +46,12 @@ export abstract class BaseTransaction<T> {
   /**
    * Deserialize transaction
    */
-  abstract deserialize(i: T): this;
+  static deserialize(i: any, callbacks: MapComponentCallbacks): any {
+    throw new Error('NOT IMPLEMENTED');
+  }
 
-  /* 
-          (isPeer, peerCalled, firstRun)
-                    Output
-          0	0	0	      T       (client does undo/redo)
-          0	0	1	      F       (init transaction originating from client)
-          0	1	0	      T       (peer does undo/redo and client recieves)
-          0	1	1	      !       (not possible (is origin but init data is from a peer?))
-          1	0	0	      T       (peer does undo/redo)
-          1	0	1       !       (not possible (peer inits transaction that originates from self, which wouldnt make them a peer))
-          1	1	0	      T       (another peer does undo/redo and peer recieves)
-          1	1	1	      T       (init transaction originating from peer)	
-  */
-
-  shouldPerformFrontendEdit(peerCalled = this.isPeer) {
-    const res = (this.isPeer && peerCalled) || !this.firstRun;
+  shouldPerformFrontendEdit() {
+    const res = this.isPeer || !this.firstRun;
 
     if (res) {
       console.log('Should perform');
@@ -69,21 +62,9 @@ export abstract class BaseTransaction<T> {
     return res;
   }
 
-  /* 
-          (isPeer, peerCalled, firstRun)
-                    Output
-          0	0	0	      T       (client does undo/redo)
-          0	0	1	      T       (init transaction originating from client)
-          0	1	0	      F       (peer does undo/redo and client recieves)
-          0	1	1	      !       (not possible (is origin but init data is from a peer?))
-          1	0	0	      T       (peer does undo/redo)
-          1	0	1       !       (not possible (peer inits transaction that originates from self, which wouldnt make them a peer))
-          1	1	0	      F       (another peer does undo/redo and peer recieves)
-          1	1	1	      F       (init transaction originating from peer)	
-  */
-
-  shouldDoNetwork(peerCalled = this.firstRun && this.isPeer) {
-    return !peerCalled;
+  shouldDoNetwork(fromSocket: boolean) {
+    const peerInit = this.firstRun && this.isPeer;
+    return !peerInit || !fromSocket;
   }
 
   static createFeatureFrontend(callbacks: MapComponentCallbacks, feature: FeatureExt) {
@@ -107,6 +88,8 @@ export abstract class BaseTransaction<T> {
       },
       'on'
     );
+
+    callbacks.onEachFeature(feature, layer as unknown as LGeoJsonExt);
 
     return layer as unknown as LGeoJsonExt;
   }
@@ -162,25 +145,22 @@ export abstract class MapTransaction<T> extends BaseTransaction<T> {
   /**
    * This method is called by jTPS when a transaction is executed.
    */
-  abstract doTransaction(map: L.Map, callbacks: MapComponentCallbacks): void | Promise<void>;
+  abstract doTransaction(
+    map: L.Map,
+    callbacks: MapComponentCallbacks,
+    fromSocket: boolean
+  ): void | Promise<void>;
   /**
    * This method is called by jTPS when a transaction is undone.
    */
-  abstract undoTransaction(map: L.Map, callbacks: MapComponentCallbacks): void | Promise<void>;
+  abstract undoTransaction(
+    map: L.Map,
+    callbacks: MapComponentCallbacks,
+    fromSocket: boolean
+  ): void | Promise<void>;
 }
 
-export abstract class RegularTransaction<T> extends BaseTransaction<T> {
-  /**
-   * This method is called by jTPS when a transaction is executed.
-   */
-  abstract doTransaction(): void | Promise<void>;
-  /**
-   * This method is called by jTPS when a transaction is undone.
-   */
-  abstract undoTransaction(): void | Promise<void>;
-}
-
-export type Transaction = MapTransaction<any> | RegularTransaction<any>;
+export type Transaction = MapTransaction<any>;
 
 /**
  * jsTPS
@@ -327,16 +307,13 @@ export default class jsTPS {
    * counter. Note this function may be invoked as a result of either adding
    * a transaction (which also does it), or redoing a transaction.
    */
-  async doTransaction() {
+  async doTransaction(fromSocket: boolean = false) {
     if (this.hasTransactionToRedo()) {
       this.performingDo = true;
       let transaction = this.transactions[this.mostRecentTransaction + 1];
       console.log(`Do Transaction: ${transaction.type}`);
-      if (transaction instanceof MapTransaction) {
-        await transaction.doTransaction(this.map.current!, this.callbacks!);
-      } else if (transaction instanceof RegularTransaction) {
-        await transaction.doTransaction();
-      }
+      await transaction.doTransaction(this.map.current!, this.callbacks!, fromSocket);
+
       this.mostRecentTransaction++;
       this.performingDo = false;
     }
@@ -346,16 +323,13 @@ export default class jsTPS {
    * This function gets the most recently executed transaction on the
    * TPS stack and undoes it, moving the TPS counter accordingly.
    */
-  async undoTransaction() {
+  async undoTransaction(fromSocket: boolean = false) {
     if (this.hasTransactionToUndo()) {
       this.performingUndo = true;
       let transaction = this.transactions[this.mostRecentTransaction];
       console.log(`Undo Transaction: ${transaction.type}`);
-      if (transaction instanceof MapTransaction) {
-        await transaction.undoTransaction(this.map.current!, this.callbacks!);
-      } else {
-        await transaction.undoTransaction();
-      }
+      await transaction.undoTransaction(this.map.current!, this.callbacks!, fromSocket);
+
       this.mostRecentTransaction--;
       this.performingUndo = false;
     }

@@ -99,6 +99,18 @@ io.on('connection', (socket) => {
     socket.broadcast.to(roomId).emit('cursorUpdate', roomId, mousePosition, socket.id);
   });
 
+  socket.on('newTransaction', (roomId: string, transaction: any) => {
+    socket.broadcast.to(roomId).emit('newTransaction', roomId, transaction);
+  });
+
+  socket.on('undo', (roomId: string) => {
+    socket.broadcast.to(roomId).emit('undo', roomId);
+  });
+
+  socket.on('redo', (roomId: string) => {
+    socket.broadcast.to(roomId).emit('redo', roomId);
+  });
+
   socket.on('disconnect', () => {
     for (const roomId in rooms) {
       rooms[roomId] = Object.fromEntries(

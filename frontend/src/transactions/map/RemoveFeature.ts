@@ -1,4 +1,4 @@
-import { MapTransaction, TransactionType } from '../../utils/jsTPS';
+import { CommonSerialization, MapTransaction, TransactionType } from '../../utils/jsTPS';
 import { FeatureExt, LGeoJsonExt, LayerExt } from '../../types';
 import { store } from '../../models';
 import { MapComponentCallbacks } from './common';
@@ -6,28 +6,37 @@ import L from 'leaflet';
 import { Feature } from 'geojson';
 import { layerEvents } from 'react-leaflet-geoman-v2';
 
-interface RemoveFeatureSerialized {}
+export interface RemoveFeatureSerialized extends CommonSerialization {
+  type: 'RemoveFeature';
+  feature: FeatureExt;
+  featureIndex: number;
+}
 
 export class RemoveFeature extends MapTransaction<RemoveFeatureSerialized> {
-  readonly type: TransactionType = 'RemoveFeature';
+  readonly type = 'RemoveFeature';
   feature: FeatureExt;
   layer?: LGeoJsonExt;
-  featureIndex?: number;
+  featureIndex: number;
 
-  constructor(layer: LGeoJsonExt, feature: FeatureExt, featureIndex: number, isPeer = false) {
+  constructor(
+    layer: LGeoJsonExt | undefined,
+    feature: FeatureExt,
+    featureIndex: number,
+    isPeer = false
+  ) {
     super(isPeer);
     this.layer = layer;
     this.feature = feature;
     this.featureIndex = featureIndex;
   }
 
-  async doTransaction(map: L.Map, callbacks: MapComponentCallbacks) {
+  async doTransaction(map: L.Map, callbacks: MapComponentCallbacks, fromSocket: boolean) {
     // dont repeat network connection on peer for first run
     const id = callbacks.getFeatureByIndex(this.featureIndex!)?._id!;
 
     await store.dispatch.mapStore.deleteFeature({
       featureid: id,
-      doNetwork: this.shouldDoNetwork(),
+      doNetwork: this.shouldDoNetwork(fromSocket),
     });
 
     RemoveFeature.deleteFeatureFrontend(callbacks, id, this.layer);
@@ -37,20 +46,25 @@ export class RemoveFeature extends MapTransaction<RemoveFeatureSerialized> {
     this.firstRun = false;
   }
 
-  async undoTransaction(map: L.Map, callbacks: MapComponentCallbacks) {
+  async undoTransaction(map: L.Map, callbacks: MapComponentCallbacks, fromSocket: boolean) {
     const { id } = (await store.dispatch.mapStore.createFeature({
       feature: this.feature,
       featureIndex: this.featureIndex,
-      doNetwork: true,
+      doNetwork: this.shouldDoNetwork(fromSocket),
     }))!;
     this.feature._id = id;
     this.layer = RemoveFeature.createFeatureFrontend(callbacks, this.feature);
   }
 
   serialize(): RemoveFeatureSerialized {
-    throw new Error('Method not implemented.');
+    return {
+      type: this.type,
+      feature: this.feature,
+      featureIndex: this.featureIndex,
+    };
   }
-  deserialize(i: RemoveFeatureSerialized): this {
-    throw new Error('Method not implemented.');
+  static deserialize(i: RemoveFeatureSerialized, callbacks: MapComponentCallbacks): RemoveFeature {
+    const layer = callbacks.getLayerById(i.feature!._id) as LGeoJsonExt | undefined;
+    return new RemoveFeature(layer, i.feature, i.featureIndex, true);
   }
 }

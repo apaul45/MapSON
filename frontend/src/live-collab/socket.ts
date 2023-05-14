@@ -3,7 +3,8 @@ import { store } from '../models';
 import { Comment, Map } from '../types';
 import * as L from 'leaflet';
 import { MutableRefObject } from 'react';
-import { MapComponentCallbacks } from '../transactions/map/common';
+import { MapComponentCallbacks, SerializedTransactionTypes } from '../transactions/map/common';
+import { TransactionTypes } from '../transactions/map/MultipleTransactions';
 
 export const socket = io(import.meta.env.VITE_BACKEND_URL, {
   autoConnect: false, //Only connecting once in project,
@@ -84,6 +85,20 @@ export const emitMousePosition = (roomId: string, mousePosition: L.LatLngExpress
   socket.emit('cursorUpdate', roomId, mousePosition);
 };
 
+export const emitTransaction = (roomId: string, transaction: TransactionTypes) => {
+  const serialized = transaction.serialize();
+  console.log({ type: 'EMIT TRANSACTION', serialized });
+  socket.emit('newTransaction', roomId, serialized);
+};
+
+export const emitUndo = (roomId: string) => {
+  socket.emit('undo', roomId);
+};
+
+export const emitRedo = (roomId: string) => {
+  socket.emit('redo', roomId);
+};
+
 socket.on('cursorUpdate', (roomId: string, position: L.LatLngExpression, socket_id: string) => {
   mapStore.updateCursor({ socket_id, position });
 });
@@ -106,3 +121,16 @@ socket.on('leaveRoom', (roomId: string, socket_id: string) => {
 });
 
 socket.on('updateComments', (comment: Comment) => mapStore.setComments(comment));
+
+socket.on('newTransaction', (roomId: string, transaction: SerializedTransactionTypes) => {
+  console.log({ type: 'RECIEVED TRANSACTION', transaction });
+  socket.callbacks?.current.applyPeerTransaction(transaction);
+});
+
+socket.on('undo', async (roomId: string) => {
+  await socket.callbacks?.current.undo(true);
+});
+
+socket.on('redo', async (roomId: string) => {
+  await socket.callbacks?.current.redo(true);
+});

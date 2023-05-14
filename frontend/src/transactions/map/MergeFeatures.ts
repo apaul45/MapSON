@@ -1,10 +1,18 @@
 import { FeatureExt, LGeoJsonExt, MongoData } from '../../types';
 import { TransactionType } from '../../utils/jsTPS';
-import { CreateAndRemoveMultipleFeature } from './CreateAndRemoveMultipleFeatures';
+import {
+  CreateAndRemoveMultipleFeature,
+  CreateAndRemoveMultipleFeaturesSerialized,
+} from './CreateAndRemoveMultipleFeatures';
 import { MapComponentCallbacks } from './common';
 
-export class MergeFeatures extends CreateAndRemoveMultipleFeature {
-  readonly type: TransactionType = 'Merge';
+export interface MergeFeaturesSerialized
+  extends Omit<CreateAndRemoveMultipleFeaturesSerialized, 'type'> {
+  type: 'Merge';
+}
+
+export class MergeFeatures extends CreateAndRemoveMultipleFeature<'Merge'> {
+  readonly type = 'Merge';
 
   constructor(
     addedLayer: { layer: LGeoJsonExt; feature?: FeatureExt },
@@ -13,5 +21,13 @@ export class MergeFeatures extends CreateAndRemoveMultipleFeature {
     isPeer = false
   ) {
     super([addedLayer], removedLayers, callbacks, isPeer);
+  }
+
+  serialize(): MergeFeaturesSerialized {
+    return super.serialize();
+  }
+
+  static deserialize(i: MergeFeaturesSerialized, callbacks: MapComponentCallbacks): MergeFeatures {
+    return super.deserialize(i, callbacks) as MergeFeatures;
   }
 }

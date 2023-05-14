@@ -170,13 +170,17 @@ export const mapStore = createModel<RootModel>()({
 
         let feature: Omit<CreateFeatureResponse, 'error'>;
 
+        let oldMap = state.mapStore.currentMap;
+
         if (payload.doNetwork === false) {
-          feature = { feature: payload.feature, featureIndex: payload.featureIndex };
+          feature = {
+            feature: payload.feature,
+            featureIndex: payload.featureIndex ?? oldMap?.features.features.length,
+          };
         } else {
           feature = (await map.createFeature(id, f, payload.featureIndex)).data;
         }
 
-        let oldMap = state.mapStore.currentMap;
         oldMap?.features.features.splice(feature!.featureIndex, 0, feature!.feature);
         this.setCurrentMap(oldMap);
         console.log({

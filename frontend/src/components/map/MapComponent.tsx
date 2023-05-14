@@ -18,19 +18,29 @@ import {
   connect,
   disconnect,
   emitMousePosition,
+  emitRedo,
+  emitTransaction,
+  emitUndo,
   joinRoom,
   leaveRoom,
   socket,
 } from '../../live-collab/socket';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { MapComponentCallbacks } from '../../transactions/map/common';
+import {
+  MapComponentCallbacks,
+  SerializedTransactionTypes,
+  deserializer,
+} from '../../transactions/map/common';
 import jsTPS, { Transaction } from '../../utils/jsTPS';
 import { CreateFeature } from '../../transactions/map/CreateFeature';
 import { RemoveFeature } from '../../transactions/map/RemoveFeature';
 import { EditFeature } from '../../transactions/map/EditFeature';
 import { extendGeomanLayer } from '../../utils/geomanExtend';
-import { MultipleTransactions } from '../../transactions/map/MultipleTransactions';
+import {
+  MultipleTransactions,
+  TransactionTypes,
+} from '../../transactions/map/MultipleTransactions';
 import { MergeFeatures } from '../../transactions/map/MergeFeatures';
 import { cloneDeep } from 'lodash';
 import { SplitFeature } from '../../transactions/map/SplitFeature';
@@ -205,7 +215,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafl
 
       layer._id = feature._id;
 
-      feature.properties?.name && layer.bindPopup(feature.properties?.name);
+      feature.properties?.name && layer.bindPopup(feature.properties?.name, { keepInView: false });
 
       layer.pm.disable();
 
@@ -349,6 +359,29 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafl
     return transactions.current;
   };
 
+  const applyPeerTransaction = (t: SerializedTransactionTypes) => {
+    transactions.current.addTransaction(
+      deserializer(t, callbacks.current),
+      leafletMap.current,
+      callbacks.current
+    );
+  };
+
+  const undo = async (fromSocket: boolean = false) => {
+    await transactions.current.undoTransaction(fromSocket);
+    if (fromSocket !== true) {
+      emitUndo(id!);
+    }
+  };
+
+  const redo = async (fromSocket: boolean = false) => {
+    await transactions.current.doTransaction(fromSocket);
+
+    if (fromSocket !== true) {
+      emitRedo(id!);
+    }
+  };
+
   callbacks.current = {
     isSelected,
     selectFeature,
@@ -362,12 +395,19 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafl
     getFeatureByIndex,
     getGeoJSONLayer,
     getTransactions,
+    applyPeerTransaction,
+    undo,
+    redo,
     onCreate: async (e) => {
+      const transaction = new CreateFeature(e.layer as LGeoJsonExt);
+
       await transactions.current.addTransaction(
-        new CreateFeature(e.layer as LGeoJsonExt),
+        transaction,
         leafletMap.current!,
         callbacks.current!
       );
+
+      emitTransaction(id!, transaction);
 
       //saveScreenshot();
     },
@@ -376,9 +416,9 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafl
       // case for vertex pinning
 
       const { feature, featureIndex } = getFeatureById((layer as any & MongoData)._id)!;
-      let layerTransaction: Transaction = new EditFeature(
-        layer as unknown as L.Polygon & MongoData,
+      let layerTransaction: TransactionTypes = new EditFeature(
         feature,
+        (layer as LGeoJsonExt).toGeoJSON(15) as FeatureExt,
         featureIndex
       );
       if (affectedLayers?.length > 0) {
@@ -390,8 +430,8 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafl
             )!;
 
             return new EditFeature(
-              aLayer as unknown as L.Polygon & MongoData,
               iFeature,
+              (aLayer as LGeoJsonExt).toGeoJSON(15) as FeatureExt,
               iFeatureIndex
             );
           }),
@@ -402,17 +442,21 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafl
         leafletMap.current!,
         callbacks.current!
       );
+
+      emitTransaction(id!, layerTransaction);
     },
 
     onRemove: async (e) => {
       const { layer } = e;
       const { feature, featureIndex } = getFeatureById((layer as LGeoJsonExt)._id)!;
 
+      const transaction = new RemoveFeature(layer as LGeoJsonExt, feature, featureIndex);
       await transactions.current.addTransaction(
-        new RemoveFeature(layer as LGeoJsonExt, feature, featureIndex),
+        transaction,
         leafletMap.current!,
         callbacks.current!
       );
+      emitTransaction(id!, transaction);
     },
   };
 
@@ -424,46 +468,35 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafl
 
   transactions.current.callbacks = callbacks.current;
 
-  const onMerge: L.PM.MergeEventHandler = async (e) =>
-    await transactions.current.addTransaction(
-      new MergeFeatures(
-        { layer: e.newLayer as LGeoJsonExt },
-        e.oldLayers.map((ol) => {
-          const { feature, featureIndex } = getFeatureById(ol.layer._id)!;
-          return { feature, featureIndex, layer: ol.layer };
-        }),
-        callbacks.current!
-      ),
-      leafletMap.current!,
+  const onMerge: L.PM.MergeEventHandler = async (e) => {
+    const transaction = new MergeFeatures(
+      { layer: e.newLayer as LGeoJsonExt },
+      e.oldLayers.map((ol) => {
+        const { feature, featureIndex } = getFeatureById(ol.layer._id)!;
+        return { feature, featureIndex, layer: ol.layer };
+      }),
       callbacks.current!
     );
+    await transactions.current.addTransaction(transaction, leafletMap.current!, callbacks.current!);
+    emitTransaction(id!, transaction);
+  };
 
   const onSplit: L.PM.SplitEventHandler = async (e) => {
     const { feature, featureIndex } = getFeatureById(e.oldLayer._id)!;
-
-    await transactions.current.addTransaction(
-      new SplitFeature(
-        e.newFeatures as InputAddedLayer[],
-        { feature, featureIndex, layer: e.oldLayer },
-        callbacks.current!
-      ),
-      leafletMap.current!,
+    const transaction = new SplitFeature(
+      e.newFeatures as InputAddedLayer[],
+      { feature, featureIndex, layer: e.oldLayer },
       callbacks.current!
     );
+
+    await transactions.current.addTransaction(transaction, leafletMap.current!, callbacks.current!);
+    emitTransaction(id!, transaction);
   };
 
   const onMouseMove: L.LeafletMouseEventHandlerFn = (e) => {
     if (id && username) {
       emitMousePosition(id, { lat: e.latlng.lat, lng: e.latlng.lng });
     }
-  };
-
-  const undo = () => {
-    transactions.current.undoTransaction();
-  };
-
-  const redo = () => {
-    transactions.current.doTransaction();
   };
 
   useEffect(() => {
@@ -477,12 +510,12 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafl
   }, []);
 
   useEffect(() => {
-    const keydownHandler = (ev: KeyboardEvent) => {
+    const keydownHandler = async (ev: KeyboardEvent) => {
       if (ev.key.toLowerCase() === 'z' && ev.ctrlKey === true) {
         if (ev.shiftKey === true) {
-          redo();
+          await redo(false);
         } else {
-          undo();
+          await undo(false);
         }
       }
     };
