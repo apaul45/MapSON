@@ -89,13 +89,23 @@ export default function TutorialDialog({ isOpen, closeDialog }: ITutorialDialog)
     },
     {
       name: 'Simplify Regions',
-      src: '/img/defaultpreviewimg.png',
-      description: '',
+      src: '/tutorial/simplify.gif',
+      description: 'Note that this operation cannot be undone',
     },
     {
       name: 'Save Thumbnail',
       src: '/tutorial/saveThumbnail.gif',
       description: 'Click Exit project to save map thumbnail',
+    },
+    {
+      name: 'Inivte a User to Edit',
+      src: '/tutorial/invite.gif',
+      description: 'The share dialog can be displayed from the project menu or from the nav bar',
+    },
+    {
+      name: 'Live Collaboration',
+      src: '/tutorial/liveCollab.gif',
+      description: 'This application supports live collaboration among users',
     },
   ];
 
