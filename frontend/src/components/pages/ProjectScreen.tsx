@@ -61,8 +61,6 @@ export const ProjectScreen = () => {
     user !== null &&
     user.maps.some((v) => v._id === map._id);
 
-  console.log({ canEdit, user, map });
-
   if (error) {
     return (
       <div className="bg-navbar w-screen h-screen">
