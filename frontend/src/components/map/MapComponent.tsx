@@ -562,15 +562,11 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafl
             data={geoJSON}
             style={(f) => {
               const feat = f as FeatureExt;
-              let base;
-
               if (isSelected(feat?._id)) {
-                base = SELECTED;
+                return SELECTED;
               } else {
-                base = getCurrentColor(feat);
+                return getCurrentColor(feat);
               }
-
-              return { ...base, weight: 2 };
             }}
             /* @ts-ignore */
             // Fine to ignore since we are guaranteeing the extensions to L.GeoJSON

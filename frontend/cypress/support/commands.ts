@@ -43,10 +43,10 @@ Cypress.Commands.add('hasVertexMarkers', (count) =>
   })
 );
 
-Cypress.Commands.add('hasLayers', (count) =>
-  cy.get('.leaflet-interactive', { timeout: 10000 }).should(($p) => {
+Cypress.Commands.add('hasLayers', (count) => {
+  return cy.get('.leaflet-interactive:not([aria-describedby])').should(($p) => {
     expect($p).to.have.length(count);
-  })
-);
+  });
+});
 
 export {};

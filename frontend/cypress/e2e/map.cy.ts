@@ -45,7 +45,7 @@ describe('Polygon tests', () => {
       .trigger('mouseover')
       .should('have.attr', 'fill')
       .and('equal', 'green');
-    clickRegion(300, 300);
+    clickRegions(1);
     cy.get('.leaflet-interactive[fill="red"]')
       .trigger('mouseover')
       .should('have.attr', 'fill')
@@ -57,17 +57,11 @@ describe('Polygon tests', () => {
   it('should delete a polygon', () => {
     drawPolygon();
 
-    doubleClickRegion(300, 300);
-
-    cy.hasVertexMarkers(4);
-
-    doubleClickRegion(300, 300);
+    cy.hasLayers(1);
 
     deletePolygon();
 
-    doubleClickRegion(300, 300);
-
-    cy.hasVertexMarkers(0);
+    cy.hasLayers(0);
   });
 
   it('should undo and redo for delete', () => {
@@ -171,14 +165,14 @@ describe('Region Properties Tests', () => {
   it('should attach a property to a region', () => {
     drawPolygon();
 
-    clickRegion(300, 300);
+    clickRegions(1);
 
     cy.contains('Feature Properties:').should('exist');
 
     addProp(type);
 
-    clickRegion(300, 300);
-    clickRegion(300, 300);
+    clickRegions(1).wait(100);
+    clickRegions(1).wait(100);
 
     cy.get(`input[value=mapson_${type}_test_key]`).should('be.visible');
     cy.get(`input[value=mapson_${type}_test_value]`).should('be.visible');
@@ -187,19 +181,19 @@ describe('Region Properties Tests', () => {
   it('should modify a property of a region', () => {
     drawPolygon();
 
-    clickRegion(300, 300);
+    clickRegions(1);
 
     cy.contains('Feature Properties:').should('exist');
 
     addProp(type);
 
-    clickRegion(300, 300);
-    clickRegion(300, 300);
+    clickRegions(1).wait(100);
+    clickRegions(1).wait(100);
 
     modProp(type);
 
-    clickRegion(300, 300);
-    clickRegion(300, 300);
+    clickRegions(1).wait(100);
+    clickRegions(1).wait(100);
 
     cy.get(`input[value=mapson_${type}_test_key_2]`).should('be.visible');
     cy.get(`input[value=mapson_${type}_test_value_2]`).should('be.visible');
@@ -207,7 +201,7 @@ describe('Region Properties Tests', () => {
 
   it('should add a name to a region', () => {
     drawPolygon();
-    clickRegion(300, 300);
+    clickRegions(1);
     cy.contains('Feature Properties:').should('exist');
 
     cy.get("input[placeholder='name value']").should('exist').type('unique name');
@@ -215,26 +209,26 @@ describe('Region Properties Tests', () => {
       .should('exist')
       .click();
 
-    clickRegion(300, 300);
+    clickRegions(1);
 
     cy.get(mapSelector).trigger('mouseover', [300, 300]).wait(10);
     cy.contains('unique name').should('exist');
     cy.wait(10);
 
-    clickRegion(300, 300);
+    clickRegions(1);
     cy.get("input[placeholder='name value']").should('exist').clear().type('unique name 2');
     cy.get('#' + type + '-save-button')
       .should('exist')
       .click();
 
-    clickRegion(300, 300);
+    clickRegions(1);
     cy.get(mapSelector).trigger('mouseover', [300, 300]).wait(DELAY);
     cy.contains('unique name 2').should('exist');
   });
 
   it('should modify the color of a region', () => {
     drawPolygon();
-    clickRegion(300, 300);
+    clickRegions(1);
     cy.contains('Feature Properties:').should('exist');
 
     cy.get("input[placeholder='color value']").should('exist').type('pink');
@@ -242,17 +236,17 @@ describe('Region Properties Tests', () => {
       .should('exist')
       .click();
 
-    clickRegion(300, 300);
+    clickRegions(1);
 
     cy.get('[fill="pink"]').should('exist');
 
-    clickRegion(300, 300);
+    clickRegions(1);
     cy.get("input[placeholder='color value']").clear().type('yellow');
     cy.get('#' + type + '-save-button')
       .should('exist')
       .click();
 
-    clickRegion(300, 300);
+    clickRegions(1);
     cy.get('[fill="yellow"]').should('exist');
   });
 });
@@ -287,7 +281,7 @@ describe('Split tests', () => {
   it('should split region into two', () => {
     drawPolygon2();
 
-    clickRegion(200, 200);
+    clickRegions(1);
 
     //draw split line
     cy.toolbarButton('split').click();
@@ -298,8 +292,7 @@ describe('Split tests', () => {
 
     cy.toolbarButton('delete').click();
 
-    clickRegion(200, 150);
-    clickRegion(200, 250);
+    clickRegions(2);
 
     cy.toolbarButton('delete').click();
   });
@@ -307,7 +300,7 @@ describe('Split tests', () => {
   it('should be able to merge region back', () => {
     drawPolygon2();
 
-    clickRegion(200, 200);
+    clickRegions(1);
 
     //draw split line
     cy.toolbarButton('split').click();
@@ -315,8 +308,7 @@ describe('Split tests', () => {
     clickRegion(50, 200).click(350, 200).click(350, 200);
 
     //select split features
-    clickRegion(200, 150);
-    clickRegion(200, 250);
+    clickRegions(2);
 
     cy.once('window:confirm', (text) => {
       expect(text).to.equal('Merge the two selected regions?');
@@ -328,9 +320,7 @@ describe('Split tests', () => {
 
     cy.get('a.action-undefined').filter(':visible').click().wait(500);
 
-    doubleClickRegion(200, 200);
-
-    cy.hasVertexMarkers(4);
+    cy.hasLayers(1);
   });
 
   // it('should undo and redo split', () => {
@@ -383,8 +373,10 @@ describe('Merge tests', () => {
     triggerRedo();
     triggerRedo();
 
-    clickRegion(150, 150);
-    clickRegion(350, 350);
+    //wait for undos/redos to propogate and for layers event handlers to properly set
+    cy.wait(500);
+
+    clickRegions(2);
 
     cy.toolbarButton('merge').click();
 
@@ -455,8 +447,7 @@ describe('Merge tests', () => {
     drawPolygon2();
     drawPolygon3();
 
-    clickRegion(250, 250);
-    clickRegion(400, 400);
+    clickRegions(2);
 
     cy.toolbarButton('merge').click();
 
@@ -560,7 +551,16 @@ const doubleClickRegion = (x: number, y: number) => {
 };
 
 const clickRegion = (x: number, y: number) => {
-  return cy.get(mapSelector).click(x, y).wait(DELAY);
+  return cy.get(mapSelector).click(x, y);
+};
+
+const clickRegions = (count: number) => {
+  return cy
+    .hasLayers(count)
+    .each((e) => {
+      cy.wrap(e).click({ force: true });
+    })
+    .wait(10);
 };
 
 const triggerUndo = (delay = DELAY) => {
