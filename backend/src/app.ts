@@ -13,8 +13,6 @@ const app: Express = express();
 
 const mongoStr = `${process.env.DB}/mapson`;
 
-app.set('trust proxy', 1);
-
 app.use(
   cors({
     credentials: true,
@@ -32,16 +30,6 @@ app.use(
 app.use(express.json({ limit: '100mb' }));
 app.use(express.urlencoded({ extended: true, limit: '100mb' }));
 
-const cookie: session.CookieOptions =
-  process.env.DEV === 'true'
-    ? {
-        sameSite: 'lax',
-      }
-    : {
-        secure: true,
-        sameSite: 'none',
-      };
-
 app.use(
   session({
     resave: false,
@@ -51,7 +39,9 @@ app.use(
       mongoUrl: mongoStr,
       ttl: 60 * 60, // = 1hr
     }),
-    cookie,
+    cookie: {
+      sameSite: false,
+    },
   })
 );
 
