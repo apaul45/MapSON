@@ -17,11 +17,11 @@ app.use(
   cors({
     credentials: true,
     origin: [
-      'http://127.0.0.1:5173',
+      'https://127.0.0.1:5173',
       'http://127.0.0.1:4173',
-      'https://mapson.vercel.app',
-      'https://mapson-apaul45.vercel.app',
-      'http://localhost:5173',
+      'http://mapson.vercel.app',
+      'http://mapson-apaul45.vercel.app',
+      'https://localhost:5173',
       /https:\/\/mapson(.*)\.vercel\.app/,
     ],
   })
@@ -40,7 +40,9 @@ app.use(
       ttl: 60 * 60, // = 1hr
     }),
     cookie: {
-      sameSite: false,
+      expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      sameSite: 'none' as const,
+      secure: true, // this was 'false' before. 'true' works.
     },
   })
 );
