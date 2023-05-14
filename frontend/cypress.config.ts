@@ -14,4 +14,5 @@ export default defineConfig({
     },
     testIsolation: false,
   },
+  defaultCommandTimeout: 10000,
 });
