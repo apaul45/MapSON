@@ -17,9 +17,16 @@ const ProjectMenu = ({ leafletMap }: { leafletMap: L.Map | null }) => {
 
   const navigate = useNavigate();
 
-  const [tutoOpen, setTutoOpen] = useState(false);
+  const open =
+    import.meta.env.MODE === 'development' || localStorage.getItem('opened') === 'true'
+      ? false
+      : user && user?.maps.length === 1
+      ? true
+      : false;
+  const [tutoOpen, setTutoOpen] = useState(open);
   const closeTutoDialog = () => {
     setTutoOpen(false);
+    localStorage.setItem('opened', 'true');
   };
 
   const exportGeojson = () => {
@@ -117,9 +124,6 @@ const ProjectMenu = ({ leafletMap }: { leafletMap: L.Map | null }) => {
       <MenuList id="project-menu" className="bg-gray text-white p-0 font-sans text-base">
         <MenuItem className="text-sort-by mb-0.5 text-lg pointer-events-none"> File </MenuItem>
 
-        {user ? <MenuItem className="hover:bg-sort-hover">Save</MenuItem> : null}
-        {user ? <MenuItem className="hover:bg-sort-hover">Import</MenuItem> : null}
-
         <Menu placement="right-start">
           <MenuHandler>
             <MenuItem>Download as</MenuItem>
@@ -153,12 +157,18 @@ const ProjectMenu = ({ leafletMap }: { leafletMap: L.Map | null }) => {
 
         <hr className="my-2 border-blue-gray-50 outline-none" />
 
-        {user ? (
+        {user && !map?.published.isPublished ? (
           <MenuItem className="text-sort-by text-lg pt-0 pointer-events-none"> Edit </MenuItem>
         ) : null}
-        {user ? <MenuItem className="hover:bg-sort-hover">Undo</MenuItem> : null}
-        {user ? <MenuItem className="hover:bg-sort-hover">Redo</MenuItem> : null}
-        {user ? <hr className="my-2 border-blue-gray-50 outline-none" /> : null}
+        {user && !map?.published.isPublished ? (
+          <MenuItem className="hover:bg-sort-hover">Undo</MenuItem>
+        ) : null}
+        {user && !map?.published.isPublished ? (
+          <MenuItem className="hover:bg-sort-hover">Redo</MenuItem>
+        ) : null}
+        {user && !map?.published.isPublished ? (
+          <hr className="my-2 border-blue-gray-50 outline-none" />
+        ) : null}
 
         {user ? (
           <MenuItem className="hover:bg-sort-hover" onClick={() => setTutoOpen(true)}>
@@ -189,11 +199,17 @@ const ProjectMenu = ({ leafletMap }: { leafletMap: L.Map | null }) => {
           Exit project
         </MenuItem>
 
-        {user ? (
-          <MenuItem className="hover:bg-sort-hover text-red-400" onClick={() => openDeleteDialog()}>
-            Delete map
-          </MenuItem>
-        ) : null}
+        {
+          // @ts-ignore
+          user && map?.owner.username === user.username ? (
+            <MenuItem
+              className="hover:bg-sort-hover text-red-400"
+              onClick={() => openDeleteDialog()}
+            >
+              Delete map
+            </MenuItem>
+          ) : null
+        }
       </MenuList>
       <TutorialDialog isOpen={tutoOpen} closeDialog={closeTutoDialog} />
     </Fragment>

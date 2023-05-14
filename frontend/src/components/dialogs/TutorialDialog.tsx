@@ -105,7 +105,11 @@ export default function TutorialDialog({ isOpen, closeDialog }: ITutorialDialog)
       <DialogBody className=" max-h-[55rem] overflow-scroll">
         <List>
           {itemList.map((item, index) => (
-            <ListItem className="text-white block" onClick={() => handleOpenTutorial(index)}>
+            <ListItem
+              className="text-white block"
+              onClick={() => handleOpenTutorial(index)}
+              key={item.name}
+            >
               <p>{item.name}</p>
               <Collapse open={handleShowTutorial(index)}>
                 <img src={item.src}></img>
