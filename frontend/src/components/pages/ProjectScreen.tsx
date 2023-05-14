@@ -55,29 +55,47 @@ export const ProjectScreen = () => {
 
   const setMapName = async (name: string) => await mapStore.updateCurrentMap({ name });
 
-  const canEdit = (map && user && user.maps?.some((v) => v._id === map._id)) ?? false;
+  const canEdit =
+    map !== null &&
+    !map.published.isPublished &&
+    user !== null &&
+    user.maps.some((v) => v._id === map._id);
 
   if (error) {
     return (
       <div className="bg-navbar w-screen h-screen">
-        <div style={{display: 'flex',  justifyContent:'center', alignItems:'center', height: '100vh'}}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100vh',
+          }}
+        >
           <span className="text-white text-3xl">Error loading map</span>
         </div>
       </div>
-    ) 
+    );
   }
-  
+
   if (!map) {
-    return  (
+    return (
       <div className="bg-navbar w-screen h-screen">
-        <div style={{display: 'flex',  justifyContent:'center', alignItems:'center', height: '100vh'}}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100vh',
+          }}
+        >
           <div>
             <PulseLoader color={'#fff'} size={65} />
             <span className="text-white text-3xl">Loading Map...</span>
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -97,7 +115,7 @@ export const ProjectScreen = () => {
         <MapComponent
           canEdit={canEdit}
           setSelectedFeature={setSelectedFeature}
-          key={'MAP'}
+          key={user?.username}
           {...map}
           setLeafletMap={(map: L.Map) => setLeafletMap(map)}
         />

@@ -3,6 +3,7 @@ import { Tabs, Tab, TabsBody, TabsHeader, TabPanel } from '@material-tailwind/re
 import { SelectedFeature } from './map/MapComponent';
 import { RootState, store } from '../models';
 import { useSelector } from 'react-redux';
+import { emitUpdateMapProperties, emitUpdateRegionProperties } from '../live-collab/socket';
 
 interface IProjectSidePanel {
   selectedFeature: SelectedFeature | null;
@@ -11,11 +12,15 @@ interface IProjectSidePanel {
 
 const ProjectSidePanel = ({ selectedFeature, canEdit }: IProjectSidePanel) => {
   // @ts-ignore
-  const properties: Record<string, any> = selectedFeature?.layer.feature?.properties;
-  const { mapStore } = store.dispatch;
-  const map = useSelector((state: RootState) => state.mapStore.currentMap);
+  const properties: Record<string, any> = selectedFeature?.layer.feature?.properties
+    ? { ...selectedFeature?.layer.feature?.properties }
+    : {};
 
-  const customMapProps = map?.properties ?? {};
+  const { mapStore } = store.dispatch;
+  const mapProps = useSelector((state: RootState) => state.mapStore.currentMap?.properties);
+  const mapId = useSelector((state: RootState) => state.mapStore.currentMap?._id);
+
+  const customMapProps = mapProps ?? {};
 
   let customFeatureProps = properties
     ? Object.fromEntries(
@@ -52,10 +57,13 @@ const ProjectSidePanel = ({ selectedFeature, canEdit }: IProjectSidePanel) => {
       );
     }
 
+    const propertyList = { ...ogProps, ...newProperties };
+
     await mapStore.updateFeature({
       id: selectedFeature!.id,
-      feature: { properties: { ...ogProps, ...newProperties } },
+      feature: { properties: { ...propertyList } },
     });
+    emitUpdateRegionProperties(mapId!, selectedFeature!.id, propertyList);
 
     selectedFeature.layer.feature.properties = { ...ogProps, ...newProperties };
     newProperties['name'] === ''
@@ -68,6 +76,7 @@ const ProjectSidePanel = ({ selectedFeature, canEdit }: IProjectSidePanel) => {
       properties: Object.fromEntries(Object.entries(props).filter(([k, v]) => k.length > 0)),
     };
     await mapStore.updateCurrentMap(prop);
+    emitUpdateMapProperties(mapId!, prop.properties);
   };
 
   return (
@@ -104,6 +113,7 @@ const ProjectSidePanel = ({ selectedFeature, canEdit }: IProjectSidePanel) => {
                   viewOnly={!canEdit}
                   type="feature"
                   selectedFeature={selectedFeature}
+                  key={JSON.stringify(customFeatureProps)}
                 />
               </div>
             ) : (

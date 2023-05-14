@@ -18,19 +18,29 @@ import {
   connect,
   disconnect,
   emitMousePosition,
+  emitRedo,
+  emitTransaction,
+  emitUndo,
   joinRoom,
   leaveRoom,
   socket,
 } from '../../live-collab/socket';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { MapComponentCallbacks } from '../../transactions/map/common';
+import {
+  MapComponentCallbacks,
+  SerializedTransactionTypes,
+  deserializer,
+} from '../../transactions/map/common';
 import jsTPS, { Transaction } from '../../utils/jsTPS';
 import { CreateFeature } from '../../transactions/map/CreateFeature';
 import { RemoveFeature } from '../../transactions/map/RemoveFeature';
 import { EditFeature } from '../../transactions/map/EditFeature';
 import { extendGeomanLayer } from '../../utils/geomanExtend';
-import { MultipleTransactions } from '../../transactions/map/MultipleTransactions';
+import {
+  MultipleTransactions,
+  TransactionTypes,
+} from '../../transactions/map/MultipleTransactions';
 import { MergeFeatures } from '../../transactions/map/MergeFeatures';
 import { cloneDeep } from 'lodash';
 import { SplitFeature } from '../../transactions/map/SplitFeature';
@@ -44,32 +54,37 @@ const HOVERED = {
   fillColor: 'green',
   fillOpacity: 0.2,
   color: 'blue',
+  weight: 2,
 };
 
 const IDLE = {
   fillColor: 'blue',
   fillOpacity: 0.2,
   color: 'blue',
+  weight: 2,
 };
 
 export const SELECTED = {
   fillColor: 'red',
   fillOpacity: 0.5,
   color: 'black',
+  weight: 2,
 };
 
 const SELECTED_AND_HOVERED = {
   fillColor: 'teal',
   fillOpacity: 0.5,
   color: 'black',
+  weight: 2,
 };
 
 const getCurrentColor = (feature: FeatureExt) =>
-  feature.properties?.color
+  feature?.properties?.color
     ? {
         fillColor: feature.properties.color as string,
         fillOpacity: 0.2,
         color: feature.properties.color as string,
+        weight: 2,
       }
     : IDLE;
 
@@ -77,7 +92,7 @@ const position: L.LatLngTuple = [37.335556, -122.009167];
 
 interface Props extends Map {
   canEdit: boolean;
-  setSelectedFeature: Function;
+  setSelectedFeature: (i: { id: any; layer: LGeoJsonExt } | null) => void;
   setLeafletMap: Function;
 }
 
@@ -91,6 +106,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafl
   const geojsonLayer = useRef<L.GeoJSON>(null!);
   const transactions = useRef(new jsTPS(leafletMap));
   const mapRef = useRef(geoJSON);
+  const callbacks = useRef<MapComponentCallbacks>(null!);
 
   const { id } = useParams();
   const navigate = useNavigate();
@@ -113,7 +129,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafl
 
       console.log('reached connection');
       connect();
-      joinRoom(username, id!, leafletMap); //joinRoom will send empty username for guest
+      joinRoom(username, id!, leafletMap, callbacks); //joinRoom will send empty username for guest
     };
 
     checkLoggedIn();
@@ -139,6 +155,12 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafl
   useLayoutEffect(() => {
     setLeafletMap(leafletMap.current);
   }, [leafletMap.current]);
+
+  useEffect(() => {
+    if (leafletMap.current) {
+      leafletMap.current.canEdit = canEdit;
+    }
+  }, [canEdit]);
 
   //second one is the most recently selected
   const selectedFeatures = useRef<SelectedFeature[]>([]);
@@ -196,98 +218,96 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafl
     }
   };
 
-  const onEachFeature = useCallback(
-    (feature: FeatureExt, layer: LGeoJsonExt) => {
-      if (layer._isConfigured) {
+  const onEachFeature = (feature: FeatureExt, layer: LGeoJsonExt) => {
+    if (layer._isConfigured) {
+      return;
+    }
+
+    layer._id = feature._id;
+
+    feature.properties?.name && layer.bindPopup(feature.properties?.name, { keepInView: false });
+
+    layer.pm.disable();
+
+    layer.setStyle(getCurrentColor(layer.feature));
+
+    const mouseover: L.LeafletMouseEventHandlerFn = (e) => {
+      const id = getLayerID(layer)!;
+
+      if (isSelected(id)) {
+        layer.setStyle(SELECTED_AND_HOVERED);
+      } else {
+        layer.setStyle(HOVERED);
+      }
+
+      layer.openPopup();
+    };
+
+    const mouseout: L.LeafletMouseEventHandlerFn = (e) => {
+      const id = getLayerID(layer)!;
+
+      if (isSelected(id)) {
+        layer.setStyle(SELECTED);
+      } else {
+        layer.setStyle(getCurrentColor(layer.feature));
+      }
+
+      layer.closePopup();
+    };
+
+    const click: L.LeafletMouseEventHandlerFn = (e) => {
+      //ignore if meta is pressed with it
+      if (e.originalEvent.metaKey) {
         return;
       }
 
-      layer._id = feature._id;
+      const id = getLayerID(layer)!;
 
-      feature.properties?.name && layer.bindPopup(feature.properties?.name);
+      if (isSelected(id)) {
+        unselectFeature(id);
+        layer.setStyle(getCurrentColor(layer.feature));
+        layer.selected = false;
+      } else {
+        selectFeature(id, layer)?.layer.setStyle(getCurrentColor(layer.feature));
+        layer.setStyle(SELECTED);
+        layer.selected = true;
+      }
+    };
 
-      layer.pm.disable();
-
-      const mouseover: L.LeafletMouseEventHandlerFn = (e) => {
-        const id = getLayerID(layer)!;
-
-        if (isSelected(id)) {
-          layer.setStyle(SELECTED_AND_HOVERED);
-        } else {
-          layer.setStyle(HOVERED);
-        }
-
-        layer.openPopup();
-      };
-
-      const mouseout: L.LeafletMouseEventHandlerFn = (e) => {
-        const id = getLayerID(layer)!;
-
-        if (isSelected(id)) {
-          layer.setStyle(SELECTED);
-        } else {
-          layer.setStyle(getCurrentColor(layer.feature));
-        }
-
-        layer.closePopup();
-      };
-
-      const click: L.LeafletMouseEventHandlerFn = (e) => {
-        //ignore if meta is pressed with it
-        if (e.originalEvent.metaKey) {
-          return;
-        }
-
-        const id = getLayerID(layer)!;
-
-        if (isSelected(id)) {
-          unselectFeature(id);
-          layer.setStyle(getCurrentColor(layer.feature));
-        } else {
-          selectFeature(id, layer)?.layer.setStyle(getCurrentColor(layer.feature));
-          layer.setStyle(SELECTED);
-        }
-      };
-
-      const dblclick: L.LeafletMouseEventHandlerFn = (e) => {
-        //ignore if meta is pressed with it
-        if (e.originalEvent.metaKey) {
-          return;
-        }
-
-        const id = getLayerID(layer)!;
-
-        const eq = editLayer.current?.id === id;
-
-        editLayer.current?.layer.pm.disable();
-        editLayer.current = null;
-
-        if (!eq) {
-          editLayer.current = { layer, id };
-          layer.pm.enable();
-        }
-      };
-
-      layer.getPopup()?.on('mouseover', mouseover);
-      layer.getPopup()?.on('click', click);
-      layer.getPopup()?.on('dblclick', dblclick);
-
-      layer.on('mouseover', mouseover);
-
-      layer.on('mouseout', mouseout);
-
-      layer.on('click', click);
-
-      if (canEdit) {
-        layer.on('dblclick', dblclick);
+    const dblclick: L.LeafletMouseEventHandlerFn = (e) => {
+      //ignore if meta is pressed with it or if we cant edit
+      if (e.originalEvent.metaKey) {
+        return;
       }
 
-      layer._isConfigured = true;
+      const id = getLayerID(layer)!;
 
-      extendGeomanLayer(layer.pm);
-    },
-    [canEdit]
-  );
+      const eq = editLayer.current?.id === id;
+
+      editLayer.current?.layer.pm.disable();
+      editLayer.current = null;
+
+      if (!eq) {
+        editLayer.current = { layer, id };
+        layer.pm.enable();
+      }
+    };
+
+    layer.getPopup()?.on('mouseover', mouseover);
+    layer.getPopup()?.on('click', click);
+    layer.getPopup()?.on('dblclick', dblclick);
+
+    layer.on('mouseover', mouseover);
+    layer.on('mouseout', mouseout);
+    layer.on('click', click);
+    if (canEdit) {
+      layer.on('dblclick', dblclick);
+    }
+
+    layer._isConfigured = true;
+
+    extendGeomanLayer(layer.pm);
+  };
 
   let bounds: any = undefined;
   if (geoJSON.features.length > 0) {
@@ -344,7 +364,41 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafl
     return geojsonLayer.current;
   };
 
-  const callbacks: MapComponentCallbacks = {
+  const getTransactions = () => {
+    return transactions.current;
+  };
+
+  const applyPeerTransaction = (t: SerializedTransactionTypes) => {
+    transactions.current.addTransaction(
+      deserializer(t, callbacks.current),
+      leafletMap.current,
+      callbacks.current,
+      true
+    );
+  };
+
+  const undo = async (
+    fromSocket: boolean = false,
+    peerArtifacts: Object | undefined = undefined
+  ) => {
+    const res = await transactions.current.undoTransaction(fromSocket, peerArtifacts);
+    if (fromSocket !== true) {
+      emitUndo(id!, res ?? undefined);
+    }
+  };
+
+  const redo = async (
+    fromSocket: boolean = false,
+    peerArtifacts: Object | undefined = undefined
+  ) => {
+    const res = await transactions.current.doTransaction(fromSocket);
+
+    if (fromSocket !== true) {
+      emitRedo(id!, res ?? undefined);
+    }
+  };
+
+  callbacks.current = {
     isSelected,
     selectFeature,
     unselectFeature,
@@ -356,12 +410,21 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafl
     getFeatureById,
     getFeatureByIndex,
     getGeoJSONLayer,
+    getTransactions,
+    applyPeerTransaction,
+    undo,
+    redo,
+    setSelectedFeature,
     onCreate: async (e) => {
+      const transaction = new CreateFeature(e.layer as LGeoJsonExt);
+
       await transactions.current.addTransaction(
-        new CreateFeature(e.layer as LGeoJsonExt),
+        transaction,
         leafletMap.current!,
-        callbacks
+        callbacks.current!
       );
+
+      emitTransaction(id!, transaction);
 
       //saveScreenshot();
     },
@@ -370,9 +433,9 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafl
       // case for vertex pinning
 
       const { feature, featureIndex } = getFeatureById((layer as any & MongoData)._id)!;
-      let layerTransaction: Transaction = new EditFeature(
-        layer as unknown as L.Polygon & MongoData,
+      let layerTransaction: TransactionTypes = new EditFeature(
         feature,
+        (layer as LGeoJsonExt).toGeoJSON(15) as FeatureExt,
         featureIndex
       );
       if (affectedLayers?.length > 0) {
@@ -384,76 +447,73 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafl
             )!;
 
             return new EditFeature(
-              aLayer as unknown as L.Polygon & MongoData,
               iFeature,
+              (aLayer as LGeoJsonExt).toGeoJSON(15) as FeatureExt,
               iFeatureIndex
             );
           }),
         ]);
       }
-      await transactions.current.addTransaction(layerTransaction, leafletMap.current!, callbacks);
+      await transactions.current.addTransaction(
+        layerTransaction,
+        leafletMap.current!,
+        callbacks.current!
+      );
+
+      emitTransaction(id!, layerTransaction);
     },
 
     onRemove: async (e) => {
       const { layer } = e;
       const { feature, featureIndex } = getFeatureById((layer as LGeoJsonExt)._id)!;
 
+      const transaction = new RemoveFeature(layer as LGeoJsonExt, feature, featureIndex);
       await transactions.current.addTransaction(
-        new RemoveFeature(layer as LGeoJsonExt, feature, featureIndex),
+        transaction,
         leafletMap.current!,
-        callbacks
+        callbacks.current!
       );
+      emitTransaction(id!, transaction);
     },
   };
 
   // did it this way so handlers can be passed to transactions
 
-  const onCreate = callbacks.onCreate;
-  const onEdit = callbacks.onEdit;
-  const onRemove = callbacks.onRemove;
+  const onCreate = callbacks.current.onCreate;
+  const onEdit = callbacks.current.onEdit;
+  const onRemove = callbacks.current.onRemove;
 
-  transactions.current.callbacks = callbacks;
+  transactions.current.callbacks = callbacks.current;
 
-  const onMerge: L.PM.MergeEventHandler = async (e) =>
-    await transactions.current.addTransaction(
-      new MergeFeatures(
-        { layer: e.newLayer as LGeoJsonExt },
-        e.oldLayers.map((ol) => {
-          const { feature, featureIndex } = getFeatureById(ol.layer._id)!;
-          return { feature, featureIndex, layer: ol.layer };
-        }),
-        callbacks
-      ),
-      leafletMap.current!,
-      callbacks
+  const onMerge: L.PM.MergeEventHandler = async (e) => {
+    const transaction = new MergeFeatures(
+      { layer: e.newLayer as LGeoJsonExt },
+      e.oldLayers.map((ol) => {
+        const { feature, featureIndex } = getFeatureById(ol.layer._id)!;
+        return { feature, featureIndex, layer: ol.layer };
+      }),
+      callbacks.current!
     );
+    await transactions.current.addTransaction(transaction, leafletMap.current!, callbacks.current!);
+    emitTransaction(id!, transaction);
+  };
 
   const onSplit: L.PM.SplitEventHandler = async (e) => {
     const { feature, featureIndex } = getFeatureById(e.oldLayer._id)!;
-
-    await transactions.current.addTransaction(
-      new SplitFeature(
-        e.newFeatures as InputAddedLayer[],
-        { feature, featureIndex, layer: e.oldLayer },
-        callbacks
-      ),
-      leafletMap.current!,
-      callbacks
+    const transaction = new SplitFeature(
+      e.newFeatures as InputAddedLayer[],
+      { feature, featureIndex, layer: e.oldLayer },
+      callbacks.current!
     );
+
+    await transactions.current.addTransaction(transaction, leafletMap.current!, callbacks.current!);
+    emitTransaction(id!, transaction);
   };
 
   const onMouseMove: L.LeafletMouseEventHandlerFn = (e) => {
     if (id && username) {
       emitMousePosition(id, { lat: e.latlng.lat, lng: e.latlng.lng });
     }
-  };
-
-  const undo = () => {
-    transactions.current.undoTransaction();
-  };
-
-  const redo = () => {
-    transactions.current.doTransaction();
   };
 
   useEffect(() => {
@@ -467,12 +527,12 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafl
   }, []);
 
   useEffect(() => {
-    const keydownHandler = (ev: KeyboardEvent) => {
+    const keydownHandler = async (ev: KeyboardEvent) => {
       if (ev.key.toLowerCase() === 'z' && ev.ctrlKey === true) {
         if (ev.shiftKey === true) {
-          redo();
+          await redo(false);
         } else {
-          undo();
+          await undo(false);
         }
       }
     };
@@ -505,15 +565,11 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafl
             data={geoJSON}
             style={(f) => {
               const feat = f as FeatureExt;
-              let base;
-
               if (isSelected(feat?._id)) {
-                base = SELECTED;
+                return SELECTED;
               } else {
-                base = getCurrentColor(feat);
+                return getCurrentColor(feat);
               }
-
-              return { ...base, weight: 2 };
             }}
             /* @ts-ignore */
             // Fine to ignore since we are guaranteeing the extensions to L.GeoJSON

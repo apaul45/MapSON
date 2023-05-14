@@ -1,4 +1,4 @@
-import { MapTransaction, TransactionType } from '../../utils/jsTPS';
+import { CommonSerialization, MapTransaction, TransactionType } from '../../utils/jsTPS';
 import { FeatureExt, LGeoJsonExt, LayerExt } from '../../types';
 import { store } from '../../models';
 import { MapComponentCallbacks } from './common';
@@ -6,75 +6,75 @@ import L from 'leaflet';
 import { Feature } from 'geojson';
 import { layerEvents } from 'react-leaflet-geoman-v2';
 
-interface RemoveFeatureSerialized {}
+export interface RemoveFeatureSerialized extends CommonSerialization {
+  type: 'RemoveFeature';
+  feature: FeatureExt;
+  featureIndex: number;
+}
 
 export class RemoveFeature extends MapTransaction<RemoveFeatureSerialized> {
-  readonly type: TransactionType = 'RemoveFeature';
+  readonly type = 'RemoveFeature';
   feature: FeatureExt;
   layer?: LGeoJsonExt;
-  featureIndex?: number;
+  featureIndex: number;
 
-  constructor(layer: LGeoJsonExt, feature: FeatureExt, featureIndex: number, isPeer = false) {
+  constructor(
+    layer: LGeoJsonExt | undefined,
+    feature: FeatureExt,
+    featureIndex: number,
+    isPeer = false
+  ) {
     super(isPeer);
     this.layer = layer;
     this.feature = feature;
     this.featureIndex = featureIndex;
   }
 
-  async doTransaction(map: L.Map, callbacks: MapComponentCallbacks) {
-    // dont repeat network connection on peer for first run
+  async doTransaction(map: L.Map, callbacks: MapComponentCallbacks, fromSocket: boolean) {
     const id = callbacks.getFeatureByIndex(this.featureIndex!)?._id!;
-    if (!(this.firstRun && this.isPeer)) {
-      await store.dispatch.mapStore.deleteFeature(id);
-    }
 
-    if (this.layer?._id !== id) {
-      this.layer = callbacks.getLayerById(id) as LGeoJsonExt;
-    }
+    await store.dispatch.mapStore.deleteFeature({
+      featureid: id,
+      doNetwork: this.shouldDoNetwork(fromSocket),
+    });
 
-    // remove layer
-    this.layer?.remove();
+    RemoveFeature.deleteFeatureFrontend(callbacks, id, this.layer);
+
     this.layer = undefined;
-
-    callbacks.unselectFeature(id);
 
     this.firstRun = false;
   }
 
-  async undoTransaction(map: L.Map, callbacks: MapComponentCallbacks) {
+  async undoTransaction(
+    map: L.Map,
+    callbacks: MapComponentCallbacks,
+    fromSocket: boolean,
+    peerArtifacts?: { id: string }
+  ) {
+    this.feature._id = peerArtifacts?.id ?? this.feature._id;
+
     const { id } = (await store.dispatch.mapStore.createFeature({
       feature: this.feature,
       featureIndex: this.featureIndex,
+      doNetwork: this.shouldDoNetwork(fromSocket),
     }))!;
     this.feature._id = id;
+    this.layer = RemoveFeature.createFeatureFrontend(callbacks, this.feature);
 
-    const geoJSONLayer = callbacks.getGeoJSONLayer();
-    const options: L.LayerOptions = { ...geoJSONLayer.options, pmIgnore: false };
+    callbacks.onEachFeature(this.feature, this.layer as unknown as LGeoJsonExt);
 
-    const layer = L.GeoJSON.geometryToLayer(this.feature, options) as L.Layer & {
-      feature: Feature;
-      defaultOptions: L.LayerOptions;
-    };
-
-    layer.feature = L.GeoJSON.asFeature(this.feature);
-    layer.defaultOptions = layer.options;
-    geoJSONLayer.resetStyle(layer);
-    callbacks.onEachFeature(this.feature, layer as unknown as LGeoJsonExt);
-    geoJSONLayer.addLayer(layer);
-
-    layerEvents(
-      layer,
-      { onEdit: callbacks.onEdit, onLayerRemove: callbacks.onRemove, onCreate: callbacks.onCreate },
-      'on'
-    );
-
-    this.layer = layer as unknown as LGeoJsonExt;
+    return { id };
   }
 
   serialize(): RemoveFeatureSerialized {
-    throw new Error('Method not implemented.');
+    return {
+      type: this.type,
+      feature: this.feature,
+      featureIndex: this.featureIndex,
+    };
   }
-  deserialize(i: RemoveFeatureSerialized): this {
-    throw new Error('Method not implemented.');
+  static deserialize(i: RemoveFeatureSerialized, callbacks: MapComponentCallbacks): RemoveFeature {
+    const layer = callbacks.getLayerById(i.feature!._id) as LGeoJsonExt | undefined;
+    return new RemoveFeature(layer, i.feature, i.featureIndex, true);
   }
 }

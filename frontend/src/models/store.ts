@@ -1,11 +1,9 @@
 import { createModel } from '@rematch/core';
 import { RootModel } from '.';
-import { Store, Map, FeatureExt, Comment, Cursor, RoomList, RoomMember } from '../types';
+import { Store, Map, FeatureExt, Comment, RoomList } from '../types';
 import { map } from '../api';
 import { AxiosError } from 'axios';
-import { Feature } from '@turf/turf';
-import { Geometry } from 'geojson';
-import { AllMapsRequest, CreateMapRequest } from '../api/types';
+import { AllMapsRequest, CreateFeatureResponse, CreateMapRequest } from '../api/types';
 import { cloneDeep } from 'lodash';
 import L from 'leaflet';
 import tinycolor from 'tinycolor2';
@@ -151,7 +149,9 @@ export const mapStore = createModel<RootModel>()({
       }
     },
     async createFeature(
-      payload: { feature: Feature<Geometry>; featureIndex?: number },
+      payload:
+        | { feature: FeatureExt; featureIndex?: number; doNetwork: true }
+        | { feature: FeatureExt; featureIndex: number; doNetwork: false },
       state
     ): Promise<{ id: string; featureIndex: number } | undefined> {
       const id = state.mapStore.currentMap?._id;
@@ -165,25 +165,39 @@ export const mapStore = createModel<RootModel>()({
       try {
         //unset mongoose immutable fields
         const f = { ...payload.feature, _id: undefined, __v: undefined };
-        const feature = await map.createFeature(id, f, payload.featureIndex);
+
+        let feature: Omit<CreateFeatureResponse, 'error'>;
 
         let oldMap = state.mapStore.currentMap;
 
-        oldMap?.features.features.splice(feature.data.featureIndex, 0, feature.data.feature);
-        this.setCurrentMap(oldMap);
+        if (payload.doNetwork === false) {
+          feature = {
+            feature: payload.feature,
+            featureIndex: payload.featureIndex ?? oldMap?.features.features.length,
+          };
+        } else {
+          feature = (await map.createFeature(id, f, payload.featureIndex)).data;
+        }
 
-        return { id: feature.data.feature._id, featureIndex: feature.data.featureIndex };
+        oldMap?.features.features.splice(feature!.featureIndex, 0, feature!.feature);
+        this.setCurrentMap(oldMap);
+        console.log({
+          type: 'Created feature',
+          feature,
+          features: state.mapStore.currentMap?.features.features,
+        });
+        return { id: feature!.feature._id, featureIndex: feature!.featureIndex };
       } catch (e: any) {
         dispatch.error.setError(e.response?.data.errorMessage ?? 'Unexpected error');
       }
     },
     async updateFeature(
-      payload: { id: string; feature: Partial<FeatureExt> },
+      payload: { id: string; feature: Partial<FeatureExt>; doNetwork?: boolean },
       state
     ): Promise<FeatureExt | void> {
       const id = state.mapStore.currentMap?._id;
 
-      let { id: featureid, feature } = payload;
+      let { id: featureid, feature, doNetwork } = payload;
 
       if (!id) {
         console.error('No map selected');
@@ -207,7 +221,9 @@ export const mapStore = createModel<RootModel>()({
       delete feature.createdAt;
 
       try {
-        await map.updateFeature(id, featureid, feature);
+        if (doNetwork !== false) {
+          await map.updateFeature(id, featureid, feature);
+        }
 
         let oldMap = state.mapStore.currentMap;
 
@@ -229,7 +245,7 @@ export const mapStore = createModel<RootModel>()({
         dispatch.error.setError(e.response?.data.errorMessage ?? 'Unexpected error');
       }
     },
-    async deleteFeature(payload: string, state) {
+    async deleteFeature(payload: { featureid: string; doNetwork?: boolean }, state) {
       const id = state.mapStore.currentMap?._id;
       if (!id) {
         console.error('No map selected');
@@ -242,14 +258,16 @@ export const mapStore = createModel<RootModel>()({
         dispatch.error.setError('No feature selected');
         return;
       }
+      const { featureid, doNetwork } = payload;
 
       try {
-        await map.deleteFeature(id, payload);
-
+        if (doNetwork !== false) {
+          await map.deleteFeature(id, featureid);
+        }
         let oldMap = state.mapStore.currentMap;
 
         oldMap!.features.features = oldMap!.features.features.filter(
-          (feature) => feature._id !== payload
+          (feature) => feature._id !== featureid
         );
 
         this.setCurrentMap(oldMap);

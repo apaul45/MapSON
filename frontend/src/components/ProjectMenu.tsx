@@ -9,6 +9,7 @@ import domtoimage from 'dom-to-image';
 import L from 'leaflet';
 import { Fragment, useState } from 'react';
 import TutorialDialog from './dialogs/TutorialDialog';
+import { clientRedo, clientUndo } from '../live-collab/socket';
 
 const ProjectMenu = ({ leafletMap }: { leafletMap: L.Map | null }) => {
   const user = useSelector((state: RootState) => state.user.currentUser);
@@ -161,10 +162,14 @@ const ProjectMenu = ({ leafletMap }: { leafletMap: L.Map | null }) => {
           <MenuItem className="text-sort-by text-lg pt-0 pointer-events-none"> Edit </MenuItem>
         ) : null}
         {user && !map?.published.isPublished ? (
-          <MenuItem className="hover:bg-sort-hover">Undo</MenuItem>
+          <MenuItem className="hover:bg-sort-hover" onClick={() => clientUndo()}>
+            Undo
+          </MenuItem>
         ) : null}
         {user && !map?.published.isPublished ? (
-          <MenuItem className="hover:bg-sort-hover">Redo</MenuItem>
+          <MenuItem className="hover:bg-sort-hover" onClick={() => clientRedo()}>
+            Redo
+          </MenuItem>
         ) : null}
         {user && !map?.published.isPublished ? (
           <hr className="my-2 border-blue-gray-50 outline-none" />

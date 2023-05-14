@@ -95,8 +95,31 @@ io.on('connection', (socket) => {
   });
 
   socket.on('cursorUpdate', (roomId: string, mousePosition: LatLngLiteral) => {
-    console.log(`${socket.id}: updated cursor ${JSON.stringify(mousePosition)} in room ${roomId}`);
+    // console.log(`${socket.id}: updated cursor ${JSON.stringify(mousePosition)} in room ${roomId}`);
     socket.broadcast.to(roomId).emit('cursorUpdate', roomId, mousePosition, socket.id);
+  });
+
+  socket.on('newTransaction', (roomId: string, transaction: any) => {
+    socket.broadcast.to(roomId).emit('newTransaction', roomId, transaction);
+  });
+
+  socket.on('undo', (roomId: string, peerArtifacts: Object | undefined) => {
+    socket.broadcast.to(roomId).emit('undo', roomId, peerArtifacts);
+  });
+
+  socket.on('redo', (roomId: string, peerArtifacts: Object | undefined) => {
+    socket.broadcast.to(roomId).emit('redo', roomId, peerArtifacts);
+  });
+
+  socket.on(
+    'updateRegionProperties',
+    (roomId: string, featureId: string, propertyList: Record<string, string>) => {
+      socket.broadcast.to(roomId).emit('updateRegionProperties', roomId, featureId, propertyList);
+    }
+  );
+
+  socket.on('updateMapProperties', (roomId: string, propertyList: Record<string, string>) => {
+    socket.broadcast.to(roomId).emit('updateMapProperties', roomId, propertyList);
   });
 
   socket.on('disconnect', () => {

@@ -1,11 +1,14 @@
-import { TransactionType } from '../../utils/jsTPS';
+import { CommonSerialization, TransactionType } from '../../utils/jsTPS';
 import { FeatureExt, LGeoJsonExt, LayerExt } from '../../types';
 import { MapComponentCallbacks, extractFeature } from './common';
 import { CreateFeature } from './CreateFeature';
 import { RemoveFeature } from './RemoveFeature';
-import { MultipleTransactions } from './MultipleTransactions';
+import { MultipleTransactions, MultipleTransactionsSerialized } from './MultipleTransactions';
 
-interface CreateAndRemoveMultipleFeaturesSerialized {}
+export interface CreateAndRemoveMultipleFeaturesSerialized
+  extends Omit<MultipleTransactionsSerialized, 'type'> {
+  type: 'CreateAndRemoveMultipleFeature';
+}
 
 interface CreateLayer {
   feature?: FeatureExt;
@@ -23,8 +26,6 @@ interface RemoveLayer {
   action: 'Remove';
 }
 
-type CreateAndRemoveTransaction = CreateFeature | RemoveFeature;
-
 export interface InputAddedLayer {
   layer: LGeoJsonExt;
   feature?: FeatureExt;
@@ -36,11 +37,10 @@ export interface InputRemoveLayer {
   featureIndex: number;
 }
 
-export class CreateAndRemoveMultipleFeature extends MultipleTransactions<
-  CreateAndRemoveMultipleFeaturesSerialized,
-  CreateAndRemoveTransaction
-> {
-  readonly type: TransactionType = 'CreateAndRemoveMultipleFeature';
+export class CreateAndRemoveMultipleFeature<
+  T extends TransactionType = 'CreateAndRemoveMultipleFeature'
+> extends MultipleTransactions<'CreateAndRemoveMultipleFeature' | T> {
+  readonly type: T | 'CreateAndRemoveMultipleFeature' = 'CreateAndRemoveMultipleFeature';
 
   static toCreateRemoveLayer(
     layer: LGeoJsonExt,
@@ -127,10 +127,16 @@ export class CreateAndRemoveMultipleFeature extends MultipleTransactions<
     );
   }
 
+  serialize(): any;
   serialize(): CreateAndRemoveMultipleFeaturesSerialized {
-    throw new Error('Method not implemented.');
+    return super.serialize();
   }
-  deserialize(i: CreateAndRemoveMultipleFeaturesSerialized): this {
-    throw new Error('Method not implemented.');
+
+  static deserialize(i: any, callbacks: MapComponentCallbacks): any;
+  static deserialize(
+    i: CreateAndRemoveMultipleFeaturesSerialized,
+    callbacks: MapComponentCallbacks
+  ): CreateAndRemoveMultipleFeature {
+    return super.deserialize(i, callbacks) as CreateAndRemoveMultipleFeature;
   }
 }

@@ -1,87 +1,95 @@
-import { MapTransaction, TransactionType } from '../../utils/jsTPS';
+import {
+  BaseTransaction,
+  CommonSerialization,
+  MapTransaction,
+  TransactionType,
+} from '../../utils/jsTPS';
 import { FeatureExt, LGeoJsonExt, LayerExt } from '../../types';
 import { store } from '../../models';
 import { MapComponentCallbacks, extractFeature } from './common';
 import L from 'leaflet';
-import { Feature } from 'geojson';
-import { layerEvents } from 'react-leaflet-geoman-v2';
 
-interface CreateFeatureSerialized {}
+export interface CreateFeatureSerialized extends CommonSerialization {
+  type: 'CreateFeature';
+  feature: FeatureExt;
+  featureIndex?: number;
+}
 
 export class CreateFeature extends MapTransaction<CreateFeatureSerialized> {
-  readonly type: TransactionType = 'CreateFeature';
+  readonly type = 'CreateFeature';
   layer?: LGeoJsonExt;
   feature: FeatureExt;
   featureIndex?: number;
 
-  constructor(layer: LGeoJsonExt, feature: FeatureExt | undefined = undefined, isPeer = false) {
+  constructor(
+    layer: LGeoJsonExt | undefined,
+    feature: FeatureExt | undefined = undefined,
+    isPeer = false
+  ) {
     super(isPeer);
     this.layer = layer;
-    this.feature = feature ?? extractFeature(layer);
+    this.feature = feature ?? extractFeature(layer!);
   }
 
-  async doTransaction(map: L.Map, callbacks: MapComponentCallbacks) {
+  async doTransaction(
+    map: L.Map,
+    callbacks: MapComponentCallbacks,
+    fromSocket: boolean,
+    peerArtifacts?: { id: string }
+  ) {
+    this.feature._id = peerArtifacts?.id ?? this.feature._id;
+
     // dont repeat network connection on peer for first run
-    if (!(this.firstRun && this.isPeer)) {
-      const { id, featureIndex } = (await store.dispatch.mapStore.createFeature({
-        feature: this.feature,
-        featureIndex: this.featureIndex,
-      }))!;
-      if (!this.featureIndex) {
-        this.featureIndex = featureIndex;
-      }
-      this.feature._id = id;
+    const { id, featureIndex } = (await store.dispatch.mapStore.createFeature({
+      feature: this.feature,
+      featureIndex: this.featureIndex!,
+      doNetwork: this.shouldDoNetwork(fromSocket),
+    }))!;
+
+    if (!this.featureIndex) {
+      this.featureIndex = featureIndex;
+    }
+    this.feature._id = id;
+
+    if (this.shouldPerformFrontendEdit()) {
+      this.layer = CreateFeature.createFeatureFrontend(callbacks, this.feature);
     }
 
-    if (!this.firstRun) {
-      const geoJSONLayer = callbacks.getGeoJSONLayer();
-      const options: L.LayerOptions = { ...geoJSONLayer.options, pmIgnore: false };
-      const layer = L.GeoJSON.geometryToLayer(this.feature, options) as L.Layer & {
-        feature: Feature;
-        defaultOptions: L.LayerOptions;
-      };
-      layer.feature = L.GeoJSON.asFeature(this.feature);
-      layer.defaultOptions = layer.options;
-      geoJSONLayer.resetStyle(layer);
-      geoJSONLayer.addLayer(layer);
-
-      layerEvents(
-        layer,
-        {
-          onEdit: callbacks.onEdit,
-          onLayerRemove: callbacks.onRemove,
-          onCreate: callbacks.onCreate,
-        },
-        'on'
-      );
-
-      this.layer = layer as unknown as LGeoJsonExt;
-    }
-
-    callbacks.onEachFeature(this.feature, this.layer!);
+    callbacks.onEachFeature(this.feature, this.layer as unknown as LGeoJsonExt);
 
     this.firstRun = false;
+
+    return { id };
   }
 
-  async undoTransaction(map: L.Map, callbacks: MapComponentCallbacks) {
+  async undoTransaction(
+    map: L.Map,
+    callbacks: MapComponentCallbacks,
+    fromSocket: boolean,
+    peerArtifacts?: { id: string }
+  ) {
     const id = callbacks.getFeatureByIndex(this.featureIndex!)?._id!;
 
-    if (this.layer?._id !== id) {
-      this.layer = callbacks.getLayerById(id) as LGeoJsonExt;
-    }
+    await store.dispatch.mapStore.deleteFeature({
+      featureid: id,
+      doNetwork: this.shouldDoNetwork(fromSocket),
+    });
 
-    await store.dispatch.mapStore.deleteFeature(id);
+    CreateFeature.deleteFeatureFrontend(callbacks, id, this.layer);
 
-    this.layer?.remove();
     this.layer = undefined;
-
-    callbacks.unselectFeature(id);
   }
 
   serialize(): CreateFeatureSerialized {
-    throw new Error('Method not implemented.');
+    return {
+      feature: this.feature,
+      featureIndex: this.featureIndex,
+      type: this.type,
+    };
   }
-  deserialize(i: CreateFeatureSerialized): this {
-    throw new Error('Method not implemented.');
+
+  static deserialize(i: CreateFeatureSerialized, callbacks: MapComponentCallbacks): CreateFeature {
+    // assume that we are a peer if we are deserializing
+    return new CreateFeature(undefined, i.feature, true);
   }
 }

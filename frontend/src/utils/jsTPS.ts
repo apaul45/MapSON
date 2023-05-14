@@ -1,5 +1,9 @@
 import { MutableRefObject } from 'react';
 import { MapComponentCallbacks } from '../transactions/map/common';
+import L from 'leaflet';
+import { Feature } from 'geojson';
+import { layerEvents } from 'react-leaflet-geoman-v2';
+import { FeatureExt, LGeoJsonExt } from '../types';
 
 /**
  * jsTPS_Transaction
@@ -20,6 +24,10 @@ export type TransactionType =
   | 'Split'
   | 'CreateAndRemoveMultipleFeature';
 
+export interface CommonSerialization {
+  type: TransactionType;
+}
+
 export abstract class BaseTransaction<T> {
   abstract readonly type: TransactionType;
   firstRun: boolean;
@@ -38,32 +46,126 @@ export abstract class BaseTransaction<T> {
   /**
    * Deserialize transaction
    */
-  abstract deserialize(i: T): this;
+  static deserialize(i: any, callbacks: MapComponentCallbacks): any {
+    throw new Error('NOT IMPLEMENTED');
+  }
+
+  shouldPerformFrontendEdit() {
+    const res = this.isPeer || !this.firstRun;
+
+    if (res) {
+      console.log('Should perform');
+    } else {
+      console.log('Should NOT perform');
+    }
+
+    return res;
+  }
+
+  /*
+    if transaction was made by peer   and the current action is from socket =>  NO
+    if transaction was made by client and the current action is from socket =>  NO 
+    if transaction was made by peer   and the current action is from client =>  YES
+    if transaction was made by client and the current action is from client =>  YES 
+  */
+  shouldDoNetwork(fromSocket: boolean) {
+    return !fromSocket;
+  }
+
+  static createFeatureFrontend(callbacks: MapComponentCallbacks, feature: FeatureExt) {
+    const geoJSONLayer = callbacks.getGeoJSONLayer();
+    const options: L.LayerOptions = { ...geoJSONLayer.options, pmIgnore: false };
+    const layer = L.GeoJSON.geometryToLayer(feature, options) as L.Layer & {
+      feature: Feature;
+      defaultOptions: L.LayerOptions;
+    };
+    layer.feature = L.GeoJSON.asFeature(feature);
+    layer.defaultOptions = layer.options;
+    geoJSONLayer.resetStyle(layer);
+    geoJSONLayer.addLayer(layer);
+
+    layerEvents(
+      layer,
+      {
+        onEdit: callbacks.onEdit,
+        onLayerRemove: callbacks.onRemove,
+        onCreate: callbacks.onCreate,
+      },
+      'on'
+    );
+
+    return layer as unknown as LGeoJsonExt;
+  }
+
+  static deleteFeatureFrontend(
+    callbacks: MapComponentCallbacks,
+    id: string,
+    iLayer: LGeoJsonExt | undefined
+  ) {
+    let layer = iLayer;
+
+    if (!layer || layer._id !== id) {
+      layer && layer.remove();
+      layer = callbacks.getLayerById(id) as LGeoJsonExt;
+    }
+
+    // remove layer
+    layer?.remove();
+
+    callbacks.unselectFeature(id);
+  }
+
+  static editFeatureFrontend(
+    feature: FeatureExt,
+    id: string | undefined,
+    callbacks: MapComponentCallbacks,
+    featureIndex: number | undefined
+  ) {
+    if (feature.geometry.type !== 'Polygon' && feature.geometry.type !== 'MultiPolygon') {
+      throw new Error('Cannot undo/redo edits features that is not a (multi)polygon');
+    }
+
+    const coords = feature.geometry.coordinates;
+
+    const latLngs = L.GeoJSON.coordsToLatLngs(coords, feature.geometry.type === 'Polygon' ? 1 : 2);
+
+    let layer = callbacks.getLayerById(id ?? callbacks.getFeatureByIndex(featureIndex!)?._id!);
+
+    if (!layer) {
+      console.error('Layer not found');
+    }
+
+    //@ts-ignore
+    layer?.setLatLngs ? layer?.setLatLngs(latLngs) : layer?._setLatLngs(latLngs);
+    if (layer?.pm.enabled()) {
+      //@ts-ignore
+      layer?.pm._initMarkers();
+    }
+  }
 }
 
 export abstract class MapTransaction<T> extends BaseTransaction<T> {
   /**
    * This method is called by jTPS when a transaction is executed.
    */
-  abstract doTransaction(map: L.Map, callbacks: MapComponentCallbacks): void | Promise<void>;
+  abstract doTransaction(
+    map: L.Map,
+    callbacks: MapComponentCallbacks,
+    fromSocket: boolean,
+    peerArtifacts?: Object
+  ): Promise<Object | void>;
   /**
    * This method is called by jTPS when a transaction is undone.
    */
-  abstract undoTransaction(map: L.Map, callbacks: MapComponentCallbacks): void | Promise<void>;
+  abstract undoTransaction(
+    map: L.Map,
+    callbacks: MapComponentCallbacks,
+    fromSocket: boolean,
+    peerArtifacts?: Object
+  ): Promise<Object | void>;
 }
 
-export abstract class RegularTransaction<T> extends BaseTransaction<T> {
-  /**
-   * This method is called by jTPS when a transaction is executed.
-   */
-  abstract doTransaction(): void | Promise<void>;
-  /**
-   * This method is called by jTPS when a transaction is undone.
-   */
-  abstract undoTransaction(): void | Promise<void>;
-}
-
-export type Transaction = MapTransaction<any> | RegularTransaction<any>;
+export type Transaction = MapTransaction<any>;
 
 /**
  * jsTPS
@@ -182,7 +284,12 @@ export default class jsTPS {
    *
    * @param {jsTPS_Transaction} transaction Transaction to add to the stack and do.
    */
-  async addTransaction(transaction: Transaction, map: L.Map, callbacks: MapComponentCallbacks) {
+  async addTransaction(
+    transaction: Transaction,
+    map: L.Map,
+    callbacks: MapComponentCallbacks,
+    fromSocket: boolean = false
+  ) {
     // ARE WE BRANCHING?
     if (
       this.mostRecentTransaction < 0 ||
@@ -200,7 +307,7 @@ export default class jsTPS {
     this.transactions[this.mostRecentTransaction + 1] = transaction;
 
     // AND EXECUTE IT
-    await this.doTransaction();
+    await this.doTransaction(fromSocket);
   }
 
   /**
@@ -210,18 +317,22 @@ export default class jsTPS {
    * counter. Note this function may be invoked as a result of either adding
    * a transaction (which also does it), or redoing a transaction.
    */
-  async doTransaction() {
+  async doTransaction(fromSocket: boolean = false, peerArtifacts: Object | undefined = undefined) {
     if (this.hasTransactionToRedo()) {
       this.performingDo = true;
       let transaction = this.transactions[this.mostRecentTransaction + 1];
       console.log(`Do Transaction: ${transaction.type}`);
-      if (transaction instanceof MapTransaction) {
-        await transaction.doTransaction(this.map.current!, this.callbacks!);
-      } else if (transaction instanceof RegularTransaction) {
-        await transaction.doTransaction();
-      }
+      const res = await transaction.doTransaction(
+        this.map.current!,
+        this.callbacks!,
+        fromSocket,
+        peerArtifacts
+      );
+
       this.mostRecentTransaction++;
       this.performingDo = false;
+
+      return res;
     }
   }
 
@@ -229,18 +340,25 @@ export default class jsTPS {
    * This function gets the most recently executed transaction on the
    * TPS stack and undoes it, moving the TPS counter accordingly.
    */
-  async undoTransaction() {
+  async undoTransaction(
+    fromSocket: boolean = false,
+    peerArtifacts: Object | undefined = undefined
+  ) {
     if (this.hasTransactionToUndo()) {
       this.performingUndo = true;
       let transaction = this.transactions[this.mostRecentTransaction];
       console.log(`Undo Transaction: ${transaction.type}`);
-      if (transaction instanceof MapTransaction) {
-        await transaction.undoTransaction(this.map.current!, this.callbacks!);
-      } else {
-        await transaction.undoTransaction();
-      }
+      const res = await transaction.undoTransaction(
+        this.map.current!,
+        this.callbacks!,
+        fromSocket,
+        peerArtifacts
+      );
+
       this.mostRecentTransaction--;
       this.performingUndo = false;
+
+      return res;
     }
   }
 
