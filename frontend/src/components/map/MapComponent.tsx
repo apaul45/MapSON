@@ -542,7 +542,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafl
           bounds={bounds}
           ref={leafletMap}
         >
-          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+          <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png" />
 
           <GeoJSON
             data={geoJSON}

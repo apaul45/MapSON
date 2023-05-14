@@ -10,6 +10,7 @@ import ProjectSidePanel from '../ProjectSidePanel';
 import { MapComponent } from '../map';
 import { SelectedFeature } from '../map/MapComponent';
 import { store } from '../../models';
+import PulseLoader from 'react-spinners/PulseLoader';
 
 export const ProjectScreen = () => {
   const user = useSelector((state: RootState) => state.user.currentUser);
@@ -57,11 +58,40 @@ export const ProjectScreen = () => {
   const canEdit = (map && user && user.maps?.some((v) => v._id === map._id)) ?? false;
 
   if (error) {
-    return <div>Error loading map</div>;
+    return (
+      <div className="bg-navbar w-screen h-screen">
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100vh',
+          }}
+        >
+          <span className="text-white text-3xl">Error loading map</span>
+        </div>
+      </div>
+    );
   }
 
   if (!map) {
-    return <div>Loading map...</div>;
+    return (
+      <div className="bg-navbar w-screen h-screen">
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100vh',
+          }}
+        >
+          <div>
+            <PulseLoader color={'#fff'} size={65} />
+            <span className="text-white text-3xl">Loading Map...</span>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (

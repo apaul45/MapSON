@@ -224,9 +224,9 @@ export default function MapCard({
           <img
             className="float-right w-8 h-8 outline-none"
             src={
-              published
+              published && location.pathname.includes('home')
                 ? '/img/icons/publishedicon.png'
-                : userAccess >= 1
+                : userAccess >= 2 && location.pathname.includes('home')
                 ? '/img/icons/shared-icon.png'
                 : '/img/white-backgrnd.png'
             }
