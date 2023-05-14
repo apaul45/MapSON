@@ -151,6 +151,12 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafl
     setLeafletMap(leafletMap.current);
   }, [leafletMap.current]);
 
+  useEffect(() => {
+    if (leafletMap.current) {
+      leafletMap.current.canEdit = canEdit;
+    }
+  }, [canEdit]);
+
   //second one is the most recently selected
   const selectedFeatures = useRef<SelectedFeature[]>([]);
 
@@ -207,98 +213,91 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafl
     }
   };
 
-  const onEachFeature = useCallback(
-    (feature: FeatureExt, layer: LGeoJsonExt) => {
-      if (layer._isConfigured) {
+  const onEachFeature = (feature: FeatureExt, layer: LGeoJsonExt) => {
+    if (layer._isConfigured) {
+      return;
+    }
+
+    layer._id = feature._id;
+
+    feature.properties?.name && layer.bindPopup(feature.properties?.name, { keepInView: false });
+
+    layer.pm.disable();
+
+    const mouseover: L.LeafletMouseEventHandlerFn = (e) => {
+      const id = getLayerID(layer)!;
+
+      if (isSelected(id)) {
+        layer.setStyle(SELECTED_AND_HOVERED);
+      } else {
+        layer.setStyle(HOVERED);
+      }
+
+      layer.openPopup();
+    };
+
+    const mouseout: L.LeafletMouseEventHandlerFn = (e) => {
+      const id = getLayerID(layer)!;
+
+      if (isSelected(id)) {
+        layer.setStyle(SELECTED);
+      } else {
+        layer.setStyle(getCurrentColor(layer.feature));
+      }
+
+      layer.closePopup();
+    };
+
+    const click: L.LeafletMouseEventHandlerFn = (e) => {
+      //ignore if meta is pressed with it
+      if (e.originalEvent.metaKey) {
         return;
       }
 
-      layer._id = feature._id;
+      const id = getLayerID(layer)!;
 
-      feature.properties?.name && layer.bindPopup(feature.properties?.name, { keepInView: false });
+      if (isSelected(id)) {
+        unselectFeature(id);
+        layer.setStyle(getCurrentColor(layer.feature));
+      } else {
+        selectFeature(id, layer)?.layer.setStyle(getCurrentColor(layer.feature));
+        layer.setStyle(SELECTED);
+      }
+    };
 
-      layer.pm.disable();
-
-      const mouseover: L.LeafletMouseEventHandlerFn = (e) => {
-        const id = getLayerID(layer)!;
-
-        if (isSelected(id)) {
-          layer.setStyle(SELECTED_AND_HOVERED);
-        } else {
-          layer.setStyle(HOVERED);
-        }
-
-        layer.openPopup();
-      };
-
-      const mouseout: L.LeafletMouseEventHandlerFn = (e) => {
-        const id = getLayerID(layer)!;
-
-        if (isSelected(id)) {
-          layer.setStyle(SELECTED);
-        } else {
-          layer.setStyle(getCurrentColor(layer.feature));
-        }
-
-        layer.closePopup();
-      };
-
-      const click: L.LeafletMouseEventHandlerFn = (e) => {
-        //ignore if meta is pressed with it
-        if (e.originalEvent.metaKey) {
-          return;
-        }
-
-        const id = getLayerID(layer)!;
-
-        if (isSelected(id)) {
-          unselectFeature(id);
-          layer.setStyle(getCurrentColor(layer.feature));
-        } else {
-          selectFeature(id, layer)?.layer.setStyle(getCurrentColor(layer.feature));
-          layer.setStyle(SELECTED);
-        }
-      };
-
-      const dblclick: L.LeafletMouseEventHandlerFn = (e) => {
-        //ignore if meta is pressed with it
-        if (e.originalEvent.metaKey) {
-          return;
-        }
-
-        const id = getLayerID(layer)!;
-
-        const eq = editLayer.current?.id === id;
-
-        editLayer.current?.layer.pm.disable();
-        editLayer.current = null;
-
-        if (!eq) {
-          editLayer.current = { layer, id };
-          layer.pm.enable();
-        }
-      };
-
-      layer.getPopup()?.on('mouseover', mouseover);
-      layer.getPopup()?.on('click', click);
-      layer.getPopup()?.on('dblclick', dblclick);
-
-      layer.on('mouseover', mouseover);
-
-      layer.on('mouseout', mouseout);
-
-      layer.on('click', click);
-
-      if (canEdit) {
-        layer.on('dblclick', dblclick);
+    const dblclick: L.LeafletMouseEventHandlerFn = (e) => {
+      //ignore if meta is pressed with it or if we cant edit
+      if (e.originalEvent.metaKey || !leafletMap.current.canEdit) {
+        console.log('CANT TOGGLE');
+        return;
       }
 
-      layer._isConfigured = true;
+      const id = getLayerID(layer)!;
 
-      extendGeomanLayer(layer.pm);
-    },
-    [canEdit]
-  );
+      const eq = editLayer.current?.id === id;
+
+      editLayer.current?.layer.pm.disable();
+      editLayer.current = null;
+
+      if (!eq) {
+        editLayer.current = { layer, id };
+        layer.pm.enable();
+      }
+    };
+
+    layer.getPopup()?.on('mouseover', mouseover);
+    layer.getPopup()?.on('click', click);
+    layer.getPopup()?.on('dblclick', dblclick);
+
+    layer.on('mouseover', mouseover);
+    layer.on('mouseout', mouseout);
+    layer.on('click', click);
+    layer.on('dblclick', dblclick);
+
+    layer._isConfigured = true;
+
+    extendGeomanLayer(layer.pm);
+  };
 
   let bounds: any = undefined;
   if (geoJSON.features.length > 0) {

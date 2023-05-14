@@ -1,10 +1,8 @@
 import { createModel } from '@rematch/core';
 import { RootModel } from '.';
-import { Store, Map, FeatureExt, Comment, Cursor, RoomList, RoomMember } from '../types';
+import { Store, Map, FeatureExt, Comment, RoomList } from '../types';
 import { map } from '../api';
 import { AxiosError } from 'axios';
-import { Feature } from '@turf/turf';
-import { Geometry } from 'geojson';
 import { AllMapsRequest, CreateFeatureResponse, CreateMapRequest } from '../api/types';
 import { cloneDeep } from 'lodash';
 import L from 'leaflet';

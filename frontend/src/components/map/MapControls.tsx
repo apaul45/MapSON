@@ -19,6 +19,10 @@ import 'leaflet-geometryutil';
 import polygonSlice from '../../utils/polygon-slice';
 
 declare module 'leaflet' {
+  interface Map {
+    canEdit: boolean;
+  }
+
   namespace PM {
     interface MergeEvent {
       newLayer: L.GeoJSON;

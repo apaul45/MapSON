@@ -54,6 +54,8 @@ export class RemoveFeature extends MapTransaction<RemoveFeatureSerialized> {
     }))!;
     this.feature._id = id;
     this.layer = RemoveFeature.createFeatureFrontend(callbacks, this.feature);
+
+    callbacks.onEachFeature(this.feature, this.layer as unknown as LGeoJsonExt);
   }
 
   serialize(): RemoveFeatureSerialized {

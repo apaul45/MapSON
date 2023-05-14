@@ -55,7 +55,11 @@ export const ProjectScreen = () => {
 
   const setMapName = async (name: string) => await mapStore.updateCurrentMap({ name });
 
-  const canEdit = (map && user && user.maps?.some((v) => v._id === map._id)) ?? false;
+  const canEdit =
+    map !== null &&
+    !map.published.isPublished &&
+    user !== null &&
+    user.maps.some((v) => v._id === map._id);
 
   if (error) {
     return (

@@ -48,6 +48,8 @@ export class CreateFeature extends MapTransaction<CreateFeatureSerialized> {
       this.layer = CreateFeature.createFeatureFrontend(callbacks, this.feature);
     }
 
+    callbacks.onEachFeature(this.feature, this.layer as unknown as LGeoJsonExt);
+
     this.firstRun = false;
   }
 

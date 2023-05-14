@@ -89,8 +89,6 @@ export abstract class BaseTransaction<T> {
       'on'
     );
 
-    callbacks.onEachFeature(feature, layer as unknown as LGeoJsonExt);
-
     return layer as unknown as LGeoJsonExt;
   }
 
