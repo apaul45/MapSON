@@ -91,12 +91,12 @@ export const emitTransaction = (roomId: string, transaction: TransactionTypes) =
   socket.emit('newTransaction', roomId, serialized);
 };
 
-export const emitUndo = (roomId: string) => {
-  socket.emit('undo', roomId);
+export const emitUndo = (roomId: string, peerArtifacts: Object | undefined = undefined) => {
+  socket.emit('undo', roomId, peerArtifacts);
 };
 
-export const emitRedo = (roomId: string) => {
-  socket.emit('redo', roomId);
+export const emitRedo = (roomId: string, peerArtifacts: Object | undefined = undefined) => {
+  socket.emit('redo', roomId, peerArtifacts);
 };
 
 socket.on('cursorUpdate', (roomId: string, position: L.LatLngExpression, socket_id: string) => {
@@ -127,10 +127,10 @@ socket.on('newTransaction', (roomId: string, transaction: SerializedTransactionT
   socket.callbacks?.current.applyPeerTransaction(transaction);
 });
 
-socket.on('undo', async (roomId: string) => {
-  await socket.callbacks?.current.undo(true);
+socket.on('undo', async (roomId: string, peerArtifacts: Object | undefined = undefined) => {
+  await socket.callbacks?.current.undo(true, peerArtifacts);
 });
 
-socket.on('redo', async (roomId: string) => {
-  await socket.callbacks?.current.redo(true);
+socket.on('redo', async (roomId: string, peerArtifacts: Object | undefined = undefined) => {
+  await socket.callbacks?.current.redo(true, peerArtifacts);
 });

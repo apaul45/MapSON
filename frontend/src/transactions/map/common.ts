@@ -33,8 +33,8 @@ export interface MapComponentCallbacks {
   getGeoJSONLayer: () => L.GeoJSON;
   getTransactions: () => jsTPS;
   applyPeerTransaction: (t: SerializedTransactionTypes) => void;
-  undo: (fromSocket?: boolean) => Promise<void>;
-  redo: (fromSocket?: boolean) => Promise<void>;
+  undo: (fromSocket?: boolean, peerArtifacts?: Object) => Promise<void>;
+  redo: (fromSocket?: boolean, peerArtifacts?: Object) => Promise<void>;
   onCreate: PM.CreateEventHandler;
   onEdit: PM.EditEventHandler;
   onRemove: PM.RemoveEventHandler;

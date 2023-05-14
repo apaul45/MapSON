@@ -45,7 +45,14 @@ export class RemoveFeature extends MapTransaction<RemoveFeatureSerialized> {
     this.firstRun = false;
   }
 
-  async undoTransaction(map: L.Map, callbacks: MapComponentCallbacks, fromSocket: boolean) {
+  async undoTransaction(
+    map: L.Map,
+    callbacks: MapComponentCallbacks,
+    fromSocket: boolean,
+    peerArtifacts?: { id: string }
+  ) {
+    this.feature._id = peerArtifacts?.id ?? this.feature._id;
+
     const { id } = (await store.dispatch.mapStore.createFeature({
       feature: this.feature,
       featureIndex: this.featureIndex,
@@ -55,6 +62,8 @@ export class RemoveFeature extends MapTransaction<RemoveFeatureSerialized> {
     this.layer = RemoveFeature.createFeatureFrontend(callbacks, this.feature);
 
     callbacks.onEachFeature(this.feature, this.layer as unknown as LGeoJsonExt);
+
+    return { id };
   }
 
   serialize(): RemoveFeatureSerialized {

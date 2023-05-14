@@ -151,16 +151,18 @@ export abstract class MapTransaction<T> extends BaseTransaction<T> {
   abstract doTransaction(
     map: L.Map,
     callbacks: MapComponentCallbacks,
-    fromSocket: boolean
-  ): void | Promise<void>;
+    fromSocket: boolean,
+    peerArtifacts?: Object
+  ): Promise<Object | void>;
   /**
    * This method is called by jTPS when a transaction is undone.
    */
   abstract undoTransaction(
     map: L.Map,
     callbacks: MapComponentCallbacks,
-    fromSocket: boolean
-  ): void | Promise<void>;
+    fromSocket: boolean,
+    peerArtifacts?: Object
+  ): Promise<Object | void>;
 }
 
 export type Transaction = MapTransaction<any>;
@@ -315,15 +317,22 @@ export default class jsTPS {
    * counter. Note this function may be invoked as a result of either adding
    * a transaction (which also does it), or redoing a transaction.
    */
-  async doTransaction(fromSocket: boolean = false) {
+  async doTransaction(fromSocket: boolean = false, peerArtifacts: Object | undefined = undefined) {
     if (this.hasTransactionToRedo()) {
       this.performingDo = true;
       let transaction = this.transactions[this.mostRecentTransaction + 1];
       console.log(`Do Transaction: ${transaction.type}`);
-      await transaction.doTransaction(this.map.current!, this.callbacks!, fromSocket);
+      const res = await transaction.doTransaction(
+        this.map.current!,
+        this.callbacks!,
+        fromSocket,
+        peerArtifacts
+      );
 
       this.mostRecentTransaction++;
       this.performingDo = false;
+
+      return res;
     }
   }
 
@@ -331,15 +340,25 @@ export default class jsTPS {
    * This function gets the most recently executed transaction on the
    * TPS stack and undoes it, moving the TPS counter accordingly.
    */
-  async undoTransaction(fromSocket: boolean = false) {
+  async undoTransaction(
+    fromSocket: boolean = false,
+    peerArtifacts: Object | undefined = undefined
+  ) {
     if (this.hasTransactionToUndo()) {
       this.performingUndo = true;
       let transaction = this.transactions[this.mostRecentTransaction];
       console.log(`Undo Transaction: ${transaction.type}`);
-      await transaction.undoTransaction(this.map.current!, this.callbacks!, fromSocket);
+      const res = await transaction.undoTransaction(
+        this.map.current!,
+        this.callbacks!,
+        fromSocket,
+        peerArtifacts
+      );
 
       this.mostRecentTransaction--;
       this.performingUndo = false;
+
+      return res;
     }
   }
 

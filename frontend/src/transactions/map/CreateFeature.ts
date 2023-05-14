@@ -31,7 +31,14 @@ export class CreateFeature extends MapTransaction<CreateFeatureSerialized> {
     this.feature = feature ?? extractFeature(layer!);
   }
 
-  async doTransaction(map: L.Map, callbacks: MapComponentCallbacks, fromSocket: boolean) {
+  async doTransaction(
+    map: L.Map,
+    callbacks: MapComponentCallbacks,
+    fromSocket: boolean,
+    peerArtifacts?: { id: string }
+  ) {
+    this.feature._id = peerArtifacts?.id ?? this.feature._id;
+
     // dont repeat network connection on peer for first run
     const { id, featureIndex } = (await store.dispatch.mapStore.createFeature({
       feature: this.feature,
@@ -51,9 +58,16 @@ export class CreateFeature extends MapTransaction<CreateFeatureSerialized> {
     callbacks.onEachFeature(this.feature, this.layer as unknown as LGeoJsonExt);
 
     this.firstRun = false;
+
+    return { id };
   }
 
-  async undoTransaction(map: L.Map, callbacks: MapComponentCallbacks, fromSocket: boolean) {
+  async undoTransaction(
+    map: L.Map,
+    callbacks: MapComponentCallbacks,
+    fromSocket: boolean,
+    peerArtifacts?: { id: string }
+  ) {
     const id = callbacks.getFeatureByIndex(this.featureIndex!)?._id!;
 
     await store.dispatch.mapStore.deleteFeature({

@@ -375,18 +375,24 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafl
     );
   };
 
-  const undo = async (fromSocket: boolean = false) => {
-    await transactions.current.undoTransaction(fromSocket);
+  const undo = async (
+    fromSocket: boolean = false,
+    peerArtifacts: Object | undefined = undefined
+  ) => {
+    const res = await transactions.current.undoTransaction(fromSocket, peerArtifacts);
     if (fromSocket !== true) {
-      emitUndo(id!);
+      emitUndo(id!, res ?? undefined);
     }
   };
 
-  const redo = async (fromSocket: boolean = false) => {
-    await transactions.current.doTransaction(fromSocket);
+  const redo = async (
+    fromSocket: boolean = false,
+    peerArtifacts: Object | undefined = undefined
+  ) => {
+    const res = await transactions.current.doTransaction(fromSocket);
 
     if (fromSocket !== true) {
-      emitRedo(id!);
+      emitRedo(id!, res ?? undefined);
     }
   };
 

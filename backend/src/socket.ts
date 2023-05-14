@@ -103,12 +103,12 @@ io.on('connection', (socket) => {
     socket.broadcast.to(roomId).emit('newTransaction', roomId, transaction);
   });
 
-  socket.on('undo', (roomId: string) => {
-    socket.broadcast.to(roomId).emit('undo', roomId);
+  socket.on('undo', (roomId: string, peerArtifacts: Object | undefined) => {
+    socket.broadcast.to(roomId).emit('undo', roomId, peerArtifacts);
   });
 
-  socket.on('redo', (roomId: string) => {
-    socket.broadcast.to(roomId).emit('redo', roomId);
+  socket.on('redo', (roomId: string, peerArtifacts: Object | undefined) => {
+    socket.broadcast.to(roomId).emit('redo', roomId, peerArtifacts);
   });
 
   socket.on('disconnect', () => {
