@@ -24,7 +24,7 @@ export const ResetScreen = () => {
       password: pwd,
     });
     if (success) {
-      error.setError('Password reset successfully');
+      alert('Password reset successfully');
     }
   };
   return (

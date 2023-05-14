@@ -10,7 +10,7 @@ export const RecoveryScreen = () => {
     e.stopPropagation();
     e.preventDefault();
     if (await user.recoverPassword({ email: email })) {
-      error.setError('Email sent');
+      alert('Email sent');
     }
   };
 

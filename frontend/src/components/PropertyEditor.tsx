@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@material-tailwind/react';
 import { SketchPicker } from 'react-color';
 import Popup from 'reactjs-popup';
@@ -134,12 +134,15 @@ const PropertyEditor = ({
     setProps(properties);
   }, [properties]);
 
+  const deleteCountRef = useRef(0);
+
   const onUpdate = (newKey: string, newValue?: string, oldKey?: string, deleteKey?: boolean) => {
     if (deleteKey) {
       setProps((prev) => {
         let newState = Object.fromEntries(Object.entries(prev).filter(([k, v]) => k !== newKey));
         return newState;
       });
+      deleteCountRef.current++;
     } else {
       setProps((prev) => {
         let newState = Object.fromEntries(
@@ -155,7 +158,7 @@ const PropertyEditor = ({
 
   return (
     <div className="bg-gray m-2">
-      <ul className="text-black">
+      <ul className="text-black" key={deleteCountRef.current}>
         {Object.entries(props).map(([k, v], i) => (
           <li key={i}>
             <Property
