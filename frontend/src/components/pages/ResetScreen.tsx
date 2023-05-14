@@ -38,6 +38,7 @@ export const ResetScreen = () => {
               name="password"
               className="form-inputs"
               placeholder="Password"
+              type="password"
               onChange={(e) => setPwd(e.target.value)}
             />
           </div>
@@ -46,6 +47,7 @@ export const ResetScreen = () => {
               name="repassword"
               className="form-inputs"
               placeholder="Re-neter Password"
+              type="password"
               onChange={(e) => setRepwd(e.target.value)}
             />
           </div>

@@ -59,7 +59,7 @@ export const RegisterScreen = () => {
           <input
             id="password"
             name="password"
-            type="text"
+            type="password"
             className="form-inputs"
             placeholder="Password"
             onChange={(e) => setPassword(e.target.value)}
