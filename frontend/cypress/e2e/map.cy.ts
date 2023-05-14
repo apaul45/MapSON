@@ -5,8 +5,8 @@ const DELAY = 500;
 
 beforeEach(() => {
   login();
-  cy.get('#plus-sign', { timeout: 10000 }).parent().should('be.visible').click();
-  cy.contains('Create new Map', { timeout: 10000 }).should('be.visible').click();
+  cy.get('#plus-sign').parent().should('be.visible').click();
+  cy.contains('Create new Map').should('be.visible').click();
   cy.location('href', { timeout: 10000 }).should((path) => {
     expect(path).to.include('/project');
   });
