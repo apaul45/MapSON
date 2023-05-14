@@ -157,7 +157,7 @@ const PropertyEditor = ({
     <div className="bg-gray m-2">
       <ul className="text-black">
         {Object.entries(props).map(([k, v], i) => (
-          <li key={k + v}>
+          <li key={i}>
             <Property
               k={k}
               v={v}

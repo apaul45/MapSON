@@ -204,7 +204,7 @@ describe('Region Properties Tests', () => {
     clickRegions(1);
     cy.contains('Feature Properties:').should('exist');
 
-    cy.get("input[placeholder='name value']").should('exist').type('unique name');
+    cy.get("input[placeholder='name value']").should('exist').wait(0).type('unique name');
     cy.get('#' + type + '-save-button')
       .should('exist')
       .click();
@@ -216,7 +216,7 @@ describe('Region Properties Tests', () => {
     cy.wait(10);
 
     clickRegions(1);
-    cy.get("input[placeholder='name value']").should('exist').clear().type('unique name 2');
+    cy.get("input[placeholder='name value']").should('exist').clear().wait(0).type('unique name 2');
     cy.get('#' + type + '-save-button')
       .should('exist')
       .click();
@@ -231,7 +231,7 @@ describe('Region Properties Tests', () => {
     clickRegions(1);
     cy.contains('Feature Properties:').should('exist');
 
-    cy.get("input[placeholder='color value']").should('exist').type('pink');
+    cy.get("input[placeholder='color value']").should('exist').wait(0).type('pink');
     cy.get('#' + type + '-save-button')
       .should('exist')
       .click()
@@ -242,7 +242,7 @@ describe('Region Properties Tests', () => {
     cy.get('.leaflet-interactive[fill="pink"]', { timeout: 10000 }).should('exist');
 
     clickRegions(1);
-    cy.get("input[placeholder='color value']").clear().type('yellow');
+    cy.get("input[placeholder='color value']").clear().wait(0).type('yellow');
     cy.get('#' + type + '-save-button')
       .should('exist')
       .click()
@@ -524,10 +524,12 @@ const addProp = (type: string) => {
   cy.get("input[placeholder='key']")
     .last()
     .should('exist')
+    .wait(0)
     .type('mapson_' + type + '_test_key');
   cy.get("input[placeholder='value']")
     .last()
     .should('exist')
+    .wait(0)
     .type('mapson_' + type + '_test_value');
   cy.get('#' + type + '-save-button')
     .should('exist')
@@ -538,10 +540,12 @@ const modProp = (type: string) => {
   cy.get(`input[value=mapson_${type}_test_key]`)
     .should('exist')
     .clear()
+    .wait(0)
     .type('mapson_' + type + '_test_key_2');
   cy.get(`input[value=mapson_${type}_test_value]`)
     .should('exist')
     .clear()
+    .wait(0)
     .type('mapson_' + type + '_test_value_2');
   cy.get('#' + type + '-save-button')
     .should('exist')

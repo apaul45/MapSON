@@ -113,6 +113,7 @@ const ProjectSidePanel = ({ selectedFeature, canEdit }: IProjectSidePanel) => {
                   viewOnly={!canEdit}
                   type="feature"
                   selectedFeature={selectedFeature}
+                  key={JSON.stringify(customFeatureProps)}
                 />
               </div>
             ) : (
