@@ -65,7 +65,7 @@ const ProjectMenu = ({ leafletMap, shareOpen, setShareOpen }: IProjectMenu) => {
   };
 
   const updateDownload = async () => {
-    await mapStore.updateCurrentMap({ downloads: map?.downloads! + 1 });
+    await mapStore.updateCurrentMap({ map: { downloads: map?.downloads! + 1 } });
   };
 
   const openDeleteDialog = () => {
@@ -116,7 +116,7 @@ const ProjectMenu = ({ leafletMap, shareOpen, setShareOpen }: IProjectMenu) => {
           };
 
           const img = await blobToDataUrl();
-          await mapStore.updateMap({ _id: mapId, preview: img });
+          await mapStore.updateMap({ map: { _id: mapId!, preview: img } });
           navigate(user ? '/home' : '/discover');
         })
         .catch((err) => {

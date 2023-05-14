@@ -11,13 +11,13 @@ interface Props {
 
 export const handlePublish = async () => {
   await store.dispatch.mapStore.updateCurrentMap({
-    published: { isPublished: true, publishedDate: new Date() },
+    map: { published: { isPublished: true, publishedDate: new Date() } },
   });
 };
 
 export const handleUnpublish = async () => {
   await store.dispatch.mapStore.updateCurrentMap({
-    published: { isPublished: false, publishedDate: new Date(0) },
+    map: { published: { isPublished: false, publishedDate: new Date(0) } },
   });
 };
 
@@ -32,7 +32,7 @@ const ShareMapDialog = ({ isOpen, closeDialog }: Props) => {
       return;
     }
     // @ts-ignore
-    await mapStore.updateCurrentMap({ userAccess: [...map?.userAccess, invite] });
+    await mapStore.updateCurrentMap({ map: { userAccess: [...map?.userAccess, invite] } });
   };
 
   const removeAccess = async (username: string) => {
@@ -42,7 +42,7 @@ const ShareMapDialog = ({ isOpen, closeDialog }: Props) => {
     if (index! >= 0) {
       map?.userAccess.splice(index!, 1);
     }
-    await mapStore.updateCurrentMap({ userAccess: map?.userAccess });
+    await mapStore.updateCurrentMap({ map: { userAccess: map?.userAccess } });
   };
 
   const copyLink = () => {

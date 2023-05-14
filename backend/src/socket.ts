@@ -122,6 +122,10 @@ io.on('connection', (socket) => {
     socket.broadcast.to(roomId).emit('updateMapProperties', roomId, propertyList);
   });
 
+  socket.on('simplify', (roomId: string, features: any) => {
+    socket.broadcast.to(roomId).emit('simplify', roomId, features);
+  });
+
   socket.on('disconnect', () => {
     for (const roomId in rooms) {
       rooms[roomId] = Object.fromEntries(

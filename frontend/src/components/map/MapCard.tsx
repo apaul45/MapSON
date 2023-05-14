@@ -126,9 +126,11 @@ export default function MapCard({
 
   const updateVotes = async () => {
     await mapStore.updateMap({
-      _id: id,
-      upvotes: upvotes,
-      downvotes: downvotes,
+      map: {
+        _id: id,
+        upvotes: upvotes,
+        downvotes: downvotes,
+      },
     });
   };
 
@@ -147,8 +149,10 @@ export default function MapCard({
 
   const updateDescription = async (desc: string) => {
     await mapStore.updateMap({
-      _id: id,
-      description: desc,
+      map: {
+        _id: id,
+        description: desc,
+      },
     });
     console.log('Updating description to ' + descriptionText);
   };

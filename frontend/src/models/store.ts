@@ -16,6 +16,7 @@ const initialState: Store = {
   deleteDialog: false,
   shareDialog: false,
   addDialog: false,
+  simplifyDialog: false,
   mapMarkedForDeletion: null,
   // TODO: Make this a dictionary, so that user can join and track multiple rooms
   roomList: {},
@@ -37,6 +38,9 @@ export const mapStore = createModel<RootModel>()({
     },
     setAddDialog: (state, payload: boolean) => {
       return { ...state, addDialog: payload };
+    },
+    setSimplifyDialog: (state, payload: boolean) => {
+      return { ...state, simplifyDialog: payload };
     },
     setMarkedMap: (state, payload: string) => {
       return { ...state, mapMarkedForDeletion: payload };
@@ -72,7 +76,9 @@ export const mapStore = createModel<RootModel>()({
         dispatch.error.setError(e.response?.data.errorMessage ?? 'Unexpected error');
       }
     },
-    async updateCurrentMap(payload: Partial<Map>, state) {
+    async updateCurrentMap(p: { map: Partial<Map>; doNetwork?: boolean }, state) {
+      const { map: mapPayload, doNetwork } = p;
+
       try {
         const id = state.mapStore.currentMap?._id;
         if (!id) {
@@ -81,21 +87,28 @@ export const mapStore = createModel<RootModel>()({
           return;
         }
 
-        await map.updateMap(id, payload);
-        this.setCurrentMap({ ...state.mapStore.currentMap, ...payload });
+        if (doNetwork !== false) {
+          await map.updateMap(id, mapPayload);
+        }
+
+        this.setCurrentMap({ ...state.mapStore.currentMap, ...mapPayload });
       } catch (e: any) {
         dispatch.error.setError(e.response?.data.errorMessage ?? 'Unexpected error');
       }
     },
-    async updateMap(payload: Partial<Map>, state) {
+    async updateMap(p: { map: Partial<Map> & { _id: string }; doNetwork?: boolean }, state) {
+      const { map: mapPayload, doNetwork } = p;
+
       try {
-        const id = payload._id;
+        const id = mapPayload._id;
         if (!id) {
           console.error('Invalid map');
           dispatch.error.setError('Invalid map');
           return;
         }
-        await map.updateMap(id, payload);
+        if (doNetwork !== false) {
+          await map.updateMap(id, mapPayload);
+        }
       } catch (e: any) {
         dispatch.error.setError(e.response?.data.errorMessage ?? 'Unexpected error');
       }

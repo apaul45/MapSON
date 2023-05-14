@@ -36,6 +36,8 @@ export interface MapComponentCallbacks {
   undo: (fromSocket?: boolean, peerArtifacts?: Object) => Promise<void>;
   redo: (fromSocket?: boolean, peerArtifacts?: Object) => Promise<void>;
   setSelectedFeature: (i: { id: any; layer: LGeoJsonExt } | null) => void;
+  clearTransactions: () => void;
+  forceRerender: () => void;
   onCreate: PM.CreateEventHandler;
   onEdit: PM.EditEventHandler;
   onRemove: PM.RemoveEventHandler;

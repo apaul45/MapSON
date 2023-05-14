@@ -13,10 +13,12 @@ import {
 } from 'geojson';
 import * as turf from '@turf/turf';
 import { useEffect } from 'react';
-import { FeatureExt, LGeoJsonExt } from '../../types';
+import { FeatureExt, Features, LGeoJsonExt } from '../../types';
 import L from 'leaflet';
 import 'leaflet-geometryutil';
 import polygonSlice from '../../utils/polygon-slice';
+import { store } from '../../models';
+import { simplifyGeojson } from '../../utils/simplify';
 
 declare module 'leaflet' {
   interface Map {
@@ -44,6 +46,17 @@ declare module 'leaflet' {
     }
 
     export type SplitEventHandler = (e: SplitEvent) => void;
+
+    interface InitSimplificationEvent {
+      f: Features;
+      weight: number;
+    }
+    export type InitSimplifcationHandler = (e: InitSimplificationEvent) => void;
+
+    interface SimplifyEvent {
+      res: Features;
+    }
+    export type SimplifyHandler = (e: SimplifyEvent) => void;
   }
   interface Evented {
     // Merge handler
@@ -55,6 +68,16 @@ declare module 'leaflet' {
     on(type: 'pm:split', fn?: PM.SplitEventHandler): this;
     off(type: 'pm:split', fn?: PM.SplitEventHandler): this;
     once(type: 'pm:split', fn?: PM.SplitEventHandler): this;
+
+    //Init simplify handler
+    on(type: 'pm:initSimplify', fn?: PM.InitSimplifcationHandler): this;
+    off(type: 'pm:initSimplify', fn?: PM.InitSimplifcationHandler): this;
+    once(type: 'pm:initSimplify', fn?: PM.InitSimplifcationHandler): this;
+
+    //Simplify handler
+    on(type: 'pm:simplify', fn?: PM.SimplifyHandler): this;
+    off(type: 'pm:simplify', fn?: PM.SimplifyHandler): this;
+    once(type: 'pm:simplify', fn?: PM.SimplifyHandler): this;
   }
 }
 
@@ -65,6 +88,7 @@ interface IMapControls {
   onMerge: PM.MergeEventHandler;
   onSplit: PM.SplitEventHandler;
   onMouseMove: L.LeafletMouseEventHandlerFn;
+  onSimplify: PM.SimplifyHandler;
   canEdit: boolean;
   getSelectedFeatures: () => SelectedFeature[];
 }
@@ -96,6 +120,7 @@ const MapControls = ({
   onMerge,
   onSplit,
   onMouseMove,
+  onSimplify,
 }: IMapControls) => {
   const map = useMap();
 
@@ -304,18 +329,33 @@ const MapControls = ({
       title: 'Simplify map',
       disabled: false,
       className: 'leaflet-pm-icon-simplify',
+      onClick: () => store.dispatch.mapStore.setSimplifyDialog(true),
     },
   ];
+
+  const handleSimplify: PM.InitSimplifcationHandler = (e) => {
+    const { f: features, weight } = e;
+
+    const res = simplifyGeojson(features, weight);
+
+    console.log({ ...e, res });
+
+    map.fire('pm:simplify', { res });
+  };
 
   useEffect(() => {
     map.on('pm:merge', onMerge);
     map.on('pm:split', onSplit);
     map.on('mousemove', onMouseMove);
+    map.on('pm:initSimplify', handleSimplify);
+    map.on('pm:simplify', onSimplify);
 
     return () => {
       map.off('pm:merge', onMerge);
       map.off('pm:split', onSplit);
       map.off('mousemove', onMouseMove);
+      map.off('pm:initSimplify', handleSimplify);
+      map.off('pm:simplify', onSimplify);
     };
   }, [onMerge, onSplit, onMouseMove]);
 

@@ -19,6 +19,7 @@ import {
   disconnect,
   emitMousePosition,
   emitRedo,
+  emitSimplify,
   emitTransaction,
   emitUndo,
   joinRoom,
@@ -50,14 +51,14 @@ import domtoimage from 'dom-to-image';
 
 export type SelectedFeature = { layer: LGeoJsonExt; id: any };
 
-const HOVERED = {
+export const HOVERED = {
   fillColor: 'green',
   fillOpacity: 0.2,
   color: 'blue',
   weight: 2,
 };
 
-const IDLE = {
+export const IDLE = {
   fillColor: 'blue',
   fillOpacity: 0.2,
   color: 'blue',
@@ -71,7 +72,7 @@ export const SELECTED = {
   weight: 2,
 };
 
-const SELECTED_AND_HOVERED = {
+export const SELECTED_AND_HOVERED = {
   fillColor: 'teal',
   fillOpacity: 0.5,
   color: 'black',
@@ -94,9 +95,18 @@ interface Props extends Map {
   canEdit: boolean;
   setSelectedFeature: (i: { id: any; layer: LGeoJsonExt } | null) => void;
   setLeafletMap: Function;
+  forceRerender: () => void;
+  classes?: string;
 }
 
-const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafletMap }: Props) => {
+const MapComponent = ({
+  features: geoJSON,
+  canEdit,
+  setSelectedFeature,
+  setLeafletMap,
+  classes,
+  forceRerender,
+}: Props) => {
   const username = useSelector((state: RootState) => state.user.currentUser?.username);
   const map = useSelector((state: RootState) => state.mapStore.currentMap);
 
@@ -138,11 +148,6 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafl
     return () => {
       //Disconnect guest for now, may make it only leave room in the future
       if (socket.connected) {
-        if (!username) {
-          disconnect();
-          return;
-        }
-
         leaveRoom(id!);
       }
     };
@@ -225,7 +230,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafl
 
     layer._id = feature._id;
 
-    feature.properties?.name && layer.bindPopup(feature.properties?.name, { keepInView: false });
+    layer.bindPopup(feature.properties?.name ?? '', { keepInView: false, autoPan: false });
 
     layer.pm.disable();
 
@@ -381,6 +386,10 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafl
     fromSocket: boolean = false,
     peerArtifacts: Object | undefined = undefined
   ) => {
+    if (!canEdit) {
+      return;
+    }
+
     const res = await transactions.current.undoTransaction(fromSocket, peerArtifacts);
     if (fromSocket !== true) {
       emitUndo(id!, res ?? undefined);
@@ -391,11 +400,19 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafl
     fromSocket: boolean = false,
     peerArtifacts: Object | undefined = undefined
   ) => {
-    const res = await transactions.current.doTransaction(fromSocket);
+    if (!canEdit) {
+      return;
+    }
+
+    const res = await transactions.current.doTransaction(fromSocket, peerArtifacts);
 
     if (fromSocket !== true) {
       emitRedo(id!, res ?? undefined);
     }
+  };
+
+  const clearTransactions = () => {
+    transactions.current.clearAllTransactions();
   };
 
   callbacks.current = {
@@ -415,6 +432,8 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafl
     undo,
     redo,
     setSelectedFeature,
+    clearTransactions,
+    forceRerender,
     onCreate: async (e) => {
       const transaction = new CreateFeature(e.layer as LGeoJsonExt);
 
@@ -510,6 +529,16 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafl
     emitTransaction(id!, transaction);
   };
 
+  const onSimplify: L.PM.SimplifyHandler = async (e) => {
+    const { res } = e;
+    //clear transactions
+    clearTransactions();
+    const changes = { features: res };
+    await mapStore.updateCurrentMap({ map: changes });
+    emitSimplify(id!, res);
+    forceRerender();
+  };
+
   const onMouseMove: L.LeafletMouseEventHandlerFn = (e) => {
     if (id && username) {
       emitMousePosition(id, { lat: e.latlng.lat, lng: e.latlng.lng });
@@ -517,7 +546,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafl
   };
 
   useEffect(() => {
-    transactions.current.clearAllTransactions();
+    clearTransactions();
   }, [map]);
 
   useEffect(() => {
@@ -545,7 +574,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafl
 
   return (
     <>
-      <div className="w-screen h-[calc(100vh-64px)]">
+      <div className={classes ?? 'w-screen h-[calc(100vh-64px)]'}>
         <MapContainer
           style={{ width: '100%', minHeight: '100%', height: '100%', zIndex: 0 }}
           zoom={4}
@@ -585,6 +614,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafl
               onSplit={onSplit}
               canEdit={canEdit}
               onMouseMove={onMouseMove}
+              onSimplify={onSimplify}
             />
           </GeoJSON>
         </MapContainer>
