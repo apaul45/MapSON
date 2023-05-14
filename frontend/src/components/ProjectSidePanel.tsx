@@ -69,6 +69,7 @@ const ProjectSidePanel = ({ selectedFeature, canEdit }: IProjectSidePanel) => {
     newProperties['name'] === ''
       ? selectedFeature.layer.unbindPopup()
       : selectedFeature.layer.bindPopup(newProperties['name']);
+    alert('Region properties successfully saved');
   };
 
   const saveMapProperties = async (props: Record<string, any>) => {
@@ -77,6 +78,7 @@ const ProjectSidePanel = ({ selectedFeature, canEdit }: IProjectSidePanel) => {
     };
     await mapStore.updateCurrentMap(prop);
     emitUpdateMapProperties(mapId!, prop.properties);
+    alert('Map properties successfully saved');
   };
 
   return (
