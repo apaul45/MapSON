@@ -11,7 +11,13 @@ import { Fragment, useState } from 'react';
 import TutorialDialog from './dialogs/TutorialDialog';
 import { clientRedo, clientUndo } from '../live-collab/socket';
 
-const ProjectMenu = ({ leafletMap }: { leafletMap: L.Map | null }) => {
+interface IProjectMenu {
+  leafletMap: L.Map | null;
+  shareOpen: boolean;
+  setShareOpen: Function;
+}
+
+const ProjectMenu = ({ leafletMap, shareOpen, setShareOpen }: IProjectMenu) => {
   const user = useSelector((state: RootState) => state.user.currentUser);
   const map = useSelector((state: RootState) => state.mapStore.currentMap);
   const { mapStore, error } = store.dispatch;
@@ -194,7 +200,9 @@ const ProjectMenu = ({ leafletMap }: { leafletMap: L.Map | null }) => {
             </MenuItem>
           ) : null
         }
-        <MenuItem className="hover:bg-sort-hover">Share</MenuItem>
+        <MenuItem className="hover:bg-sort-hover" onClick={() => setShareOpen(!shareOpen)}>
+          Share
+        </MenuItem>
 
         <MenuItem
           className="hover:bg-sort-hover"
