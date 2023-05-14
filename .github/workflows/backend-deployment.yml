@@ -2,8 +2,8 @@ name: 'Deploy backend'
 
 on:
   push:
-    # branches:
-    #   - main
+    branches:
+      - main
     paths:
       - 'backend/**'
 
@@ -16,7 +16,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: DigitalOcean App Platform deployment
-        uses: digitalocean/app_action@v1.1.5
+        uses: digitalocean/app_action@main
         with:
           app_name: ${{ vars.DO_APP_NAME }}
           token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
