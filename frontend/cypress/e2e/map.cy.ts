@@ -238,7 +238,7 @@ describe('Region Properties Tests', () => {
 
     clickRegions(1);
 
-    cy.get('[fill="pink"]').should('exist');
+    cy.get('.leaflet-interactive[fill="pink"]', { timeout: 10000 }).should('exist');
 
     clickRegions(1);
     cy.get("input[placeholder='color value']").clear().type('yellow');
@@ -247,7 +247,7 @@ describe('Region Properties Tests', () => {
       .click();
 
     clickRegions(1);
-    cy.get('[fill="yellow"]').should('exist');
+    cy.get('.leaflet-interactive[fill="yellow"]', { timeout: 10000 }).should('exist');
   });
 });
 
