@@ -1,6 +1,6 @@
 import { io } from 'socket.io-client';
 import { store } from '../models';
-import { Comment, Map } from '../types';
+import { Comment, LGeoJsonExt, Map } from '../types';
 import * as L from 'leaflet';
 import { MutableRefObject } from 'react';
 import { MapComponentCallbacks, SerializedTransactionTypes } from '../transactions/map/common';
@@ -99,6 +99,18 @@ export const emitRedo = (roomId: string, peerArtifacts: Object | undefined = und
   socket.emit('redo', roomId, peerArtifacts);
 };
 
+export const emitUpdateRegionProperties = (
+  roomId: string,
+  featureId: string,
+  propertyList: Record<string, string>
+) => {
+  socket.emit('updateRegionProperties', roomId, featureId, propertyList);
+};
+
+export const emitUpdateMapProperties = (roomId: string, propertyList: Record<string, string>) => {
+  socket.emit('updateMapProperties', roomId, propertyList);
+};
+
 socket.on('cursorUpdate', (roomId: string, position: L.LatLngExpression, socket_id: string) => {
   mapStore.updateCursor({ socket_id, position });
 });
@@ -133,6 +145,44 @@ socket.on('undo', async (roomId: string, peerArtifacts: Object | undefined = und
 
 socket.on('redo', async (roomId: string, peerArtifacts: Object | undefined = undefined) => {
   await socket.callbacks?.current.redo(true, peerArtifacts);
+});
+
+socket.on(
+  'updateRegionProperties',
+  async (roomId: string, featureId: string, propertyList: Record<string, string>) => {
+    await mapStore.updateFeature({
+      id: featureId,
+      feature: { properties: { ...propertyList } },
+      doNetwork: false,
+    });
+
+    const layer = socket.callbacks?.current.getLayerById(featureId) as LGeoJsonExt;
+
+    if (!layer) {
+      console.error('Layer not found!');
+      return;
+    }
+
+    layer.feature!.properties = { ...propertyList };
+
+    layer.unbindPopup();
+    layer.bindPopup(propertyList['name']);
+
+    if (layer.selected !== true && propertyList.color) {
+      layer.setStyle({ color: propertyList.color, fillColor: propertyList.color });
+    }
+
+    if (layer.selected === true) {
+      socket.callbacks?.current.setSelectedFeature({ id: featureId, layer });
+    }
+  }
+);
+
+socket.on('updateMapProperties', async (roomId: string, propertyList: Record<string, string>) => {
+  mapStore.setCurrentMap({
+    ...store.getState().mapStore.currentMap!,
+    properties: { ...propertyList },
+  });
 });
 
 export const clientRedo = async () => {

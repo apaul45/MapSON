@@ -111,6 +111,17 @@ io.on('connection', (socket) => {
     socket.broadcast.to(roomId).emit('redo', roomId, peerArtifacts);
   });
 
+  socket.on(
+    'updateRegionProperties',
+    (roomId: string, featureId: string, propertyList: Record<string, string>) => {
+      socket.broadcast.to(roomId).emit('updateRegionProperties', roomId, featureId, propertyList);
+    }
+  );
+
+  socket.on('updateMapProperties', (roomId: string, propertyList: Record<string, string>) => {
+    socket.broadcast.to(roomId).emit('updateMapProperties', roomId, propertyList);
+  });
+
   socket.on('disconnect', () => {
     for (const roomId in rooms) {
       rooms[roomId] = Object.fromEntries(

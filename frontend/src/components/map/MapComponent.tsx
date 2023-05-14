@@ -92,7 +92,7 @@ const position: L.LatLngTuple = [37.335556, -122.009167];
 
 interface Props extends Map {
   canEdit: boolean;
-  setSelectedFeature: Function;
+  setSelectedFeature: (i: { id: any; layer: LGeoJsonExt } | null) => void;
   setLeafletMap: Function;
 }
 
@@ -266,9 +266,11 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafl
       if (isSelected(id)) {
         unselectFeature(id);
         layer.setStyle(getCurrentColor(layer.feature));
+        layer.selected = false;
       } else {
         selectFeature(id, layer)?.layer.setStyle(getCurrentColor(layer.feature));
         layer.setStyle(SELECTED);
+        layer.selected = true;
       }
     };
 
@@ -412,6 +414,7 @@ const MapComponent = ({ features: geoJSON, canEdit, setSelectedFeature, setLeafl
     applyPeerTransaction,
     undo,
     redo,
+    setSelectedFeature,
     onCreate: async (e) => {
       const transaction = new CreateFeature(e.layer as LGeoJsonExt);
 

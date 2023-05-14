@@ -132,7 +132,6 @@ export const extendGeomanLayer = (pm: L.PM.PMLayerGroup) => {
       marker._snappedMarkersInOtherLayers = marker._snappedMarkersInOtherLayers.map(
         ([layer, ll]) => {
           const { indexPath } = findDeepLLIndex(layer.pm._calculatedLatLngs, ll);
-          console.log({ coords: layer.pm._calculatedLatLngs, indexPath, otherLL, ll, layer });
           set(layer.pm._calculatedLatLngs, indexPath!, otherLL);
           layer.setLatLngs(layer.pm._calculatedLatLngs);
           return [layer, otherLL];
