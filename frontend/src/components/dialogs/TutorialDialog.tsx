@@ -89,8 +89,8 @@ export default function TutorialDialog({ isOpen, closeDialog }: ITutorialDialog)
     },
     {
       name: 'Simplify Regions',
-      src: '/img/defaultpreviewimg.png',
-      description: '',
+      src: '/tutorial/simplify.gif',
+      description: 'Note that this operation cannot be undone',
     },
     {
       name: 'Save Thumbnail',
