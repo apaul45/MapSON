@@ -102,6 +102,11 @@ export default function TutorialDialog({ isOpen, closeDialog }: ITutorialDialog)
       src: '/tutorial/invite.gif',
       description: 'The share dialog can be displayed from the project menu or from the nav bar',
     },
+    {
+      name: 'Live Collaboration',
+      src: '/tutorial/liveCollab.gif',
+      description: 'This application supports live collaboration among users',
+    },
   ];
 
   return (
