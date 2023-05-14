@@ -102,6 +102,7 @@ export interface Store {
   deleteDialog: boolean;
   shareDialog: boolean;
   addDialog: boolean;
+  simplifyDialog: boolean;
   mapMarkedForDeletion: string | null;
 
   //For live collab

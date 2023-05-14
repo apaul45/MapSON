@@ -1,7 +1,7 @@
 import { ProjectNavbar } from '../ProjectNavbar';
 import DeletedMapDialog from '../dialogs/DeletedMapDialog';
 import ShareMapDialog from '../dialogs/ShareMapDialog';
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { RootState } from '../../models';
 import { useSelector } from 'react-redux';
@@ -11,10 +11,14 @@ import { MapComponent } from '../map';
 import { SelectedFeature } from '../map/MapComponent';
 import { store } from '../../models';
 import PulseLoader from 'react-spinners/PulseLoader';
+import SimplifyMapDialog from '../dialogs/SimplifyMapDialog';
+import { cloneDeep } from 'lodash';
 
 export const ProjectScreen = () => {
   const user = useSelector((state: RootState) => state.user.currentUser);
   const map = useSelector((state: RootState) => state.mapStore.currentMap);
+
+  const [leafletKey, setLeafletKey] = useState(0);
 
   const { mapStore } = store.dispatch;
 
@@ -53,7 +57,11 @@ export const ProjectScreen = () => {
     setShareOpen(false);
   };
 
-  const setMapName = async (name: string) => await mapStore.updateCurrentMap({ name });
+  const forceRerender = () => {
+    setLeafletKey(leafletKey + 1);
+  };
+
+  const setMapName = async (name: string) => await mapStore.updateCurrentMap({ map: { name } });
 
   const canEdit =
     map !== null &&
@@ -99,34 +107,42 @@ export const ProjectScreen = () => {
   }
 
   return (
-    <div className="bg-black w-screen h-screen">
-      <ProjectNavbar
-        shareOpen={shareOpen}
-        setShareOpen={setShareOpen}
-        canEditName={canEdit}
-        mapName={map.name}
-        setMapName={setMapName}
-        setSidePanelToggle={setSidePanelToggle}
-        sidePanelToggle={sidePanelToggle}
-        leafletMap={leafletMap}
-      />
-
-      <div className="flex flex-row">
-        <MapComponent
-          canEdit={canEdit}
-          setSelectedFeature={setSelectedFeature}
-          key={user?.username}
-          {...map}
-          setLeafletMap={(map: L.Map) => setLeafletMap(map)}
+    <Fragment>
+      <div className="bg-black w-screen h-screen">
+        <ProjectNavbar
+          shareOpen={shareOpen}
+          setShareOpen={setShareOpen}
+          canEditName={canEdit}
+          mapName={map.name}
+          setMapName={setMapName}
+          setSidePanelToggle={setSidePanelToggle}
+          sidePanelToggle={sidePanelToggle}
+          leafletMap={leafletMap}
         />
-        {!sidePanelToggle && (
-          <ProjectSidePanel selectedFeature={selectedFeature} canEdit={canEdit} />
-        )}
-        {sidePanelToggle && <CommentsSidePanel />}
-      </div>
 
-      <DeletedMapDialog isOpen={isMapDeleted} closeDialog={closeDeletedDialog} />
-      <ShareMapDialog isOpen={shareOpen} closeDialog={closeShareDialog} />
-    </div>
+        <div className="flex flex-row">
+          <MapComponent
+            canEdit={canEdit}
+            setSelectedFeature={setSelectedFeature}
+            key={`${user?.username} ${leafletKey}`}
+            {...map}
+            setLeafletMap={(map: L.Map) => setLeafletMap(map)}
+            forceRerender={forceRerender}
+          />
+          {!sidePanelToggle && (
+            <ProjectSidePanel selectedFeature={selectedFeature} canEdit={canEdit} />
+          )}
+          {sidePanelToggle && <CommentsSidePanel />}
+        </div>
+
+        <DeletedMapDialog isOpen={isMapDeleted} closeDialog={closeDeletedDialog} />
+        <ShareMapDialog isOpen={shareOpen} closeDialog={closeShareDialog} />
+      </div>
+      <SimplifyMapDialog
+        map={map}
+        projectLeafletMap={leafletMap}
+        key={`${user?.username} ${leafletKey}`}
+      />
+    </Fragment>
   );
 };

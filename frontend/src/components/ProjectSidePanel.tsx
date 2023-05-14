@@ -75,7 +75,7 @@ const ProjectSidePanel = ({ selectedFeature, canEdit }: IProjectSidePanel) => {
     let prop = {
       properties: Object.fromEntries(Object.entries(props).filter(([k, v]) => k.length > 0)),
     };
-    await mapStore.updateCurrentMap(prop);
+    await mapStore.updateCurrentMap({ map: prop });
     emitUpdateMapProperties(mapId!, prop.properties);
   };
 

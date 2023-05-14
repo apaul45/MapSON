@@ -257,13 +257,7 @@ mapRouter.post('/fork/:id', auth, async (req: Request, res: Response) => {
 //     return res.status(201).json({ maps: user.maps })
 // })
 
-interface FeatureChanges {
-  create: FeatureType[];
-  delete: string[];
-  edit: {
-    [key: string]: FeatureType;
-  };
-}
+type FeatureChanges = Partial<IMap>;
 
 // Handles update a map in the database request
 mapRouter.put('/map/:id', auth, async (req: Request, res: Response) => {
@@ -283,6 +277,18 @@ mapRouter.put('/map/:id', auth, async (req: Request, res: Response) => {
       errorMessage: 'Bad request',
     });
   }
+
+  const features = changes.features;
+
+  delete changes['features'];
+
+  // manually update any features
+  await Promise.all(
+    features?.features.map(async (f) => {
+      //@ts-ignore
+      await Feature.findByIdAndUpdate(f._id, f);
+    }) ?? []
+  );
 
   const map = await Map.findByIdAndUpdate({ _id: id }, changes);
 

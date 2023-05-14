@@ -1,6 +1,6 @@
 import { io } from 'socket.io-client';
 import { store } from '../models';
-import { Comment, LGeoJsonExt, Map } from '../types';
+import { Comment, Features, LGeoJsonExt, Map } from '../types';
 import * as L from 'leaflet';
 import { MutableRefObject } from 'react';
 import { MapComponentCallbacks, SerializedTransactionTypes } from '../transactions/map/common';
@@ -8,6 +8,7 @@ import { TransactionTypes } from '../transactions/map/MultipleTransactions';
 
 export const socket = io(import.meta.env.VITE_BACKEND_URL, {
   autoConnect: false, //Only connecting once in project,
+  transports: ['websocket'],
 });
 
 const { mapStore } = store.dispatch;
@@ -111,6 +112,11 @@ export const emitUpdateMapProperties = (roomId: string, propertyList: Record<str
   socket.emit('updateMapProperties', roomId, propertyList);
 };
 
+export const emitSimplify = (roomId: string, features: Features) => {
+  console.log('Emitted simplify');
+  socket.emit('simplify', roomId, features);
+};
+
 socket.on('cursorUpdate', (roomId: string, position: L.LatLngExpression, socket_id: string) => {
   mapStore.updateCursor({ socket_id, position });
 });
@@ -178,11 +184,18 @@ socket.on(
   }
 );
 
-socket.on('updateMapProperties', async (roomId: string, propertyList: Record<string, string>) => {
+socket.on('updateMapProperties', (roomId: string, propertyList: Record<string, string>) => {
   mapStore.setCurrentMap({
     ...store.getState().mapStore.currentMap!,
     properties: { ...propertyList },
   });
+});
+
+socket.on('simplify', (roomId: string, features: Features) => {
+  console.log('Recieved simplify');
+  socket.callbacks?.current.clearTransactions();
+  store.dispatch.mapStore.setCurrentMap({ ...store.getState().mapStore.currentMap!, features });
+  socket.callbacks?.current.forceRerender();
 });
 
 export const clientRedo = async () => {
