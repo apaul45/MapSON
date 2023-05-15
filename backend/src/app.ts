@@ -29,7 +29,7 @@ app.use(
 
 app.use(express.json({ limit: '100mb' }));
 app.use(express.urlencoded({ extended: true, limit: '100mb' }));
-
+app.set('trust proxy', 1);
 app.use(
   session({
     resave: false,
@@ -40,7 +40,8 @@ app.use(
       ttl: 60 * 60, // = 1hr
     }),
     cookie: {
-      sameSite: false,
+      sameSite: 'none',
+      secure: process.env.DEV === 'false' ? true : false,
     },
   })
 );
