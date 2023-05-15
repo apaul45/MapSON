@@ -37,3 +37,5 @@ frontend/cypress/screenshots
 frontend/cypress/videos
 
 local-db
+frontend/cert.pem
+frontend/key.pem
