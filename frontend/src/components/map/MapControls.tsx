@@ -412,6 +412,7 @@ const MapControls = ({
         position: 'topright',
         drawRectangle: false,
         drawText: false,
+        drawPolyline: false,
         cutPolygon: false,
         editMode: false,
         rotateMode: false,
@@ -430,6 +431,7 @@ const MapControls = ({
         continueDrawing: true,
         editable: false,
         allowEditing: canEdit,
+        limitMarkersToCount: 50,
       }}
       pathOptions={{
         color: 'red',

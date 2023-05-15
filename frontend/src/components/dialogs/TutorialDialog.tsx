@@ -53,7 +53,8 @@ export default function TutorialDialog({ isOpen, closeDialog }: ITutorialDialog)
     {
       name: 'Enter Vertices Editing Mode',
       src: '/tutorial/showVertices.gif',
-      description: 'Double click on the region to enter vertices editing mode',
+      description:
+        "Double click on the region to enter vertices editing mode. If there a lot of vertices on a region, the map will dynamically render upto 50 of the vertex markers closest to the user's cursor",
     },
     {
       name: 'Add a Vertex',
