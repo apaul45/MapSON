@@ -132,6 +132,7 @@ const ProjectSidePanel = ({ selectedFeature, canEdit }: IProjectSidePanel) => {
               viewOnly={!canEdit}
               type="map"
               selectedFeature={null}
+              key={JSON.stringify(customMapProps)}
             />
           </TabPanel>
         </TabsBody>
