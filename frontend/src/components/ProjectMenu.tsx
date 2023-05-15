@@ -10,6 +10,7 @@ import L from 'leaflet';
 import { Fragment, useState } from 'react';
 import TutorialDialog from './dialogs/TutorialDialog';
 import { clientRedo, clientUndo } from '../live-collab/socket';
+import { FeatureExt } from '../types';
 
 interface IProjectMenu {
   leafletMap: L.Map | null;
@@ -36,12 +37,23 @@ const ProjectMenu = ({ leafletMap, shareOpen, setShareOpen }: IProjectMenu) => {
     localStorage.setItem('opened', 'true');
   };
 
+  const filterProps = (obj: any) => {
+    let copy = { ...obj };
+    delete copy._id;
+    delete copy.__v;
+    delete copy.createdAt;
+    delete copy.updatedAt;
+    return copy;
+  };
+
   const exportGeojson = () => {
     if (!map?.features) {
       error.setError('Please fill the map with polygons');
       return;
     }
-    const blob = new Blob([JSON.stringify(map?.features)]);
+    const filtered = filterProps(map.features);
+    filtered.features = filtered.features.map((f: FeatureExt) => filterProps(f));
+    const blob = new Blob([JSON.stringify(filtered)]);
     saveAs(blob, map?.name + '.geo.json');
     updateDownload();
   };
@@ -51,9 +63,10 @@ const ProjectMenu = ({ leafletMap, shareOpen, setShareOpen }: IProjectMenu) => {
       error.setError('Please fill the map with polygons');
       return;
     }
-
     const params = new URLSearchParams();
-    params.append('json', JSON.stringify(map?.features));
+    const filtered = filterProps(map.features);
+    filtered.features = filtered.features.map((f: FeatureExt) => filterProps(f));
+    params.append('json', JSON.stringify(filtered));
 
     const res = await axios.post('https://ogre.adc4gis.com/convertJson', params, {
       withCredentials: false,
