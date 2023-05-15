@@ -48,7 +48,9 @@ export const AddMapDialog = () => {
 
     if (
       (fileType === 'GeoJSON' && e.target.files[0].type === 'application/json') ||
-      (fileType === 'Shapefile' && e.target.files[0].type === 'application/x-zip-compressed')
+      (fileType === 'Shapefile' &&
+        (e.target.files[0].type === 'application/x-zip-compressed' ||
+          e.target.files[0].type === 'application/zip'))
     ) {
       setUploadPrompt(e.target.files[0].name);
       await processFile([...e.target.files]);
