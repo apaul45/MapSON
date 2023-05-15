@@ -107,6 +107,11 @@ export default function TutorialDialog({ isOpen, closeDialog }: ITutorialDialog)
       src: '/tutorial/liveCollab.gif',
       description: 'This application supports live collaboration among users',
     },
+    {
+      name: 'Edit Map Name',
+      src: '/tutorial/editName.gif',
+      description: 'Double click on name to enter edit mode, press enter to save',
+    },
   ];
 
   return (
