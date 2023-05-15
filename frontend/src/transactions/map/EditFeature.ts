@@ -1,15 +1,14 @@
-import { CommonSerialization, MapTransaction, TransactionType } from '../../utils/jsTPS';
-import { FeatureExt, LGeoJsonExt, MongoData } from '../../types';
+import { CommonSerialization, MapTransaction } from '../../utils/jsTPS';
+import { FeatureExt } from '../../types';
 import { store } from '../../models';
 import { MapComponentCallbacks } from './common';
 import L from 'leaflet';
-import { cloneDeep } from 'lodash';
-import * as jsondiffpatch from 'jsondiffpatch';
+import { diff, reverse, patch, Delta } from 'jsondiffpatch';
 
 export interface EditFeatureSerialized extends CommonSerialization {
   type: 'EditFeature';
   featureIndex: number;
-  diff?: jsondiffpatch.Delta;
+  diff?: Delta;
 }
 
 type InputType =
@@ -18,12 +17,12 @@ type InputType =
       feature: FeatureExt;
     }
   | {
-      diff: jsondiffpatch.Delta;
+      diff: Delta;
     };
 
 export class EditFeature extends MapTransaction<EditFeatureSerialized> {
   readonly type = 'EditFeature';
-  diff: jsondiffpatch.Delta | undefined;
+  diff: Delta | undefined;
   featureIndex: number;
 
   constructor(input: InputType, featureIndex: number, isPeer: boolean | undefined = false) {
@@ -32,7 +31,7 @@ export class EditFeature extends MapTransaction<EditFeatureSerialized> {
     if ('diff' in input) {
       this.diff = input.diff;
     } else {
-      this.diff = jsondiffpatch.diff(
+      this.diff = diff(
         {
           ...input.oldFeature,
           _id: undefined,
@@ -50,19 +49,19 @@ export class EditFeature extends MapTransaction<EditFeatureSerialized> {
       );
     }
 
-    this.diff = jsondiffpatch.reverse(this.diff!);
+    this.diff = reverse(this.diff!);
 
     this.featureIndex = featureIndex;
   }
 
   async doTransaction(map: L.Map, callbacks: MapComponentCallbacks, fromSocket: boolean) {
-    this.diff = jsondiffpatch.reverse(this.diff!);
+    this.diff = reverse(this.diff!);
 
     // dont repeat network connection on peer for first run
     let oldFeature = callbacks.getFeatureByIndex(this.featureIndex!)!;
     const id = oldFeature._id!;
 
-    oldFeature = jsondiffpatch.patch(
+    oldFeature = patch(
       { ...oldFeature, _id: undefined, __v: undefined, createdAt: undefined, updatedAt: undefined },
       this.diff!
     );
@@ -81,12 +80,12 @@ export class EditFeature extends MapTransaction<EditFeatureSerialized> {
   }
 
   async undoTransaction(map: L.Map, callbacks: MapComponentCallbacks, fromSocket: boolean) {
-    this.diff = jsondiffpatch.reverse(this.diff!);
+    this.diff = reverse(this.diff!);
 
     let feature = callbacks.getFeatureByIndex(this.featureIndex!)!;
     const id = feature._id!;
 
-    feature = jsondiffpatch.patch(
+    feature = patch(
       { ...feature, _id: undefined, __v: undefined, createdAt: undefined, updatedAt: undefined },
       this.diff!
     );
