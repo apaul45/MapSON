@@ -23,7 +23,7 @@ describe('Map interaction tests', () => {
   });
 
   it('should display all toolbar items', () => {
-    const items = ['polygon', 'delete', 'merge', 'split', 'simplify'];
+    const items = ['polygon', 'polyline', 'delete', 'merge', 'split', 'simplify'];
 
     items.forEach((label) => cy.toolbarButton(label).should('be.visible'));
   });
@@ -122,6 +122,41 @@ describe('Polygon tests', () => {
     triggerUndo();
     //undo draw
     triggerUndo();
+  });
+});
+
+describe('Polyline tests', () => {
+  beforeEach(() => {
+    login();
+    cy.get('.mapcard').last().click();
+  });
+
+  it('should draw a polyline', () => {
+    drawPolyline();
+
+    doubleClickRegion(100, 150);
+
+    cy.hasVertexMarkers(2);
+
+    deletePolyline();
+  });
+
+  it('should delete a polyline', () => {
+    drawPolyline();
+
+    doubleClickRegion(100, 150);
+
+    cy.hasVertexMarkers(2);
+
+    doubleClickRegion(100, 150);
+
+    deletePolyline();
+
+    doubleClickRegion(100, 150);
+
+    cy.hasVertexMarkers(0);
+
+    doubleClickRegion(100, 150);
   });
 });
 

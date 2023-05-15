@@ -294,7 +294,7 @@ const MapComponent = ({
 
       if (!eq) {
         editLayer.current = { layer, id };
-        layer.pm.enable({ limitMarkersToCount: 50 });
+        layer.pm.enable();
       }
     };
 
@@ -453,10 +453,8 @@ const MapComponent = ({
 
       const { feature, featureIndex } = getFeatureById((layer as any & MongoData)._id)!;
       let layerTransaction: TransactionTypes = new EditFeature(
-        {
-          oldFeature: feature,
-          feature: (layer as LGeoJsonExt).toGeoJSON(15) as FeatureExt,
-        },
+        feature,
+        (layer as LGeoJsonExt).toGeoJSON(15) as FeatureExt,
         featureIndex
       );
       if (affectedLayers?.length > 0) {
@@ -468,10 +466,8 @@ const MapComponent = ({
             )!;
 
             return new EditFeature(
-              {
-                oldFeature: iFeature,
-                feature: (aLayer as LGeoJsonExt).toGeoJSON(15) as FeatureExt,
-              },
+              iFeature,
+              (aLayer as LGeoJsonExt).toGeoJSON(15) as FeatureExt,
               iFeatureIndex
             );
           }),
