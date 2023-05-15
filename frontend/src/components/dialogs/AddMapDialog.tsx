@@ -7,6 +7,7 @@ import { GeoJsonProperties, Geometry, FeatureCollection } from 'geojson';
 import Pbf from 'pbf';
 // @ts-ignore
 import * as gb from 'geobuf';
+import { PulseLoader } from 'react-spinners';
 
 export const AddMapDialog = () => {
   const [uploadPrompt, setUploadPrompt] = useState('Drag files into box \n or click to browse');
@@ -15,6 +16,8 @@ export const AddMapDialog = () => {
   const [geojson, setGeojson] = useState<
     FeatureCollectionWithFilename | FeatureCollection<Geometry, GeoJsonProperties> | undefined
   >();
+  const [isLoading, setLoading] = useState<boolean>(false);
+
   const { error, mapStore } = store.dispatch;
   const isOpen = useSelector((state: RootState) => state.mapStore.addDialog);
   const navigate = useNavigate();
@@ -136,12 +139,15 @@ export const AddMapDialog = () => {
 
   const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.preventDefault();
+    setLoading(true);
     if (mapName === '') {
+      setLoading(false);
       error.setError('Please enter a map name');
       return;
     }
 
     if (geojson === undefined) {
+      setLoading(false);
       error.setError('Please upload a file');
       return;
     }
@@ -152,6 +158,7 @@ export const AddMapDialog = () => {
       mapName: mapName,
       geojson: geojson,
     });
+    setLoading(false);
     closeDialog();
     navigate(`/project/${id}`);
   };
@@ -258,7 +265,7 @@ export const AddMapDialog = () => {
                     handleSubmit(e);
                   }}
                 >
-                  Submit
+                  {isLoading ? <PulseLoader color={'#fff'} size={10} /> : 'Submit'}
                 </button>
               </div>
             </div>
