@@ -1,6 +1,11 @@
 name: 'Deploy backend'
 
-on: [push]
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend/**'
 
 jobs:
   deploy:
