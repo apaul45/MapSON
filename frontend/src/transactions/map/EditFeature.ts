@@ -4,69 +4,110 @@ import { store } from '../../models';
 import { MapComponentCallbacks } from './common';
 import L from 'leaflet';
 import { cloneDeep } from 'lodash';
+import * as jsondiffpatch from 'jsondiffpatch';
 
 export interface EditFeatureSerialized extends CommonSerialization {
   type: 'EditFeature';
   featureIndex: number;
-  feature: FeatureExt;
-  oldFeature: FeatureExt;
+  diff?: jsondiffpatch.Delta;
 }
+
+type InputType =
+  | {
+      oldFeature: FeatureExt;
+      feature: FeatureExt;
+    }
+  | {
+      diff: jsondiffpatch.Delta;
+    };
 
 export class EditFeature extends MapTransaction<EditFeatureSerialized> {
   readonly type = 'EditFeature';
-  oldFeature: FeatureExt;
-  feature: FeatureExt;
+  diff: jsondiffpatch.Delta | undefined;
   featureIndex: number;
 
-  constructor(oldFeature: FeatureExt, feature: FeatureExt, featureIndex: number, isPeer = false) {
+  constructor(input: InputType, featureIndex: number, isPeer: boolean | undefined = false) {
     super(isPeer);
-    this.oldFeature = oldFeature;
-    this.feature = feature;
+
+    if ('diff' in input) {
+      this.diff = input.diff;
+    } else {
+      this.diff = jsondiffpatch.diff(
+        {
+          ...input.oldFeature,
+          _id: undefined,
+          __v: undefined,
+          createdAt: undefined,
+          updatedAt: undefined,
+        },
+        {
+          ...input.feature,
+          _id: undefined,
+          __v: undefined,
+          createdAt: undefined,
+          updatedAt: undefined,
+        }
+      );
+    }
+
+    this.diff = jsondiffpatch.reverse(this.diff!);
+
     this.featureIndex = featureIndex;
   }
 
   async doTransaction(map: L.Map, callbacks: MapComponentCallbacks, fromSocket: boolean) {
-    let id = undefined;
+    this.diff = jsondiffpatch.reverse(this.diff!);
 
     // dont repeat network connection on peer for first run
-    id = callbacks.getFeatureByIndex(this.featureIndex!)?._id!;
-    const res = await store.dispatch.mapStore.updateFeature({
+    let oldFeature = callbacks.getFeatureByIndex(this.featureIndex!)!;
+    const id = oldFeature._id!;
+
+    oldFeature = jsondiffpatch.patch(
+      { ...oldFeature, _id: undefined, __v: undefined, createdAt: undefined, updatedAt: undefined },
+      this.diff!
+    );
+
+    await store.dispatch.mapStore.updateFeature({
       id,
-      feature: this.feature,
+      feature: oldFeature,
       doNetwork: this.shouldDoNetwork(fromSocket),
     });
 
-    if (this.oldFeature === undefined) {
-      this.oldFeature = cloneDeep(res)!;
-    }
-
     if (this.shouldPerformFrontendEdit()) {
-      EditFeature.editFeatureFrontend(this.feature, id, callbacks, this.featureIndex);
+      EditFeature.editFeatureFrontend(oldFeature, id, callbacks, this.featureIndex);
     }
 
     this.firstRun = false;
   }
 
   async undoTransaction(map: L.Map, callbacks: MapComponentCallbacks, fromSocket: boolean) {
-    const id = callbacks.getFeatureByIndex(this.featureIndex!)?._id!;
+    this.diff = jsondiffpatch.reverse(this.diff!);
+
+    let feature = callbacks.getFeatureByIndex(this.featureIndex!)!;
+    const id = feature._id!;
+
+    feature = jsondiffpatch.patch(
+      { ...feature, _id: undefined, __v: undefined, createdAt: undefined, updatedAt: undefined },
+      this.diff!
+    );
+
     await store.dispatch.mapStore.updateFeature({
       id,
-      feature: this.oldFeature!,
+      feature: feature,
       doNetwork: this.shouldDoNetwork(fromSocket),
     });
-    EditFeature.editFeatureFrontend(this.oldFeature!, id, callbacks, this.featureIndex);
+    EditFeature.editFeatureFrontend(feature, id, callbacks, this.featureIndex);
   }
 
   serialize(): EditFeatureSerialized {
     return {
       type: this.type,
       featureIndex: this.featureIndex,
-      feature: this.feature,
-      oldFeature: this.oldFeature,
+      diff: this.diff,
     };
   }
 
   static deserialize(i: EditFeatureSerialized, callbacks: MapComponentCallbacks): EditFeature {
-    return new EditFeature(i.oldFeature, i.feature, i.featureIndex, true);
+    return new EditFeature({ diff: i.diff! }, i.featureIndex, true);
   }
 }

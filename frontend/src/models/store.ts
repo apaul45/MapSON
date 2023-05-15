@@ -210,7 +210,7 @@ export const mapStore = createModel<RootModel>()({
     ): Promise<FeatureExt | void> {
       const id = state.mapStore.currentMap?._id;
 
-      let { id: featureid, feature, doNetwork } = payload;
+      let { id: featureid, feature: f, doNetwork } = payload;
 
       if (!id) {
         console.error('No map selected');
@@ -218,14 +218,13 @@ export const mapStore = createModel<RootModel>()({
         return;
       }
 
-      if (!featureid || !feature) {
+      if (!featureid || !f) {
         console.error('Invalid feature');
         dispatch.error.setError('Invalid feature');
         return;
       }
 
-      // make a deep clone so we dont have weird ref stuff
-      feature = cloneDeep(feature);
+      const feature = { ...f };
 
       //unset mongoose immutable fields
       delete feature._id;
@@ -247,7 +246,7 @@ export const mapStore = createModel<RootModel>()({
         const oldFeature = oldMap!.features.features[featureIndex];
 
         oldMap!.features.features[featureIndex] = {
-          ...oldMap!.features.features[featureIndex],
+          ...oldFeature,
           ...feature,
         };
 
