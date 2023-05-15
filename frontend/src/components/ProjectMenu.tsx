@@ -170,11 +170,13 @@ const ProjectMenu = ({ leafletMap, shareOpen, setShareOpen }: IProjectMenu) => {
         {user && !map?.published.isPublished ? (
           <MenuItem className="hover:bg-sort-hover" onClick={() => clientUndo()}>
             Undo
+            <div className="text-xs float-right">CTRL-Z</div>
           </MenuItem>
         ) : null}
         {user && !map?.published.isPublished ? (
           <MenuItem className="hover:bg-sort-hover" onClick={() => clientRedo()}>
             Redo
+            <div className="text-xs float-right">CTRL-SHIFT-Z</div>
           </MenuItem>
         ) : null}
         {user && !map?.published.isPublished ? (
